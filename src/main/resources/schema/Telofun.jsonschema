@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://jsonschema.net",
+  "type": "object",
+  "properties": {
+    "displayFieldName": {
+      "id": "http://jsonschema.net/displayFieldName",
+      "type": "string"
+    },
+    "fieldAliases": {
+      "id": "http://jsonschema.net/fieldAliases",
+      "type": "object",
+      "properties": {
+        "lon": {
+          "id": "http://jsonschema.net/fieldAliases/lon",
+          "type": "string"
+        },
+        "lat": {
+          "id": "http://jsonschema.net/fieldAliases/lat",
+          "type": "string"
+        },
+        "oid_thana": {
+          "id": "http://jsonschema.net/fieldAliases/oid_thana",
+          "type": "string"
+        },
+        "tachana_id": {
+          "id": "http://jsonschema.net/fieldAliases/tachana_id",
+          "type": "string"
+        },
+        "Shem_tachana": {
+          "id": "http://jsonschema.net/fieldAliases/Shem_tachana",
+          "type": "string"
+        },
+        "Teur_tachana": {
+          "id": "http://jsonschema.net/fieldAliases/Teur_tachana",
+          "type": "string"
+        }
+      }
+    },
+    "geometryType": {
+      "id": "http://jsonschema.net/geometryType",
+      "type": "string"
+    },
+    "spatialReference": {
+      "id": "http://jsonschema.net/spatialReference",
+      "type": "object",
+      "properties": {
+        "wkid": {
+          "id": "http://jsonschema.net/spatialReference/wkid",
+          "type": "integer"
+        },
+        "latestWkid": {
+          "id": "http://jsonschema.net/spatialReference/latestWkid",
+          "type": "integer"
+        }
+      }
+    },
+    "fields": {
+      "id": "http://jsonschema.net/fields",
+      "type": "array",
+      "items": {
+        "id": "http://jsonschema.net/fields/5",
+        "type": "object",
+        "properties": {
+          "name": {
+            "id": "http://jsonschema.net/fields/5/name",
+            "type": "string"
+          },
+          "type": {
+            "id": "http://jsonschema.net/fields/5/type",
+            "type": "string"
+          },
+          "alias": {
+            "id": "http://jsonschema.net/fields/5/alias",
+            "type": "string"
+          },
+          "length": {
+            "id": "http://jsonschema.net/fields/5/length",
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "features": {
+      "id": "http://jsonschema.net/features",
+      "type": "array",
+      "items": {
+        "id": "http://jsonschema.net/features/1",
+        "type": "object",
+        "properties": {
+          "attributes": {
+            "id": "http://jsonschema.net/features/1/attributes",
+            "type": "object",
+            "properties": {
+              "lon": {
+                "id": "http://jsonschema.net/features/1/attributes/lon",
+                "type": "number"
+              },
+              "lat": {
+                "id": "http://jsonschema.net/features/1/attributes/lat",
+                "type": "number"
+              },
+              "oid_thana": {
+                "id": "http://jsonschema.net/features/1/attributes/oid_thana",
+                "type": "integer"
+              },
+              "tachana_id": {
+                "id": "http://jsonschema.net/features/1/attributes/tachana_id",
+                "type": "integer"
+              },
+              "Shem_tachana": {
+                "id": "http://jsonschema.net/features/1/attributes/Shem_tachana",
+                "type": "string"
+              },
+              "Teur_tachana": {
+                "id": "http://jsonschema.net/features/1/attributes/Teur_tachana",
+                "type": "string"
+              }
+            }
+          },
+          "geometry": {
+            "id": "http://jsonschema.net/features/1/geometry",
+            "type": "object",
+            "properties": {
+              "x": {
+                "id": "http://jsonschema.net/features/1/geometry/x",
+                "type": "number"
+              },
+              "y": {
+                "id": "http://jsonschema.net/features/1/geometry/y",
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "displayFieldName",
+    "fieldAliases",
+    "geometryType",
+    "spatialReference",
+    "fields",
+    "features"
+  ]
+}

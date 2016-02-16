@@ -1,0 +1,508 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://alter.meteor.com/api",
+  "type": "array",
+  "items": {
+    "id": "http://alter.meteor.com/api/0",
+    "type": "object",
+    "properties": {
+      "_id": {
+        "id": "http://alter.meteor.com/api/0/_id",
+        "type": "string"
+      },
+      "origin": {
+        "id": "http://alter.meteor.com/api/0/origin",
+        "type": "object",
+        "properties": {
+          "valid": {
+            "id": "http://alter.meteor.com/api/0/origin/valid",
+            "type": "boolean"
+          },
+          "address": {
+            "id": "http://alter.meteor.com/api/0/origin/address",
+            "type": "string"
+          },
+          "lat": {
+            "id": "http://alter.meteor.com/api/0/origin/lat",
+            "type": "number"
+          },
+          "lng": {
+            "id": "http://alter.meteor.com/api/0/origin/lng",
+            "type": "number"
+          }
+        }
+      },
+      "destination": {
+        "id": "http://alter.meteor.com/api/0/destination",
+        "type": "object",
+        "properties": {
+          "valid": {
+            "id": "http://alter.meteor.com/api/0/destination/valid",
+            "type": "boolean"
+          },
+          "address": {
+            "id": "http://alter.meteor.com/api/0/destination/address",
+            "type": "string"
+          },
+          "lat": {
+            "id": "http://alter.meteor.com/api/0/destination/lat",
+            "type": "number"
+          },
+          "lng": {
+            "id": "http://alter.meteor.com/api/0/destination/lng",
+            "type": "number"
+          }
+        }
+      },
+      "alternatives": {
+        "id": "http://alter.meteor.com/api/0/alternatives",
+        "type": "array",
+        "items": {
+          "id": "http://alter.meteor.com/api/0/alternatives/3",
+          "type": "object",
+          "properties": {
+            "key": {
+              "id": "http://alter.meteor.com/api/0/alternatives/3/key",
+              "type": "string"
+            },
+            "price": {
+              "id": "http://alter.meteor.com/api/0/alternatives/3/price",
+              "type": "number"
+            },
+            "calories": {
+              "id": "http://alter.meteor.com/api/0/alternatives/3/calories",
+              "type": "number"
+            },
+            "emissions": {
+              "id": "http://alter.meteor.com/api/0/alternatives/3/emissions",
+              "type": "number"
+            },
+            "duration": {
+              "id": "http://alter.meteor.com/api/0/alternatives/3/duration",
+              "type": "number"
+            }
+          }
+        }
+      },
+      "chosenType": {
+        "id": "http://alter.meteor.com/api/0/chosenType",
+        "type": "string"
+      },
+      "chosenRoute": {
+        "id": "http://alter.meteor.com/api/0/chosenRoute",
+        "type": "array",
+        "items": {
+          "id": "http://alter.meteor.com/api/0/chosenRoute/0",
+          "type": "object",
+          "properties": {
+            "geocoded_waypoints": {
+              "id": "http://alter.meteor.com/api/0/chosenRoute/0/geocoded_waypoints",
+              "type": "array",
+              "items": {
+                "id": "http://alter.meteor.com/api/0/chosenRoute/0/geocoded_waypoints/1",
+                "type": "object",
+                "properties": {
+                  "geocoder_status": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/geocoded_waypoints/1/geocoder_status",
+                    "type": "string"
+                  },
+                  "place_id": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/geocoded_waypoints/1/place_id",
+                    "type": "string"
+                  },
+                  "types": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/geocoded_waypoints/1/types",
+                    "type": "array",
+                    "items": {
+                      "id": "http://alter.meteor.com/api/0/chosenRoute/0/geocoded_waypoints/1/types/0",
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "routes": {
+              "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes",
+              "type": "array",
+              "items": {
+                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0",
+                "type": "object",
+                "properties": {
+                  "bounds": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/bounds",
+                    "type": "object",
+                    "properties": {
+                      "N": {
+                        "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/bounds/N",
+                        "type": "object",
+                        "properties": {
+                          "N_num": {
+                            "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/bounds/N/N_num",
+                            "type": "number"
+                          },
+                          "j_num": {
+                            "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/bounds/N/j_num",
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "j": {
+                        "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/bounds/j",
+                        "type": "object",
+                        "properties": {
+                          "j_num": {
+                            "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/bounds/j/j_num",
+                            "type": "number"
+                          },
+                          "N_num": {
+                            "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/bounds/j/N_num",
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "copyrights": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/copyrights",
+                    "type": "string"
+                  },
+                  "legs": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs",
+                    "type": "array",
+                    "items": {
+                      "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0",
+                      "type": "object",
+                      "properties": {
+                        "distance": {
+                          "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/distance",
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/distance/text",
+                              "type": "string"
+                            },
+                            "value": {
+                              "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/distance/value",
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "duration": {
+                          "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/duration",
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/duration/text",
+                              "type": "string"
+                            },
+                            "value": {
+                              "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/duration/value",
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "end_address": {
+                          "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/end_address",
+                          "type": "string"
+                        },
+                        "end_location": {
+                          "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/end_location",
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "start_address": {
+                          "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/start_address",
+                          "type": "string"
+                        },
+                        "start_location": {
+                          "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/start_location",
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "steps": {
+                          "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps",
+                          "type": "array",
+                          "items": {
+                            "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18",
+                            "type": "object",
+                            "properties": {
+                              "distance": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/distance",
+                                "type": "object",
+                                "properties": {
+                                  "text": {
+                                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/distance/text",
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/distance/value",
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "duration": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/duration",
+                                "type": "object",
+                                "properties": {
+                                  "text": {
+                                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/duration/text",
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/duration/value",
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "end_location": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/end_location",
+                                "type": "object",
+                                "properties": {}
+                              },
+                              "maneuver": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/maneuver",
+                                "type": "string"
+                              },
+                              "polyline": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/polyline",
+                                "type": "object",
+                                "properties": {
+                                  "points": {
+                                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/polyline/points",
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "start_location": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/start_location",
+                                "type": "object",
+                                "properties": {}
+                              },
+                              "travel_mode": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/travel_mode",
+                                "type": "string"
+                              },
+                              "encoded_lat_lngs": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/encoded_lat_lngs",
+                                "type": "string"
+                              },
+                              "path": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/path",
+                                "type": "array",
+                                "items": {
+                                  "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/path/14",
+                                  "type": "object",
+                                  "properties": {}
+                                }
+                              },
+                              "lat_lngs": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/lat_lngs",
+                                "type": "array",
+                                "items": {
+                                  "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/lat_lngs/14",
+                                  "type": "object",
+                                  "properties": {}
+                                }
+                              },
+                              "instructions": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/instructions",
+                                "type": "string"
+                              },
+                              "start_point": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/start_point",
+                                "type": "object",
+                                "properties": {}
+                              },
+                              "end_point": {
+                                "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/steps/18/end_point",
+                                "type": "object",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        },
+                        "via_waypoint": {
+                          "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/via_waypoint",
+                          "type": "array",
+                          "items": {}
+                        },
+                        "via_waypoints": {
+                          "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/legs/0/via_waypoints",
+                          "type": "array",
+                          "items": {}
+                        }
+                      }
+                    }
+                  },
+                  "overview_polyline": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/overview_polyline",
+                    "type": "string"
+                  },
+                  "summary": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/summary",
+                    "type": "string"
+                  },
+                  "warnings": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/warnings",
+                    "type": "array",
+                    "items": {}
+                  },
+                  "waypoint_order": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/waypoint_order",
+                    "type": "array",
+                    "items": {}
+                  },
+                  "overview_path": {
+                    "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/overview_path",
+                    "type": "array",
+                    "items": {
+                      "id": "http://alter.meteor.com/api/0/chosenRoute/0/routes/0/overview_path/321",
+                      "type": "object",
+                      "properties": {}
+                    }
+                  }
+                }
+              }
+            },
+            "status": {
+              "id": "http://alter.meteor.com/api/0/chosenRoute/0/status",
+              "type": "string"
+            },
+            "request": {
+              "id": "http://alter.meteor.com/api/0/chosenRoute/0/request",
+              "type": "object",
+              "properties": {
+                "origin": {
+                  "id": "http://alter.meteor.com/api/0/chosenRoute/0/request/origin",
+                  "type": "object",
+                  "properties": {}
+                },
+                "destination": {
+                  "id": "http://alter.meteor.com/api/0/chosenRoute/0/request/destination",
+                  "type": "object",
+                  "properties": {}
+                },
+                "travelMode": {
+                  "id": "http://alter.meteor.com/api/0/chosenRoute/0/request/travelMode",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "userId": {
+        "id": "http://alter.meteor.com/api/0/userId",
+        "type": "string"
+      },
+      "createdAt": {
+        "id": "http://alter.meteor.com/api/0/createdAt",
+        "type": "string"
+      },
+      "tracks": {
+        "id": "http://alter.meteor.com/api/0/tracks",
+        "type": "array",
+        "items": {
+          "id": "http://alter.meteor.com/api/0/tracks/1",
+          "type": "object",
+          "properties": {
+            "_id": {
+              "id": "http://alter.meteor.com/api/0/tracks/1/_id",
+              "type": "string"
+            },
+            "location": {
+              "id": "http://alter.meteor.com/api/0/tracks/1/location",
+              "type": "object",
+              "properties": {
+                "activity": {
+                  "id": "http://alter.meteor.com/api/0/tracks/1/location/activity",
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/activity/type",
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/activity/confidence",
+                      "type": "integer"
+                    }
+                  }
+                },
+                "battery": {
+                  "id": "http://alter.meteor.com/api/0/tracks/1/location/battery",
+                  "type": "object",
+                  "properties": {
+                    "is_charging": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/battery/is_charging",
+                      "type": "boolean"
+                    },
+                    "level": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/battery/level",
+                      "type": "number"
+                    }
+                  }
+                },
+                "is_moving": {
+                  "id": "http://alter.meteor.com/api/0/tracks/1/location/is_moving",
+                  "type": "boolean"
+                },
+                "uuid": {
+                  "id": "http://alter.meteor.com/api/0/tracks/1/location/uuid",
+                  "type": "string"
+                },
+                "coords": {
+                  "id": "http://alter.meteor.com/api/0/tracks/1/location/coords",
+                  "type": "object",
+                  "properties": {
+                    "latitude": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/coords/latitude",
+                      "type": "number"
+                    },
+                    "longitude": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/coords/longitude",
+                      "type": "number"
+                    },
+                    "accuracy": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/coords/accuracy",
+                      "type": "number"
+                    },
+                    "speed": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/coords/speed",
+                      "type": "integer"
+                    },
+                    "heading": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/coords/heading",
+                      "type": "integer"
+                    },
+                    "altitude": {
+                      "id": "http://alter.meteor.com/api/0/tracks/1/location/coords/altitude",
+                      "type": "integer"
+                    }
+                  }
+                },
+                "timestamp": {
+                  "id": "http://alter.meteor.com/api/0/tracks/1/location/timestamp",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "_id",
+      "origin",
+      "destination",
+      "alternatives",
+      "chosenType",
+      "chosenRoute",
+      "userId",
+      "createdAt",
+      "tracks"
+    ]
+  },
+  "required": [
+    "0"
+  ]
+}

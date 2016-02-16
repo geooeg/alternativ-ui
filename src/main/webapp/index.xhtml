@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title><ui:insert name="title">Alternativ.Meteor</ui:insert></title>
+        <script type='text/javascript' src='http://maps.google.com/maps/api/js?sensor=true'></script>
+        <script src="http://www.google.com/jsapi" type="text/javascript" ></script>
+        <style type="text/css">
+            html, body {
+                height: 100%;
+                min-width: 480px;
+                min-height: 320px;
+                margin: 0;
+            }
+            .gmap {
+                min-height: 600px;
+                height: 100% !important;
+                min-width: 400px;
+                width: 100% !important;
+            }
+            div#content {
+                right:0%;
+                left:0%;
+                bottom:0px;
+                top:0px;
+                padding-bottom:40px;
+                position:absolute;
+            }
+            #footer {
+                bottom:0px;
+                height:40px;
+                right:0%;
+                left:0%;
+                position:fixed!important;
+                position:absolute;
+                text-align:left;
+                visibility:visible;
+                background-color: #fff;
+                border: 1px solid;
+                border-color: #e5e6e9 #dfe0e4 #d0d1d5;
+                z-index: 9999;
+            }
+        </style>
+    </h:head>
+    <h:body>
+        <h:form id="form" style="height: 100%" enctype="multipart/form-data">
+            <p:growl id="growl" life="3000" showDetail = "true" />
+            <div id="content">
+                <p:gmap widgetVar="w_gmap" center="32.064019, 34.76977199999999" zoom="8" type="HYBRID" model="#{indexView.mapModel}" styleClass="gmap">
+                    <p:ajax event="overlaySelect" listener="#{indexView.onMarkerSelect}" />
+                    <p:gmapInfoWindow id="infoWindow">
+                        <p:outputPanel style="text-align: center; display: block; margin: auto">
+                            <h:outputText value="#{indexView.marker.data}" />
+                            <br />
+                            <h:outputText value="#{indexView.marker.title}" />
+                        </p:outputPanel>
+                    </p:gmapInfoWindow>
+                </p:gmap>
+            </div>
+            <div id="footer">
+                <p:commandButton value="Select Route" type="button" onclick="PF('RoutesDialog').show();" /> 
+                <p:dialog header="Routes" widgetVar="RoutesDialog" showEffect="clip" hideEffect="clip">
+                    <p:dataList value="#{indexView.alterNativs}" var="alterNativ" type="ordered">
+                        <p:commandLink update=":form" oncomplete="PF('RoutesDialog').hide()" title="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" >
+                            <f:setPropertyActionListener value="#{alterNativ}" target="#{indexView.selectedAlterNativ}" />
+                            <h:outputText value="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" />
+                        </p:commandLink>
+                    </p:dataList>
+                </p:dialog>
+                
+                <p:fileUpload label="10city .json" value="#{indexView.file}" mode="simple" skinSimple="true"/>
+                <p:fileUpload label="Busstop .csv" value="#{indexView.busStopFile}" mode="simple" skinSimple="true" />
+                <p:fileUpload label="Telofun .json" value="#{indexView.telofunFile}" mode="simple" skinSimple="true" />
+                <p:commandButton value="Submit" ajax="false" actionListener="#{indexView.upload}" disabled="false" />
+            </div>
+        </h:form>   
+    </h:body>
+</html>
