@@ -34,8 +34,8 @@ public class GoogleApiJUnitTest {
     }
 
     @Test
-    public void hello() {
-        final GoogleGeocoding googleGeocoding = GoogleApi.googleGeocoding();
-        
+    public void googleGeocodingHebrew() {
+        final GoogleGeocoding googleGeocoding = GoogleApi.googleGeocoding("מונטיפיורי 2, תל אביב יפו, ישראל", "iw");
+        String status = googleGeocoding.getStatus();
     }
 }

@@ -17,18 +17,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class GoogleApi {
     public static String GOOGLE_REST_URL = "https://maps.googleapis.com/maps/api/geocode/json?";
     public static String GOOGLE_API_KEY = "";
-    public static String Sample_Address = "מונטיפיורי 2, תל אביב יפו, ישראל";
     
     private final static Logger LOGGER = Logger.getGlobal();
     
-    public static GoogleGeocoding googleGeocoding () {
+    public static GoogleGeocoding googleGeocoding (final String address, final String language) {
         final RestTemplate restTemplate = new RestTemplate();
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
         final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GOOGLE_REST_URL)
-                .queryParam("address", Sample_Address)
+                .queryParam("address", address)
                 .queryParam("key", GOOGLE_API_KEY)
-                .queryParam("language", "iw");
+                .queryParam("language", language);
         final HttpEntity<?> entity = new HttpEntity<>(headers);
         
         // lets just get the plain response as a string
