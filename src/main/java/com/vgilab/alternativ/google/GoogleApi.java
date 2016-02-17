@@ -22,10 +22,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class GoogleApi {
     public static String GOOGLE_REST_URL = "https://maps.googleapis.com/maps/api/geocode/json?";
     public static String GOOGLE_API_KEY = "";
+    public static String Sample_Address = "מונטיפיורי 2, תל אביב יפו, ישראל";
     
-    Public static String Sample_Address = "מונטיפיורי 2, תל אביב יפו, ישראל";
-    
-
     private final static Logger LOGGER = Logger.getGlobal();
     
     public static GoogleGeocoding googleGeocoding () {
