@@ -1,6 +1,7 @@
 package com.vgilab.alternativ.google;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
 
 /**
  *
@@ -11,7 +12,7 @@ public class GoogleGeocoding {
     
     private String status;
 
-    private GeocodingResults geocodingResults;
+    private List<GeocodingResult> results;
 
     public GoogleGeocoding() {
 
@@ -32,16 +33,16 @@ public class GoogleGeocoding {
     }
 
     /**
-     * @return the geocodingResults
+     * @return the results
      */
-    public GeocodingResults getGeocodingResults() {
-        return geocodingResults;
+    public List<GeocodingResult> getResults() {
+        return results;
     }
 
     /**
-     * @param geocodingResults the geocodingResults to set
+     * @param results the results to set
      */
-    public void setGeocodingResults(GeocodingResults geocodingResults) {
-        this.geocodingResults = geocodingResults;
+    public void setResults(List<GeocodingResult> results) {
+        this.results = results;
     }
 }

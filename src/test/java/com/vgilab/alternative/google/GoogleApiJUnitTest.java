@@ -2,6 +2,7 @@ package com.vgilab.alternative.google;
 
 import com.vgilab.alternativ.google.GoogleApi;
 import com.vgilab.alternativ.google.GoogleGeocoding;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -13,6 +14,8 @@ import org.junit.Test;
  * @author smuellner
  */
 public class GoogleApiJUnitTest {
+    
+    private final static Logger LOGGER = Logger.getGlobal();
     
     public GoogleApiJUnitTest() {
     }
@@ -36,12 +39,14 @@ public class GoogleApiJUnitTest {
     @Test
     public void googleGeocodingHebrew() {
         final GoogleGeocoding googleGeocoding = GoogleApi.googleGeocoding("מונטיפיורי 2, תל אביב יפו, ישראל", "iw");
-        String status = googleGeocoding.getStatus();
+        final String status = googleGeocoding.getStatus();
+        LOGGER.severe(status);
     }
     
     @Test
     public void googleGeocodingEnglish() {
         final GoogleGeocoding googleGeocoding = GoogleApi.googleGeocoding("USA, New York, 1st Avenue", "en");
-        String status = googleGeocoding.getStatus();
+        final String status = googleGeocoding.getStatus();
+        LOGGER.severe(status);
     }
 }
