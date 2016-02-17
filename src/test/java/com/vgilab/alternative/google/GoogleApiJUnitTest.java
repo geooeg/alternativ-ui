@@ -38,4 +38,10 @@ public class GoogleApiJUnitTest {
         final GoogleGeocoding googleGeocoding = GoogleApi.googleGeocoding("מונטיפיורי 2, תל אביב יפו, ישראל", "iw");
         String status = googleGeocoding.getStatus();
     }
+    
+    @Test
+    public void googleGeocodingEnglish() {
+        final GoogleGeocoding googleGeocoding = GoogleApi.googleGeocoding("USA, New York, 1st Avenue", "en");
+        String status = googleGeocoding.getStatus();
+    }
 }
