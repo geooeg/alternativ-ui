@@ -73,12 +73,26 @@
                         </p:commandLink>
                     </p:dataList>
                 </p:dialog>
-                
+
                 <p:fileUpload label="10city .json" value="#{indexView.file}" mode="simple" skinSimple="true"/>
                 <p:fileUpload label="Busstop .csv" value="#{indexView.busStopFile}" mode="simple" skinSimple="true" />
                 <p:fileUpload label="Telofun .json" value="#{indexView.telofunFile}" mode="simple" skinSimple="true" />
                 <p:commandButton value="Submit" ajax="false" actionListener="#{indexView.upload}" disabled="false" />
+                <p:commandButton id="shapefileButton" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);" icon="ui-icon-arrowthick-1-s" value="Export...">
+                    <p:fileDownload value="#{indexView.shapefile}" />
+                </p:commandButton>  
             </div>
+            <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                <p:graphicImage name="/ajaxloadingbar.gif" />
+            </p:dialog>
+            <script type="text/javascript">
+                function start() {
+                    PF('statusDialog').show();
+                }
+                function stop() {
+                    PF('statusDialog').hide();
+                }
+            </script>
         </h:form>   
     </h:body>
 </html>

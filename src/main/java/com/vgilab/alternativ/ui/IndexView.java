@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vgilab.alternativ.business.busstop.BusStop;
 import com.vgilab.alternativ.business.busstop.BusStopParser;
+import com.vgilab.alternativ.business.geo.ShapefileService;
 import com.vgilab.alternativ.business.telofun.TelofunParser;
 import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
@@ -15,7 +16,10 @@ import com.vgilab.alternativ.generated.Route;
 import com.vgilab.alternativ.generated.Telofun;
 import com.vgilab.alternativ.generated.Track;
 import java.awt.Color;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -28,13 +32,15 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import org.primefaces.event.map.OverlaySelectEvent;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 import org.primefaces.model.UploadedFile;
-import org.primefaces.model.map.Circle;
 import org.primefaces.model.map.DefaultMapModel;
 import org.primefaces.model.map.LatLng;
 import org.primefaces.model.map.MapModel;
 import org.primefaces.model.map.Marker;
 import org.primefaces.model.map.Polyline;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -65,6 +71,11 @@ public class IndexView implements Serializable {
     private UploadedFile busStopFile;
 
     private UploadedFile telofunFile;
+     
+    private StreamedContent shapefile;
+    
+    @Autowired
+    private ShapefileService shapefileService;
 
     @PostConstruct
     public void init() {
@@ -275,5 +286,23 @@ public class IndexView implements Serializable {
             }
         }
     }
-
+    
+    public StreamedContent getShapefile() {
+        InputStream fis = null;
+        try {
+            fis = new FileInputStream(this.shapefileService.exportToShapefile(this.alterNativs));
+            this.shapefile = new DefaultStreamedContent(fis, "application/zip", "alternativ-shp.zip");
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if(null != fis) {
+                    fis.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return this.shapefile;
+    }
 }

@@ -15,6 +15,9 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.springframework.stereotype.Service;
@@ -27,22 +30,21 @@ import org.springframework.stereotype.Service;
 public class FeatureService {
 
     public List<SimpleFeature> createFeaturesFromTracks(final List<Track> tracks, final String tripId) {
-        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
-        featureTypeBuilder.setName("Point");
-        featureTypeBuilder.add("id", String.class);
-        featureTypeBuilder.add("timestamp", Integer.class);
-        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
-        featureTypeBuilder.add("location", Point.class); // then add geometry
-        final SimpleFeatureType TYPE = featureTypeBuilder.buildFeatureType();
         final List<SimpleFeature> features = new ArrayList<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForTracks());
         for (final Track curTrack : tracks) {
             if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
                 final Point point = geometryFactory.createPoint(new Coordinate(curTrack.getLocation().getCoords().getLongitude(), curTrack.getLocation().getCoords().getLatitude()));
                 featureBuilder.add(tripId);
                 if (StringUtils.isNotBlank(curTrack.getLocation().getTimestamp())) {
-                    featureBuilder.add(Integer.valueOf(curTrack.getLocation().getTimestamp()));
+                    final DateTimeFormatter patternFormat = new DateTimeFormatterBuilder()
+                            .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                            .appendTimeZoneOffset("Z", true, 2, 4)
+                            .toFormatter();
+                    final DateTime dateTime = patternFormat.parseDateTime(curTrack.getLocation().getTimestamp());
+                    // 2016-01-10T14:47:35.820Z
+                    featureBuilder.add(dateTime.getMillis() / 1000);
                 }
                 featureBuilder.add(point);
                 final SimpleFeature feature = featureBuilder.buildFeature(null);
@@ -52,16 +54,20 @@ public class FeatureService {
         return features;
     }
 
-    public List<SimpleFeature> createFeaturesFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
+    public SimpleFeatureType getTypeForTracks() {
         final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.add("id", String.class);
+        featureTypeBuilder.add("timestamp", Integer.class);
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("location", Point.class); // then add geometry
-        final SimpleFeatureType TYPE = featureTypeBuilder.buildFeatureType();
+        return featureTypeBuilder.buildFeatureType();
+    }
+
+    public List<SimpleFeature> createFeaturesFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
         final List<SimpleFeature> features = new ArrayList<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForChosenRoute());
         for (final Route curRoute : chosenRoute.getRoutes()) {
             if (null != curRoute.getLegs()) {
                 for (final Leg curLeg : curRoute.getLegs()) {
@@ -81,6 +87,15 @@ public class FeatureService {
             }
         }
         return features;
+    }
+
+    public SimpleFeatureType getTypeForChosenRoute() {
+        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.setName("Point");
+        featureTypeBuilder.add("id", String.class);
+        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
+        featureTypeBuilder.add("location", Point.class); // then add geometry
+        return featureTypeBuilder.buildFeatureType();
     }
 
     private List<Coordinate> decodePolyline(final String encoded) {
@@ -112,7 +127,6 @@ public class FeatureService {
                     (int) (((double) lng / 1E5) * 1E6));
             coordinates.add(c);
         }
-
         return coordinates;
     }
 }
