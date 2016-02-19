@@ -113,12 +113,11 @@ public class ShapefileService {
             Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            shapeDir.deleteOnExit(); // Note: the order is important
+            shapeDir.deleteOnExit();
             final File zipFile = new File(shapeDir + File.pathSeparator + "alternativ-shp.zip");
             try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
                 for (File file : shapeDir.listFiles()) {
                     file.deleteOnExit();
-                    // ZipEntry entry = new ZipEntry(shapeDir.replace(rootDir, "") + file.getName());
                     final ZipEntry entry = new ZipEntry(file.getName());
                     zipOutputStream.putNextEntry(entry);
                     final FileInputStream in = new FileInputStream(file);

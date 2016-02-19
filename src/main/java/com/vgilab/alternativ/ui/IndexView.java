@@ -19,7 +19,6 @@ import java.awt.Color;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -71,9 +70,9 @@ public class IndexView implements Serializable {
     private UploadedFile busStopFile;
 
     private UploadedFile telofunFile;
-     
+
     private StreamedContent shapefile;
-    
+
     @Autowired
     private ShapefileService shapefileService;
 
@@ -160,13 +159,13 @@ public class IndexView implements Serializable {
             }
         }
         // render bustops
-        if(this.busStops != null) {
+        if (this.busStops != null) {
             for (final BusStop curBusStop : this.getBusStops()) {
                 this.mapModel.addOverlay(new Marker(curBusStop.getLatLng(), "Bus Stop:" + curBusStop.getTitle()));
             }
         }
         // render telofuns
-        if(this.telofuns != null) {
+        if (this.telofuns != null) {
             for (final Feature curFeature : this.telofuns) {
                 final LatLng latLng = new LatLng(curFeature.getAttributes().getLat(), curFeature.getAttributes().getLon());
                 this.mapModel.addOverlay(new Marker(latLng, "Telofun: " + curFeature.getAttributes().getShemTachana()));
@@ -286,22 +285,17 @@ public class IndexView implements Serializable {
             }
         }
     }
-    
+
     public StreamedContent getShapefile() {
-        InputStream fis = null;
-        try {
-            fis = new FileInputStream(this.shapefileService.exportToShapefile(this.alterNativs));
-            this.shapefile = new DefaultStreamedContent(fis, "application/zip", "alternativ-shp.zip");
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
+        if (null != this.alterNativs) {
             try {
-                if(null != fis) {
-                    fis.close();
-                }
-            } catch (IOException ex) {
+                this.shapefile = new DefaultStreamedContent(new FileInputStream(this.shapefileService.exportToShapefile(this.alterNativs)), "application/zip", "alternativ-shp.zip");
+            } catch (FileNotFoundException ex) {
                 Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
             }
+        } else {
+            FacesMessage message = new FacesMessage("Failed", "Please import first data.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
         }
         return this.shapefile;
     }
