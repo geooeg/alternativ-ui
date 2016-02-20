@@ -8,8 +8,10 @@ import com.vgilab.alternativ.generated.Track;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class FeatureService {
+    private final static Logger LOGGER = Logger.getGlobal();
 
     public List<SimpleFeature> createFeaturesFromTracks(final List<Track> tracks, final String tripId) {
         final List<SimpleFeature> features = new ArrayList<>();
@@ -37,14 +40,21 @@ public class FeatureService {
             if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
                 final Point point = geometryFactory.createPoint(new Coordinate(curTrack.getLocation().getCoords().getLongitude(), curTrack.getLocation().getCoords().getLatitude()));
                 featureBuilder.add(tripId);
-                if (StringUtils.isNotBlank(curTrack.getLocation().getTimestamp())) {
-                    final DateTimeFormatter patternFormat = new DateTimeFormatterBuilder()
-                            .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
-                            .appendTimeZoneOffset("Z", true, 2, 4)
-                            .toFormatter();
-                    final DateTime dateTime = patternFormat.parseDateTime(curTrack.getLocation().getTimestamp());
-                    // 2016-01-10T14:47:35.820Z
-                    featureBuilder.add(dateTime.getMillis() / 1000);
+                String timestamp = curTrack.getLocation().getTimestamp();
+                if (StringUtils.isNotBlank(timestamp)) {
+                    try {
+                        // ISO8601: https://en.wikipedia.org/wiki/ISO_8601 
+                        final DateTimeFormatter patternFormat = new DateTimeFormatterBuilder()
+                                .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                                .appendTimeZoneOffset("Z", true, 2, 4)
+                                .toFormatter();
+                        final DateTime dateTime = patternFormat.parseDateTime(timestamp);
+                        // 2016-01-10T14:47:35.820Z
+                        final Long unixTimeStamp = dateTime.getMillis() / 1000;
+                        featureBuilder.add(unixTimeStamp);
+                    } catch (IllegalArgumentException ex) {
+                        LOGGER.severe(MessageFormat.format("Track {0} contains a not ISO8601 conform timestamp {1}. Exception: {2} ", curTrack.getId(), timestamp, ex.getLocalizedMessage()));
+                    }
                 }
                 featureBuilder.add(point);
                 final SimpleFeature feature = featureBuilder.buildFeature(null);
@@ -58,7 +68,7 @@ public class FeatureService {
         final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.add("id", String.class);
-        featureTypeBuilder.add("timestamp", Integer.class);
+        featureTypeBuilder.add("timestamp", Long.class);
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("location", Point.class); // then add geometry
         return featureTypeBuilder.buildFeatureType();
