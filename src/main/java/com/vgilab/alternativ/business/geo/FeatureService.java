@@ -39,8 +39,10 @@ public class FeatureService {
         for (final Track curTrack : tracks) {
             if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
                 final Point point = geometryFactory.createPoint(new Coordinate(curTrack.getLocation().getCoords().getLongitude(), curTrack.getLocation().getCoords().getLatitude()));
+                featureBuilder.add(point);
                 featureBuilder.add(tripId);
                 String timestamp = curTrack.getLocation().getTimestamp();
+                
                 if (StringUtils.isNotBlank(timestamp)) {
                     try {
                         // ISO8601: https://en.wikipedia.org/wiki/ISO_8601 
@@ -56,7 +58,7 @@ public class FeatureService {
                         LOGGER.severe(MessageFormat.format("Track {0} contains a not ISO8601 conform timestamp {1}. Exception: {2} ", curTrack.getId(), timestamp, ex.getLocalizedMessage()));
                     }
                 }
-                featureBuilder.add(point);
+                
                 final SimpleFeature feature = featureBuilder.buildFeature(null);
                 features.add(feature);
             }
@@ -66,11 +68,12 @@ public class FeatureService {
 
     public SimpleFeatureType getTypeForTracks() {
         final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.add("the_geom", Point.class); // then add geometry
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.add("id", String.class);
         featureTypeBuilder.add("timestamp", Long.class);
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
-        featureTypeBuilder.add("location", Point.class); // then add geometry
+        
         return featureTypeBuilder.buildFeatureType();
     }
 
@@ -84,10 +87,13 @@ public class FeatureService {
                     if (null != curLeg.getSteps()) {
                         for (final Step curStep : curLeg.getSteps()) {
                             final List<Coordinate> coordinates = this.decodePolyline(curStep.getPolyline().getPoints());
+                            final String travelMode = curStep.getTravelMode();
                             for (final Coordinate curCoordinate : coordinates) {
                                 final Point point = geometryFactory.createPoint(curCoordinate);
-                                featureBuilder.add(tripId);
                                 featureBuilder.add(point);
+                                featureBuilder.add(tripId);
+                                featureBuilder.add(travelMode);
+                                
                                 final SimpleFeature feature = featureBuilder.buildFeature(null);
                                 features.add(feature);
                             }
@@ -101,10 +107,12 @@ public class FeatureService {
 
     public SimpleFeatureType getTypeForChosenRoute() {
         final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.add("the_geom", Point.class); // then add geometry
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.add("id", String.class);
+        featureTypeBuilder.add("travel mode", String.class);
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
-        featureTypeBuilder.add("location", Point.class); // then add geometry
+        
         return featureTypeBuilder.buildFeatureType();
     }
 
