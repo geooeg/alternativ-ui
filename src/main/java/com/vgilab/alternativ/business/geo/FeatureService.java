@@ -10,7 +10,10 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -30,50 +33,40 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class FeatureService {
+
     private final static Logger LOGGER = Logger.getGlobal();
 
     public List<SimpleFeature> createFeaturesFromTracks(final List<Track> tracks, final String tripId) {
         final List<SimpleFeature> features = new ArrayList<>();
-        final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForTracks());
         for (final Track curTrack : tracks) {
             if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
-                final Point point = geometryFactory.createPoint(new Coordinate(curTrack.getLocation().getCoords().getLongitude(), curTrack.getLocation().getCoords().getLatitude()));
-                featureBuilder.add(point);
-                featureBuilder.add(tripId);
-                String timestamp = curTrack.getLocation().getTimestamp();
-                
-                if (StringUtils.isNotBlank(timestamp)) {
-                    try {
-                        // ISO8601: https://en.wikipedia.org/wiki/ISO_8601 
-                        final DateTimeFormatter patternFormat = new DateTimeFormatterBuilder()
-                                .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
-                                .appendTimeZoneOffset("Z", true, 2, 4)
-                                .toFormatter();
-                        final DateTime dateTime = patternFormat.parseDateTime(timestamp);
-                        // 2016-01-10T14:47:35.820Z
-                        final Long unixTimeStamp = dateTime.getMillis() / 1000;
-                        featureBuilder.add(unixTimeStamp);
-                    } catch (IllegalArgumentException ex) {
-                        LOGGER.severe(MessageFormat.format("Track {0} contains a not ISO8601 conform timestamp {1}. Exception: {2} ", curTrack.getId(), timestamp, ex.getLocalizedMessage()));
-                    }
-                }
-                
-                final SimpleFeature feature = featureBuilder.buildFeature(null);
+                final SimpleFeature feature = this.buildFeatureFromTrack(curTrack, tripId, featureBuilder);
                 features.add(feature);
             }
         }
         return features;
     }
 
+    public Map<Track, SimpleFeature> createTrackFeatureMapFromTracks(final List<Track> tracks, final String tripId) {
+        final Map<Track, SimpleFeature> trackFeatureMap = new HashMap<>();
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForChosenRoute());
+        for (final Track curTrack : tracks) {
+            if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
+                final SimpleFeature feature = this.buildFeatureFromTrack(curTrack, tripId, featureBuilder);
+                trackFeatureMap.put(curTrack, feature);
+            }
+        }
+        return trackFeatureMap;
+    }
+
     public SimpleFeatureType getTypeForTracks() {
         final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
-        featureTypeBuilder.add("the_geom", Point.class); // then add geometry
         featureTypeBuilder.setName("Point");
-        featureTypeBuilder.add("id", String.class);
-        featureTypeBuilder.add("timestamp", Long.class);
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
-        
+        featureTypeBuilder.add("the_geom", Point.class); // then add geometry
+        featureTypeBuilder.add("trip_id", String.class);
+        featureTypeBuilder.add("timestamp", Long.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
@@ -86,14 +79,13 @@ public class FeatureService {
                 for (final Leg curLeg : curRoute.getLegs()) {
                     if (null != curLeg.getSteps()) {
                         for (final Step curStep : curLeg.getSteps()) {
-                            final List<Coordinate> coordinates = this.decodePolyline(curStep.getPolyline().getPoints());
                             final String travelMode = curStep.getTravelMode();
+                            final List<Coordinate> coordinates = this.decodePolyline(curStep.getPolyline().getPoints());
                             for (final Coordinate curCoordinate : coordinates) {
                                 final Point point = geometryFactory.createPoint(curCoordinate);
                                 featureBuilder.add(point);
                                 featureBuilder.add(tripId);
                                 featureBuilder.add(travelMode);
-                                
                                 final SimpleFeature feature = featureBuilder.buildFeature(null);
                                 features.add(feature);
                             }
@@ -105,17 +97,51 @@ public class FeatureService {
         return features;
     }
 
+    public Map<Step, List<SimpleFeature>> createStepFeatureMapFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
+        final Map<Step, List<SimpleFeature>> stepFeatureMap = new HashMap<>();
+        final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForChosenRoute());
+        for (final Route curRoute : chosenRoute.getRoutes()) {
+            if (null != curRoute.getLegs()) {
+                for (final Leg curLeg : curRoute.getLegs()) {
+                    if (null != curLeg.getSteps()) {
+                        for (final Step curStep : curLeg.getSteps()) {
+                            final String travelMode = curStep.getTravelMode();
+                            final List<SimpleFeature> features = new LinkedList<>();
+                            final List<Coordinate> coordinates = this.decodePolyline(curStep.getPolyline().getPoints());
+                            for (final Coordinate curCoordinate : coordinates) {
+                                final Point point = geometryFactory.createPoint(curCoordinate);
+                                featureBuilder.add(point);
+                                featureBuilder.add(tripId);
+                                featureBuilder.add(travelMode);
+                                final SimpleFeature feature = featureBuilder.buildFeature(null);
+                                features.add(feature);
+                            }
+                            stepFeatureMap.put(curStep, features);
+                        }
+                    }
+                }
+            }
+        }
+        return stepFeatureMap;
+    }
+
     public SimpleFeatureType getTypeForChosenRoute() {
         final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
-        featureTypeBuilder.add("the_geom", Point.class); // then add geometry
         featureTypeBuilder.setName("Point");
-        featureTypeBuilder.add("id", String.class);
-        featureTypeBuilder.add("travel mode", String.class);
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
-        
+        featureTypeBuilder.add("the_geom", Point.class); // then add geometry
+        featureTypeBuilder.add("trip_id", String.class);
+        featureTypeBuilder.add("travelmode", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
+    /**
+     * https://developers.google.com/maps/documentation/utilities/polylineutility
+     * 
+     * @param encoded
+     * @return 
+     */
     private List<Coordinate> decodePolyline(final String encoded) {
         final List<Coordinate> coordinates = new ArrayList<>();
         int index = 0, len = encoded.length();
@@ -140,11 +166,36 @@ public class FeatureService {
             } while (b >= 0x20);
             int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
             lng += dlng;
-
-            final Coordinate c = new Coordinate((int) (((double) lat / 1E5) * 1E6),
-                    (int) (((double) lng / 1E5) * 1E6));
+            final Double latitude = ((double) lat / 1E5);
+            final Double longitude = ((double) lng / 1E5);
+            final Coordinate c = new Coordinate(longitude, latitude);
             coordinates.add(c);
         }
         return coordinates;
+    }
+
+    private SimpleFeature buildFeatureFromTrack(final Track curTrack, final String tripId, final SimpleFeatureBuilder featureBuilder) {
+        final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+        final Coordinate coordinate = new Coordinate(curTrack.getLocation().getCoords().getLongitude(), curTrack.getLocation().getCoords().getLatitude());
+        final Point point = geometryFactory.createPoint(coordinate);
+        featureBuilder.add(point);
+        featureBuilder.add(tripId);
+        String timestamp = curTrack.getLocation().getTimestamp();
+        if (StringUtils.isNotBlank(timestamp)) {
+            try {
+                // ISO8601: https://en.wikipedia.org/wiki/ISO_8601 
+                final DateTimeFormatter patternFormat = new DateTimeFormatterBuilder()
+                        .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                        .appendTimeZoneOffset("Z", true, 2, 4)
+                        .toFormatter();
+                final DateTime dateTime = patternFormat.parseDateTime(timestamp);
+                // 2016-01-10T14:47:35.820Z
+                final Long unixTimeStamp = dateTime.getMillis() / 1000;
+                featureBuilder.add(unixTimeStamp);
+            } catch (IllegalArgumentException ex) {
+                LOGGER.severe(MessageFormat.format("Track {0} contains a not ISO8601 conform timestamp {1}. Exception: {2} ", curTrack.getId(), timestamp, ex.getLocalizedMessage()));
+            }
+        }
+        return featureBuilder.buildFeature(null);
     }
 }
