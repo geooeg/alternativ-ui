@@ -47,17 +47,23 @@ public class AlterNativApi {
                 jsonConverter.setSupportedMediaTypes(Arrays.asList(types));
             }
         }
-        // lets just get the plain response as a string
-        final HttpEntity<String> response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entity, String.class);
+        try {
+            // lets just get the plain response as a string
+            final HttpEntity<String> response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entity, String.class);
 
-        LOGGER.severe(response.getBody());
+            LOGGER.severe(response.getBody());
 
-        // Now deserialize/map the json data to our defined POJOs
-        final ResponseEntity<List<AlterNativ>> alterNativResponse
-                = restTemplate.exchange(builder.build().encode().toUri(),
-                        HttpMethod.GET, entity, new ParameterizedTypeReference<List<AlterNativ>>() {
-                });
-        return alterNativResponse.getBody();
+            // Now deserialize/map the json data to our defined POJOs
+            final ResponseEntity<List<AlterNativ>> alterNativResponse
+                    = restTemplate.exchange(builder.build().encode().toUri(),
+                            HttpMethod.GET, entity, new ParameterizedTypeReference<List<AlterNativ>>() {
+                    });
+            return alterNativResponse.getBody();
+
+        } catch (Exception ex) {
+
+        }
+        return null;
     }
 
 }
