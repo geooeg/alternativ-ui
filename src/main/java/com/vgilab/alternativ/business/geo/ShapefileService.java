@@ -44,20 +44,22 @@ public class ShapefileService {
     private FeatureService featureService;
 
     public File exportToShapefile(List<AlterNativ> alterNativs, List<BusStop> busStops, List<Feature> telofuns) {
-        final List<SimpleFeature> pointsForTracks = new LinkedList<>();
-        final List<SimpleFeature> linesForTracks = new LinkedList<>();
-        final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
-        for (final AlterNativ curAlterNativ : alterNativs) {
-            for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
-                pointsForChosenRoute.addAll(this.featureService.createFeaturesFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
-            }
-            pointsForTracks.addAll(this.featureService.createPointsFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
-            linesForTracks.add(this.featureService.createLineFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
-        }
         final File shapeDir = Files.createTempDir();
-        this.addChoosenRoute(shapeDir, pointsForChosenRoute);
-        this.addTracksAsPoints(shapeDir, pointsForTracks);
-        this.addTracksAsLine(shapeDir, linesForTracks);
+        if (null != alterNativs) {
+            final List<SimpleFeature> pointsForTracks = new LinkedList<>();
+            final List<SimpleFeature> linesForTracks = new LinkedList<>();
+            final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
+            for (final AlterNativ curAlterNativ : alterNativs) {
+                for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
+                    pointsForChosenRoute.addAll(this.featureService.createFeaturesFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
+                }
+                pointsForTracks.addAll(this.featureService.createPointsFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
+                linesForTracks.add(this.featureService.createLineFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
+            }
+            this.addChoosenRoute(shapeDir, pointsForChosenRoute);
+            this.addTracksAsPoints(shapeDir, pointsForTracks);
+            this.addTracksAsLine(shapeDir, linesForTracks);
+        }
         if (null != busStops) {
             final List<SimpleFeature> pointsForBusStops = this.featureService.createPointsFromBusStops(busStops);
             this.addBusStopsAsPoints(shapeDir, pointsForBusStops);
@@ -88,28 +90,38 @@ public class ShapefileService {
     }
 
     private void addChoosenRoute(File shapeDir, List<SimpleFeature> featuresForChosenRoute) {
-        final File shapeFile = new File(shapeDir, "chosenroute.shp");
-        this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForChosenRoute(), featuresForChosenRoute);
+        if (null != featuresForChosenRoute) {
+            final File shapeFile = new File(shapeDir, "chosenroute.shp");
+            this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForChosenRoute(), featuresForChosenRoute);
+        }
     }
 
     private void addTracksAsPoints(File shapeDir, List<SimpleFeature> featuresForTracks) {
-        final File shapeFile = new File(shapeDir, "tracks.shp");
-        this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForTracks(), featuresForTracks);
+        if (null != featuresForTracks) {
+            final File shapeFile = new File(shapeDir, "tracks.shp");
+            this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForTracks(), featuresForTracks);
+        }
     }
 
     private void addTracksAsLine(File shapeDir, List<SimpleFeature> featuresForTracks) {
-        final File shapeFile = new File(shapeDir, "trackline.shp");
-        this.writeToShapeFile(shapeFile, this.featureService.getLineTypeForTracks(), featuresForTracks);
+        if (null != featuresForTracks) {
+            final File shapeFile = new File(shapeDir, "trackline.shp");
+            this.writeToShapeFile(shapeFile, this.featureService.getLineTypeForTracks(), featuresForTracks);
+        }
     }
 
     private void addBusStopsAsPoints(File shapeDir, List<SimpleFeature> pointsForBusStops) {
-        final File shapeFile = new File(shapeDir, "busstops.shp");
-        this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForBusStops(), pointsForBusStops);
+        if (null != pointsForBusStops) {
+            final File shapeFile = new File(shapeDir, "busstops.shp");
+            this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForBusStops(), pointsForBusStops);
+        }
     }
 
     private void addTelofunsAsPoints(File shapeDir, List<SimpleFeature> pointsForTelofuns) {
-        final File shapeFile = new File(shapeDir, "telofuns.shp");
-        this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForTelofuns(), pointsForTelofuns);
+        if (null != pointsForTelofuns) {
+            final File shapeFile = new File(shapeDir, "telofuns.shp");
+            this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForTelofuns(), pointsForTelofuns);
+        }
     }
 
     public void writeToShapeFile(File shapeFile, SimpleFeatureType simpleFeatureType, List<SimpleFeature> features) {

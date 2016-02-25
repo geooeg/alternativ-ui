@@ -22,11 +22,15 @@ public class SpatialAnalysisService {
     public Map<String, List<Position>> analyseRoutes(List<AlterNativ> alterNativs) {
         final Map<String, List<Position>> trips = new HashMap<>();
         for (final AlterNativ curAlterNativ : alterNativs) {
+            // Create Feature Maps
             final Map<Track, SimpleFeature> trackFeatureMap = this.featureService.createTrackPointMapFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId());
+            final Map<Step, List<SimpleFeature>> stepFeatureMap = new HashMap<>();
             for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
-                final Map<Step, List<SimpleFeature>> stepFeatureMap = this.featureService.createStepFeatureMapFromChosenRoute(curChosenRoute, curAlterNativ.getId());
-                // curChosenRoute.
+                stepFeatureMap.putAll(this.featureService.createStepFeatureMapFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
             }
+            // 
+            
+            
         }
 
         return trips;

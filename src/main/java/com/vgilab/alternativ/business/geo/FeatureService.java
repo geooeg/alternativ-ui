@@ -60,11 +60,14 @@ public class FeatureService {
             }
         }
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-        LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
-        featureBuilder.add(line);
-        featureBuilder.add(tripId);
-        return featureBuilder.buildFeature(null);
+        if (coordinates.size() > 1) {
+            LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
+            final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
+            featureBuilder.add(line);
+            featureBuilder.add(tripId);
+            return featureBuilder.buildFeature(null);
+        }
+        return null;
     }
 
     public Map<Track, SimpleFeature> createTrackPointMapFromTracks(final List<Track> tracks, final String tripId) {
@@ -164,7 +167,6 @@ public class FeatureService {
         return featureTypeBuilder.buildFeatureType();
     }
 
-
     public List<SimpleFeature> createPointsFromBusStops(List<BusStop> busStops) {
         final List<SimpleFeature> features = new ArrayList<>();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForBusStops());
@@ -195,7 +197,7 @@ public class FeatureService {
         final List<SimpleFeature> features = new ArrayList<>();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForTelofuns());
         for (final Feature curFeature : telofuns) {
-            if (null != curFeature.getGeometry() ) {
+            if (null != curFeature.getGeometry()) {
                 final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                 final Coordinate coordinate = new Coordinate(curFeature.getGeometry().getX(), curFeature.getGeometry().getY());
                 final Point point = geometryFactory.createPoint(coordinate);
@@ -214,7 +216,7 @@ public class FeatureService {
         featureTypeBuilder.add("the_geom", Point.class); // then add geometry
         return featureTypeBuilder.buildFeatureType();
     }
-    
+
     /**
      * https://developers.google.com/maps/documentation/utilities/polylineutility
      *

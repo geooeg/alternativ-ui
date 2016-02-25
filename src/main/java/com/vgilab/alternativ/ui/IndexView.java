@@ -287,7 +287,7 @@ public class IndexView implements Serializable {
     }
 
     public StreamedContent getShapefile() {
-        if (null != this.alterNativs) {
+        if (null != this.alterNativs || null != this.busStops || null != this.telofuns) {
             try {
                 this.shapefile = new DefaultStreamedContent(new FileInputStream(this.shapefileService.exportToShapefile(this.alterNativs, this.busStops, this.telofuns)), "application/zip", "alternativ-shp.zip");
             } catch (FileNotFoundException ex) {
