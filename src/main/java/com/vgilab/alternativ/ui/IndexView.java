@@ -289,7 +289,7 @@ public class IndexView implements Serializable {
     public StreamedContent getShapefile() {
         if (null != this.alterNativs) {
             try {
-                this.shapefile = new DefaultStreamedContent(new FileInputStream(this.shapefileService.exportToShapefile(this.alterNativs)), "application/zip", "alternativ-shp.zip");
+                this.shapefile = new DefaultStreamedContent(new FileInputStream(this.shapefileService.exportToShapefile(this.alterNativs, this.busStops, this.telofuns)), "application/zip", "alternativ-shp.zip");
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
             }

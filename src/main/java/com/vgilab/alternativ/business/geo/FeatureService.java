@@ -1,6 +1,8 @@
 package com.vgilab.alternativ.business.geo;
 
+import com.vgilab.alternativ.business.busstop.BusStop;
 import com.vgilab.alternativ.generated.ChosenRoute;
+import com.vgilab.alternativ.generated.Feature;
 import com.vgilab.alternativ.generated.Leg;
 import com.vgilab.alternativ.generated.Route;
 import com.vgilab.alternativ.generated.Step;
@@ -67,7 +69,7 @@ public class FeatureService {
 
     public Map<Track, SimpleFeature> createTrackPointMapFromTracks(final List<Track> tracks, final String tripId) {
         final Map<Track, SimpleFeature> trackFeatureMap = new HashMap<>();
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForChosenRoute());
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForChosenRoute());
         for (final Track curTrack : tracks) {
             if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
                 final SimpleFeature feature = this.buildFeatureFromTrack(curTrack, tripId, featureBuilder);
@@ -99,7 +101,7 @@ public class FeatureService {
     public List<SimpleFeature> createFeaturesFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
         final List<SimpleFeature> features = new ArrayList<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForChosenRoute());
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForChosenRoute());
         for (final Route curRoute : chosenRoute.getRoutes()) {
             if (null != curRoute.getLegs()) {
                 for (final Leg curLeg : curRoute.getLegs()) {
@@ -126,7 +128,7 @@ public class FeatureService {
     public Map<Step, List<SimpleFeature>> createStepFeatureMapFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
         final Map<Step, List<SimpleFeature>> stepFeatureMap = new HashMap<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForChosenRoute());
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForChosenRoute());
         for (final Route curRoute : chosenRoute.getRoutes()) {
             if (null != curRoute.getLegs()) {
                 for (final Leg curLeg : curRoute.getLegs()) {
@@ -152,7 +154,7 @@ public class FeatureService {
         return stepFeatureMap;
     }
 
-    public SimpleFeatureType getTypeForChosenRoute() {
+    public SimpleFeatureType getPointTypeForChosenRoute() {
         final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
@@ -162,6 +164,57 @@ public class FeatureService {
         return featureTypeBuilder.buildFeatureType();
     }
 
+
+    public List<SimpleFeature> createPointsFromBusStops(List<BusStop> busStops) {
+        final List<SimpleFeature> features = new ArrayList<>();
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForBusStops());
+        for (final BusStop curBusStop : busStops) {
+            if (null != curBusStop.getLatLng()) {
+                final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+                final Coordinate coordinate = new Coordinate(curBusStop.getLatLng().getLng(), curBusStop.getLatLng().getLat());
+                final Point point = geometryFactory.createPoint(coordinate);
+                featureBuilder.add(point);
+                featureBuilder.add(curBusStop.getTitle());
+                final SimpleFeature feature = featureBuilder.buildFeature(null);
+                features.add(feature);
+            }
+        }
+        return features;
+    }
+
+    public SimpleFeatureType getPointTypeForBusStops() {
+        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.setName("Point");
+        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
+        featureTypeBuilder.add("the_geom", Point.class); // then add geometry
+        featureTypeBuilder.add("title", String.class);
+        return featureTypeBuilder.buildFeatureType();
+    }
+
+    public List<SimpleFeature> createPointsFromTelofuns(List<com.vgilab.alternativ.generated.Feature> telofuns) {
+        final List<SimpleFeature> features = new ArrayList<>();
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForTelofuns());
+        for (final Feature curFeature : telofuns) {
+            if (null != curFeature.getGeometry() ) {
+                final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+                final Coordinate coordinate = new Coordinate(curFeature.getGeometry().getX(), curFeature.getGeometry().getY());
+                final Point point = geometryFactory.createPoint(coordinate);
+                featureBuilder.add(point);
+                final SimpleFeature feature = featureBuilder.buildFeature(null);
+                features.add(feature);
+            }
+        }
+        return features;
+    }
+
+    public SimpleFeatureType getPointTypeForTelofuns() {
+        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.setName("Point");
+        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
+        featureTypeBuilder.add("the_geom", Point.class); // then add geometry
+        return featureTypeBuilder.buildFeatureType();
+    }
+    
     /**
      * https://developers.google.com/maps/documentation/utilities/polylineutility
      *
