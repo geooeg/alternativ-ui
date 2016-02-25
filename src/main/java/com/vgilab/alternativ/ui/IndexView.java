@@ -161,7 +161,7 @@ public class IndexView implements Serializable {
         // render bustops
         if (this.busStops != null) {
             for (final BusStop curBusStop : this.getBusStops()) {
-                this.mapModel.addOverlay(new Marker(curBusStop.getLatLng(), "Bus Stop:" + curBusStop.getTitle()));
+                this.mapModel.addOverlay(new Marker(curBusStop.getLatLng(), "Bus Stop:" + curBusStop.getName() + " | Code:" + curBusStop.getCode()));
             }
         }
         // render telofuns

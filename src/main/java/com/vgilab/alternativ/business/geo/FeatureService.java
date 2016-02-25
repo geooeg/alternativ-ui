@@ -176,7 +176,8 @@ public class FeatureService {
                 final Coordinate coordinate = new Coordinate(curBusStop.getLatLng().getLng(), curBusStop.getLatLng().getLat());
                 final Point point = geometryFactory.createPoint(coordinate);
                 featureBuilder.add(point);
-                featureBuilder.add(curBusStop.getTitle());
+                featureBuilder.add(curBusStop.getCode());
+                featureBuilder.add(curBusStop.getName());
                 featureBuilder.add(curBusStop.getDescription());
                 final SimpleFeature feature = featureBuilder.buildFeature(null);
                 features.add(feature);
@@ -190,7 +191,8 @@ public class FeatureService {
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", Point.class); // then add geometry
-        featureTypeBuilder.add("title", String.class);
+        featureTypeBuilder.add("code", String.class);
+        featureTypeBuilder.add("name", String.class);
         featureTypeBuilder.add("description", String.class);
         return featureTypeBuilder.buildFeatureType();
     }

@@ -7,29 +7,33 @@ import org.primefaces.model.map.LatLng;
  * @author Zhang
  */
 public class BusStop {
-    private String title;
+    private String id;
+    private String code;
+    private String name;
     private String description;
     private LatLng latLng;
 
-    public BusStop(String title, String description, double lat, double lng) {
-        this.title = title;
+    public BusStop(String id, String code, String name, String description, double lat, double lng) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
         this.description = description;
         this.latLng = new LatLng(lat, lng);
     }
     
     
     /**
-     * @return the title
+     * @return the name
      */
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
     /**
-     * @param title the title to set
+     * @param name the name to set
      */
-    public void setTitle(String title) {
-        this.title = title;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -58,5 +62,33 @@ public class BusStop {
      */
     public void setLatLng(LatLng latLng) {
         this.latLng = latLng;
+    }
+
+    /**
+     * @return the id
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * @param id the id to set
+     */
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    /**
+     * @return the code
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * @param code the code to set
+     */
+    public void setCode(String code) {
+        this.code = code;
     }
 }
