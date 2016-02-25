@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
+ * http://mapstarter.com http://www.mapshaper.org
  *
  * @author smuellner
  */
@@ -41,15 +42,42 @@ public class ShapefileService {
     private FeatureService featureService;
 
     public File exportToShapefile(List<AlterNativ> alterNativs) {
-        final List<SimpleFeature> featuresForChosenRoute = new LinkedList<>();
-        final List<SimpleFeature> featuresForTracks = new LinkedList<>();
+        final List<SimpleFeature> pointsForTracks = new LinkedList<>();
+        final List<SimpleFeature> linesForTracks = new LinkedList<>();
+        final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
         for (final AlterNativ curAlterNativ : alterNativs) {
             for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
-                featuresForChosenRoute.addAll(this.featureService.createFeaturesFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
+                pointsForChosenRoute.addAll(this.featureService.createFeaturesFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
             }
-            featuresForTracks.addAll(this.featureService.createFeaturesFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
+            pointsForTracks.addAll(this.featureService.createPointsFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
+            linesForTracks.add(this.featureService.createLineFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
         }
         final File shapeDir = Files.createTempDir();
+        this.addChoosenRoute(shapeDir, pointsForChosenRoute);
+        this.addTracksAsPoints(shapeDir, pointsForTracks);
+        this.addTracksAsLine(shapeDir, linesForTracks);
+        try {
+            shapeDir.deleteOnExit();
+            final File zipFile = new File(shapeDir + File.pathSeparator + "alternativ-shp.zip");
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
+                for (File file : shapeDir.listFiles()) {
+                    file.deleteOnExit();
+                    final ZipEntry entry = new ZipEntry(file.getName());
+                    zipOutputStream.putNextEntry(entry);
+                    final FileInputStream in = new FileInputStream(file);
+                    IOUtils.copy(in, zipOutputStream);
+                    IOUtils.closeQuietly(in);
+                }
+                zipOutputStream.flush();
+            }
+            return zipFile;
+        } catch (IOException ex) {
+            Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    private void addChoosenRoute(File shapeDir, List<SimpleFeature> featuresForChosenRoute) {
         try {
             final File shapeFile = new File(shapeDir, "chosenroute.shp");
             final ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
@@ -81,13 +109,16 @@ public class ShapefileService {
         } catch (IOException ex) {
             Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void addTracksAsPoints(File shapeDir, List<SimpleFeature> featuresForTracks) {
         try {
             final File shapeFile = new File(shapeDir, "tracks.shp");
             final ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
             final Map<String, Serializable> params = new HashMap<>();
             params.put("url", shapeFile.toURI().toURL());
             params.put("create spatial index", Boolean.TRUE);
-            final SimpleFeatureType typeForTracks = this.featureService.getTypeForTracks();
+            final SimpleFeatureType typeForTracks = this.featureService.getPointTypeForTracks();
             final ShapefileDataStore shapefileDataStore = (ShapefileDataStore) dataStoreFactory.createNewDataStore(params);
             shapefileDataStore.createSchema(typeForTracks);
             final Transaction transaction = new DefaultTransaction("create");
@@ -112,24 +143,39 @@ public class ShapefileService {
         } catch (IOException ex) {
             Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void addTracksAsLine(File shapeDir, List<SimpleFeature> featuresForTracks) {
         try {
-            shapeDir.deleteOnExit();
-            final File zipFile = new File(shapeDir + File.pathSeparator + "alternativ-shp.zip");
-            try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
-                for (File file : shapeDir.listFiles()) {
-                    file.deleteOnExit();
-                    final ZipEntry entry = new ZipEntry(file.getName());
-                    zipOutputStream.putNextEntry(entry);
-                    final FileInputStream in = new FileInputStream(file);
-                    IOUtils.copy(in, zipOutputStream);
-                    IOUtils.closeQuietly(in);
+            final File shapeFile = new File(shapeDir, "trackline.shp");
+            final ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
+            final Map<String, Serializable> params = new HashMap<>();
+            params.put("url", shapeFile.toURI().toURL());
+            params.put("create spatial index", Boolean.TRUE);
+            final SimpleFeatureType typeForTracks = this.featureService.getLineTypeForTracks();
+            final ShapefileDataStore shapefileDataStore = (ShapefileDataStore) dataStoreFactory.createNewDataStore(params);
+            shapefileDataStore.createSchema(typeForTracks);
+            final Transaction transaction = new DefaultTransaction("create");
+            final String typeName = shapefileDataStore.getTypeNames()[0];
+            final SimpleFeatureSource featureSource = shapefileDataStore.getFeatureSource(typeName);
+            if (featureSource instanceof SimpleFeatureStore) {
+                final SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
+                final SimpleFeatureCollection collection = new ListFeatureCollection(typeForTracks, featuresForTracks);
+                featureStore.setTransaction(transaction);
+                try {
+                    featureStore.addFeatures(collection);
+                    transaction.commit();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    transaction.rollback();
+                } finally {
+                    transaction.close();
                 }
-                zipOutputStream.flush();
+            } else {
+                System.out.println(typeName + " does not support read/write access");
             }
-            return zipFile;
         } catch (IOException ex) {
             Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
     }
 }

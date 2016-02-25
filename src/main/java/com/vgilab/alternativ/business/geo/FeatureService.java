@@ -7,6 +7,7 @@ import com.vgilab.alternativ.generated.Step;
 import com.vgilab.alternativ.generated.Track;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -36,9 +37,9 @@ public class FeatureService {
 
     private final static Logger LOGGER = Logger.getGlobal();
 
-    public List<SimpleFeature> createFeaturesFromTracks(final List<Track> tracks, final String tripId) {
+    public List<SimpleFeature> createPointsFromTracks(final List<Track> tracks, final String tripId) {
         final List<SimpleFeature> features = new ArrayList<>();
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForTracks());
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForTracks());
         for (final Track curTrack : tracks) {
             if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
                 final SimpleFeature feature = this.buildFeatureFromTrack(curTrack, tripId, featureBuilder);
@@ -48,7 +49,23 @@ public class FeatureService {
         return features;
     }
 
-    public Map<Track, SimpleFeature> createTrackFeatureMapFromTracks(final List<Track> tracks, final String tripId) {
+    public SimpleFeature createLineFromTracks(final List<Track> tracks, final String tripId) {
+        final List<Coordinate> coordinates = new ArrayList<>();
+        for (final Track curTrack : tracks) {
+            if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
+                final Coordinate coordinate = new Coordinate(curTrack.getLocation().getCoords().getLongitude(), curTrack.getLocation().getCoords().getLatitude());
+                coordinates.add(coordinate);
+            }
+        }
+        final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+        LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
+        featureBuilder.add(line);
+        featureBuilder.add(tripId);
+        return featureBuilder.buildFeature(null);
+    }
+
+    public Map<Track, SimpleFeature> createTrackPointMapFromTracks(final List<Track> tracks, final String tripId) {
         final Map<Track, SimpleFeature> trackFeatureMap = new HashMap<>();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getTypeForChosenRoute());
         for (final Track curTrack : tracks) {
@@ -60,13 +77,22 @@ public class FeatureService {
         return trackFeatureMap;
     }
 
-    public SimpleFeatureType getTypeForTracks() {
+    public SimpleFeatureType getPointTypeForTracks() {
         final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", Point.class); // then add geometry
         featureTypeBuilder.add("trip_id", String.class);
         featureTypeBuilder.add("timestamp", Long.class);
+        return featureTypeBuilder.buildFeatureType();
+    }
+
+    public SimpleFeatureType getLineTypeForTracks() {
+        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.setName("Line");
+        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
+        featureTypeBuilder.add("the_geom", LineString.class); // then add geometry
+        featureTypeBuilder.add("trip_id", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
@@ -138,9 +164,9 @@ public class FeatureService {
 
     /**
      * https://developers.google.com/maps/documentation/utilities/polylineutility
-     * 
+     *
      * @param encoded
-     * @return 
+     * @return
      */
     private List<Coordinate> decodePolyline(final String encoded) {
         final List<Coordinate> coordinates = new ArrayList<>();
