@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vgilab.alternativ.business.busstop.BusStop;
 import com.vgilab.alternativ.business.busstop.BusStopParser;
 import com.vgilab.alternativ.business.geo.ShapefileService;
+import com.vgilab.alternativ.business.geo.SpatialAnalysisService;
 import com.vgilab.alternativ.business.telofun.TelofunParser;
 import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
@@ -26,6 +27,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
+import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -75,6 +77,9 @@ public class IndexView implements Serializable {
 
     @Autowired
     private ShapefileService shapefileService;
+    
+    @Autowired
+    private SpatialAnalysisService spatialAnalysisService;
 
     @PostConstruct
     public void init() {
@@ -86,36 +91,6 @@ public class IndexView implements Serializable {
 
     public void onMarkerSelect(OverlaySelectEvent event) {
         marker = (Marker) event.getOverlay();
-    }
-
-    public MapModel getMapModel() {
-        return mapModel;
-    }
-
-    public Marker getMarker() {
-        return marker;
-    }
-
-    /**
-     * @return the alterNativs
-     */
-    public List<AlterNativ> getAlterNativs() {
-        return alterNativs;
-    }
-
-    /**
-     * @return the selectedAlterNativ
-     */
-    public AlterNativ getSelectedAlterNativ() {
-        return selectedAlterNativ;
-    }
-
-    /**
-     * @param selectedAlterNativ the selectedAlterNativ to set
-     */
-    public void setSelectedAlterNativ(AlterNativ selectedAlterNativ) {
-        this.selectedAlterNativ = selectedAlterNativ;
-        this.updateMapModel();
     }
 
     private void updateMapModel() {
@@ -172,6 +147,52 @@ public class IndexView implements Serializable {
             }
         }
     }
+    
+    public void upload() {
+        if (this.file != null && this.file.getSize() > 0) {
+            FacesMessage message = new FacesMessage("Succesful", this.file.getFileName() + " is uploaded.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+
+            final String content = new String(this.file.getContents());
+            final ObjectMapper objectMapper = new ObjectMapper();
+
+            try {
+                this.alterNativs = objectMapper.readValue(content, new TypeReference<List<AlterNativ>>() {
+                });
+                this.updateMapModel();
+            } catch (IOException ex) {
+                Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if (this.busStopFile != null && this.busStopFile.getSize() > 0) {
+            FacesMessage message = new FacesMessage("Succesful", this.busStopFile.getFileName() + " bus stops are uploaded.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            try {
+                this.setBusStops(BusStopParser.getBusStops(this.busStopFile.getInputstream()));
+                this.updateMapModel();
+            } catch (IOException ex) {
+                Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if (this.telofunFile != null && this.telofunFile.getSize() > 0) {
+            FacesMessage message = new FacesMessage("Succesful", this.telofunFile.getFileName() + " telofun stops are uploaded.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            try {
+                final Telofun telofun = TelofunParser.getTelofun(this.telofunFile.getContents());
+                this.telofuns = telofun.getFeatures();
+                this.updateMapModel();
+            } catch (IOException ex) {
+                Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    public void startAnalysis() {
+        final PositionListView positionListView = (PositionListView) FacesContext.getCurrentInstance().getApplication().getELResolver().getValue(FacesContext.getCurrentInstance().getELContext(), null, "positionListView");
+        positionListView.setAlterNativs(this.alterNativs);
+        final ConfigurableNavigationHandler configurableNavigationHandler = (ConfigurableNavigationHandler) FacesContext.getCurrentInstance().getApplication().getNavigationHandler();
+        configurableNavigationHandler.performNavigation("/positionList.xhtml?faces-redirect=true");
+    }
 
     private String getRandomHTMLColor() {
         final Random ra = new Random();
@@ -181,6 +202,36 @@ public class IndexView implements Serializable {
         b = ra.nextInt(255);
         final Color color = new Color(r, g, b);
         return "#" + Integer.toHexString(color.getRGB()).substring(2);
+    }
+
+    public MapModel getMapModel() {
+        return mapModel;
+    }
+
+    public Marker getMarker() {
+        return marker;
+    }
+
+    /**
+     * @return the alterNativs
+     */
+    public List<AlterNativ> getAlterNativs() {
+        return alterNativs;
+    }
+
+    /**
+     * @return the selectedAlterNativ
+     */
+    public AlterNativ getSelectedAlterNativ() {
+        return selectedAlterNativ;
+    }
+
+    /**
+     * @param selectedAlterNativ the selectedAlterNativ to set
+     */
+    public void setSelectedAlterNativ(AlterNativ selectedAlterNativ) {
+        this.selectedAlterNativ = selectedAlterNativ;
+        this.updateMapModel();
     }
 
     public UploadedFile getFile() {
@@ -245,45 +296,6 @@ public class IndexView implements Serializable {
      */
     public void setTelofuns(List<Feature> telofuns) {
         this.telofuns = telofuns;
-    }
-
-    public void upload() {
-        if (this.file != null && this.file.getSize() > 0) {
-            FacesMessage message = new FacesMessage("Succesful", this.file.getFileName() + " is uploaded.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
-
-            final String content = new String(this.file.getContents());
-            final ObjectMapper objectMapper = new ObjectMapper();
-
-            try {
-                this.alterNativs = objectMapper.readValue(content, new TypeReference<List<AlterNativ>>() {
-                });
-                this.updateMapModel();
-            } catch (IOException ex) {
-                Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        if (this.busStopFile != null && this.busStopFile.getSize() > 0) {
-            FacesMessage message = new FacesMessage("Succesful", this.busStopFile.getFileName() + " bus stops are uploaded.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
-            try {
-                this.setBusStops(BusStopParser.getBusStops(this.busStopFile.getInputstream()));
-                this.updateMapModel();
-            } catch (IOException ex) {
-                Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        if (this.telofunFile != null && this.telofunFile.getSize() > 0) {
-            FacesMessage message = new FacesMessage("Succesful", this.telofunFile.getFileName() + " telofun stops are uploaded.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
-            try {
-                final Telofun telofun = TelofunParser.getTelofun(this.telofunFile.getContents());
-                this.telofuns = telofun.getFeatures();
-                this.updateMapModel();
-            } catch (IOException ex) {
-                Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
     }
 
     public StreamedContent getShapefile() {

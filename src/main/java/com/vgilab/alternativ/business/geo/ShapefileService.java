@@ -51,7 +51,7 @@ public class ShapefileService {
             final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
             for (final AlterNativ curAlterNativ : alterNativs) {
                 for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
-                    pointsForChosenRoute.addAll(this.featureService.createFeaturesFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
+                    pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
                 }
                 pointsForTracks.addAll(this.featureService.createPointsFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
                 linesForTracks.add(this.featureService.createLineFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));

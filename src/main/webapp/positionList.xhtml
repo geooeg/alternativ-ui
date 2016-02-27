@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:head>
+        <title><ui:insert name="title">#{bundle.Routes}</ui:insert></title>
+    </h:head>
+
+    <h:body>
+        <p:growl id="growl" sticky="true" showDetail="true"/>
+        <h:form id="RouteListForm">
+            <c:forEach var="trip" items="#{positionListView.trips}">
+                <p:dataTable var="position" value="#{positionListView.getPositions(trip)}" paginator="true" rows="10" scrollable="true"
+                             paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15,30,60,100,1000" id="datalist" lazy="true">
+                    <f:facet name="header">
+                        <h:outputText value="From #{trip.alterNativ.origin.address} to #{trip.alterNativ.destination.address} by #{trip.alterNativ.chosenType}" />
+                    </f:facet>
+
+                    <p:columnGroup type="header">
+                        <p:row>
+                            <p:column colspan="2" headerText="Choosen Route" />
+                            <p:column colspan="2" headerText="Track" />
+                            <p:column colspan="2" headerText="" />
+                        </p:row>
+                        <p:row>
+                            <p:column headerText="#{bundle.Latitude}" sortBy="#{position.coordinateForStep.latitude}" filterBy="#{position.coordinateForStep.latitude}"/>
+                            <p:column headerText="#{bundle.Longitude}" sortBy="#{position.coordinateForStep.longitude}" filterBy="#{position.coordinateForStep.longitude}"/>
+                            <p:column headerText="#{bundle.Latitude}" sortBy="#{position.coordinateForTrack.latitude}" filterBy="#{position.coordinateForTrack.latitude}"/>
+                            <p:column headerText="#{bundle.Longitude}" sortBy="#{position.coordinateForTrack.longitude}" filterBy="#{position.coordinateForTrack.longitude}"/>
+                            <p:column headerText="#{bundle.Distance}" sortBy="#{position.distance}" filterBy="#{position.distance}"/>
+                            <p:column headerText="#{bundle.TravelMode}" sortBy="#{position.step.travelMode}" filterBy="#{position.step.travelMode}"/>
+                        </p:row>
+                    </p:columnGroup>
+                    <p:column>
+                        <h:outputText value="#{position.coordinateForStep.latitude}" />
+                    </p:column>
+                    <p:column>
+                        <h:outputText value="#{position.coordinateForStep.longitude}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.Latitude}" sortBy="#{position.coordinateForTrack.latitude}" filterBy="#{position.coordinateForTrack.latitude}">
+                        <h:outputText value="#{position.coordinateForTrack.latitude}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.Longitude}" sortBy="#{position.coordinateForTrack.longitude}" filterBy="#{position.coordinateForTrack.longitude}">
+                        <h:outputText value="#{position.coordinateForTrack.longitude}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.Distance}" sortBy="#{position.distance}" filterBy="#{position.distance}">
+                        <h:outputText value="#{position.distance}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.TravelMode}" sortBy="#{position.step.travelMode}" filterBy="#{position.step.travelMode}">
+                        <h:outputText value="#{position.step.travelMode}" />
+                    </p:column>
+<!--                    <p:column headerText="#{bundle.Timestamp}" sortBy="#{position.timestamp}">
+                        <h:outputText value="#{position.timestamp.time}">
+                            <f:convertDateTime type="both" dateStyle="long" />
+                        </h:outputText>
+                    </p:column>-->
+                    <f:facet name="footer">
+                        <h:outputText value="#{trip.alterNativ.id}" />
+                    </f:facet>
+                </p:dataTable>
+            </c:forEach>
+        </h:form>
+    </h:body>
+</html>
