@@ -10,8 +10,8 @@ public class Coordinate3D {
     private Double altitude;
 
     public Coordinate3D(Double x, Double y, Double z) {
-        this.latitude = x;
-        this.longitude = y;
+        this.longitude = x;
+        this.latitude = y;
         this.altitude = z;
     }
 

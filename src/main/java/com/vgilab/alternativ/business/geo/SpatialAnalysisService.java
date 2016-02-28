@@ -33,7 +33,10 @@ public class SpatialAnalysisService {
     @Autowired
     private FeatureService featureService;
 
-    public List<AnalysedTrip> analyseRoutes(List<AlterNativ> alterNativs) {
+    public List<AnalysedTrip> analyseRoutes(final List<AlterNativ> alterNativs, Double deviationInMeters) {
+        if (null == deviationInMeters) {
+            deviationInMeters = 20d;
+        }
         final List<AnalysedTrip> trips = new LinkedList<>();
         if (null != alterNativs) {
             for (final AlterNativ curAlterNativ : alterNativs) {
@@ -41,10 +44,10 @@ public class SpatialAnalysisService {
                 // Create Feature Maps
                 // final Map<Track, Point> trackPointMap = this.featureService.createTrackPointMapFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId());
                 final Map<Point, Track> pointTrackMap = this.featureService.createPointTrackMapFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId());
-                final Map<Step, List<Point>> stepPointMap = new HashMap<>();
+                final Map<Route, Map<Step, List<Point>>> routeStepPointMap = new HashMap<>();
                 final Map<Route, LineString> stepLineStringMap = new HashMap<>();
                 for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
-                    stepPointMap.putAll(this.featureService.createStepPointMapFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
+                    routeStepPointMap.putAll(this.featureService.createRouteStepPointMapFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
                     stepLineStringMap.putAll(this.featureService.createRouteLineStringMapFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
                 }
                 // 
@@ -71,35 +74,39 @@ public class SpatialAnalysisService {
                                 position.setCoordinateForTrack(new Coordinate3D(origin.getCoordinate().x, origin.getCoordinate().y, origin.getCoordinate().z));
                                 positions.add(position);
                                 break origin_loop;
-                            } 
+                            }
                         }
                     }
                 }
                 // get tracks
-                for (Map.Entry<Route, LineString> curStepLineString : stepLineStringMap.entrySet()) {
-                    final LineString curLineString = curStepLineString.getValue();
-                    for (final Coordinate curCoordinate : curLineString.getCoordinates()) {
-                        final Point point = geometryFactory.createPoint(curCoordinate);
-                        final Position position = new Position();
-                        position.setRoute(curStepLineString.getKey());
-                        position.setCoordinateForStep(new Coordinate3D(curCoordinate.x, curCoordinate.y, curCoordinate.z));
-                        for (Map.Entry<Point, Track> curPointTrack : pointTrackMap.entrySet()) {
-                            final Coordinate coordinate = curPointTrack.getKey().getCoordinate();
-                            position.setCoordinateForTrack(new Coordinate3D(coordinate.x, coordinate.y, coordinate.z));
-                            final GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
-                            try {
-                                gc.setStartingPosition(JTS.toDirectPosition(curPointTrack.getKey().getCoordinate(), DefaultGeographicCRS.WGS84));
-                                gc.setDestinationPosition(JTS.toDirectPosition(point.getCoordinate(), DefaultGeographicCRS.WGS84));
-                                double orthodromicDistance = gc.getOrthodromicDistance();
-                                if (orthodromicDistance < 20) {
-                                    position.setTrack(curPointTrack.getValue());
-                                    position.setDistance(orthodromicDistance);
+                for (final Map.Entry<Route, Map<Step, List<Point>>> curRouteStepPoint : routeStepPointMap.entrySet()) {
+                    final Route route = curRouteStepPoint.getKey();
+                    final Map<Step, List<Point>> stepPointMap = curRouteStepPoint.getValue();
+                    for (final Map.Entry<Step, List<Point>> curStepPoint : stepPointMap.entrySet()) {
+                        final Step step = curStepPoint.getKey();
+                        for (final Point curPointForStep : curStepPoint.getValue()) {
+                            final Position position = new Position();
+                            position.setRoute(route);
+                            position.setStep(step);
+                            position.setCoordinateForStep(new Coordinate3D(curPointForStep.getCoordinate().x, curPointForStep.getCoordinate().y, curPointForStep.getCoordinate().z));
+                            for (Map.Entry<Point, Track> curPointForTrack : pointTrackMap.entrySet()) {
+                                final Coordinate coordinate = curPointForTrack.getKey().getCoordinate();
+                                final GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
+                                try {
+                                    gc.setStartingPosition(JTS.toDirectPosition(curPointForTrack.getKey().getCoordinate(), DefaultGeographicCRS.WGS84));
+                                    gc.setDestinationPosition(JTS.toDirectPosition(curPointForStep.getCoordinate(), DefaultGeographicCRS.WGS84));
+                                    double orthodromicDistance = gc.getOrthodromicDistance();
+                                    if (orthodromicDistance < deviationInMeters) {
+                                        position.setTrack(curPointForTrack.getValue());
+                                        position.setDistance(orthodromicDistance);
+                                        position.setCoordinateForTrack(new Coordinate3D(coordinate.x, coordinate.y, coordinate.z));
+                                    }
+                                } catch (TransformException ex) {
+                                    Logger.getLogger(SpatialAnalysisService.class.getName()).log(Level.SEVERE, null, ex);
                                 }
-                            } catch (TransformException ex) {
-                                Logger.getLogger(SpatialAnalysisService.class.getName()).log(Level.SEVERE, null, ex);
                             }
+                            positions.add(position);
                         }
-                        positions.add(position);
                     }
                 }
                 // get destination

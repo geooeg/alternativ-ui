@@ -81,7 +81,7 @@ public class FeatureService {
         }
         return trackPointMap;
     }
-    
+
     public Map<Point, Track> createPointTrackMapFromTracks(final List<Track> tracks, final String tripId) {
         final Map<Point, Track> pointTrackMap = new HashMap<>();
         for (final Track curTrack : tracks) {
@@ -94,8 +94,6 @@ public class FeatureService {
         return pointTrackMap;
     }
 
-    
-    
     public SimpleFeatureType getPointTypeForTracks() {
         final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
         featureTypeBuilder.setName("Point");
@@ -141,7 +139,7 @@ public class FeatureService {
         }
         return features;
     }
-        
+
     public Map<Route, LineString> createRouteLineStringMapFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
         final Map<Route, LineString> stepFeatureMap = new HashMap<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
@@ -162,10 +160,11 @@ public class FeatureService {
         return stepFeatureMap;
     }
 
-    public Map<Step, List<Point>> createStepPointMapFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
-        final Map<Step, List<Point>> stepFeatureMap = new HashMap<>();
+    public Map<Route, Map<Step, List<Point>>> createRouteStepPointMapFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
+        final Map<Route, Map<Step, List<Point>>> routeStepPointMap = new HashMap<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         for (final Route curRoute : chosenRoute.getRoutes()) {
+            final Map<Step, List<Point>> stepPointMap = new HashMap<>();
             if (null != curRoute.getLegs()) {
                 for (final Leg curLeg : curRoute.getLegs()) {
                     if (null != curLeg.getSteps()) {
@@ -175,13 +174,14 @@ public class FeatureService {
                             for (final Coordinate curCoordinate : coordinates) {
                                 points.add(geometryFactory.createPoint(curCoordinate));
                             }
-                            stepFeatureMap.put(curStep, points);
+                            stepPointMap.put(curStep, points);
                         }
                     }
                 }
             }
+            routeStepPointMap.put(curRoute, stepPointMap);
         }
-        return stepFeatureMap;
+        return routeStepPointMap;
     }
 
     public SimpleFeatureType getPointTypeForChosenRoute() {

@@ -54,12 +54,7 @@
         </dependency>
                 
                 
-        <!-- Utility framework -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-        
+        <!-- XML Framework -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -76,14 +71,8 @@
             <artifactId>commons-csv</artifactId>
             <version>1.1</version>
         </dependency>
-
-        <!-- JSF Provider - that is all necessary for the web representation -->
-        <dependency>
-            <groupId>org.primefaces</groupId>
-            <artifactId>primefaces</artifactId>
-            <version>5.3</version>
-            <type>jar</type>
-        </dependency>
+        
+        <!-- Geotools -->
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-main</artifactId>
@@ -91,14 +80,25 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>13.2</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-shapefile</artifactId>
+            <artifactId>gt-epsg-hsql</artifactId>
             <version>13.2</version>
+        </dependency>
+        
+        <!-- Utility framework -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -110,19 +110,24 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
         </dependency>
-        
+
+        <!-- JSF Provider - that is all necessary for the web representation -->
+        <dependency>
+            <groupId>org.primefaces</groupId>
+            <artifactId>primefaces</artifactId>
+            <version>5.3</version>
+            <type>jar</type>
+        </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
         </dependency>
-        
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>7.0</version>
             <scope>provided</scope>
         </dependency>
-                
         <dependency>
             <groupId>javax.faces</groupId>
             <artifactId>javax.faces-api</artifactId>

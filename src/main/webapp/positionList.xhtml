@@ -9,6 +9,8 @@
 
     <h:head>
         <title><ui:insert name="title">#{bundle.Routes}</ui:insert></title>
+        <script type='text/javascript' src='http://maps.google.com/maps/api/js?sensor=true'></script>
+        <script src="http://www.google.com/jsapi" type="text/javascript" ></script>
     </h:head>
 
     <h:body>
@@ -17,18 +19,21 @@
             <c:forEach var="trip" items="#{positionListView.trips}">
                 <p:dataTable var="position" value="#{positionListView.getPositions(trip)}" paginator="true" rows="10" scrollable="true"
                              paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="5,10,15,30,60,100,1000" id="datalist" lazy="true">
+                             rowsPerPageTemplate="5,10,15,30,60,100,1000" id="positiondatalist" lazy="true">
+                    <p:ajax event="rowToggle" listener="#{positionListView.onRowToggle}" />
                     <f:facet name="header">
-                        <h:outputText value="From #{trip.alterNativ.origin.address} to #{trip.alterNativ.destination.address} by #{trip.alterNativ.chosenType}" />
+                        <h:outputText value="From #{trip.alterNativ.origin.address} to #{trip.alterNativ.destination.address} by #{trip.alterNativ.chosenType}. ID: #{trip.alterNativ.id}" />
                     </f:facet>
 
                     <p:columnGroup type="header">
                         <p:row>
+                            <p:column headerText="" style="width:16px"/>
                             <p:column colspan="2" headerText="Choosen Route" />
                             <p:column colspan="2" headerText="Track" />
                             <p:column colspan="2" headerText="" />
                         </p:row>
                         <p:row>
+                            <p:column headerText="" />
                             <p:column headerText="#{bundle.Latitude}" sortBy="#{position.coordinateForStep.latitude}" filterBy="#{position.coordinateForStep.latitude}"/>
                             <p:column headerText="#{bundle.Longitude}" sortBy="#{position.coordinateForStep.longitude}" filterBy="#{position.coordinateForStep.longitude}"/>
                             <p:column headerText="#{bundle.Latitude}" sortBy="#{position.coordinateForTrack.latitude}" filterBy="#{position.coordinateForTrack.latitude}"/>
@@ -38,21 +43,24 @@
                         </p:row>
                     </p:columnGroup>
                     <p:column>
+                        <p:rowToggler />
+                    </p:column>
+                    <p:column>
                         <h:outputText value="#{position.coordinateForStep.latitude}" />
                     </p:column>
                     <p:column>
                         <h:outputText value="#{position.coordinateForStep.longitude}" />
                     </p:column>
-                    <p:column headerText="#{bundle.Latitude}" sortBy="#{position.coordinateForTrack.latitude}" filterBy="#{position.coordinateForTrack.latitude}">
+                    <p:column>
                         <h:outputText value="#{position.coordinateForTrack.latitude}" />
                     </p:column>
-                    <p:column headerText="#{bundle.Longitude}" sortBy="#{position.coordinateForTrack.longitude}" filterBy="#{position.coordinateForTrack.longitude}">
+                    <p:column>
                         <h:outputText value="#{position.coordinateForTrack.longitude}" />
                     </p:column>
-                    <p:column headerText="#{bundle.Distance}" sortBy="#{position.distance}" filterBy="#{position.distance}">
+                    <p:column>
                         <h:outputText value="#{position.distance}" />
                     </p:column>
-                    <p:column headerText="#{bundle.TravelMode}" sortBy="#{position.step.travelMode}" filterBy="#{position.step.travelMode}">
+                    <p:column>
                         <h:outputText value="#{position.step.travelMode}" />
                     </p:column>
 <!--                    <p:column headerText="#{bundle.Timestamp}" sortBy="#{position.timestamp}">
@@ -60,8 +68,38 @@
                             <f:convertDateTime type="both" dateStyle="long" />
                         </h:outputText>
                     </p:column>-->
+                    <p:rowExpansion>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column style="width:300px">
+                                    <p:gmap model="#{positionListView.mapModel}" center="#{positionListView.mapCenter}" zoom="15" type="HYBRID" style="width:300px;height:300px">
+                                    </p:gmap>
+                                </p:column>
+                                <p:column>
+
+                                    <p:panelGrid columns="2" columnClasses="label,value">
+                                        <h:outputText value="Route Summary" />
+                                        <h:outputText value="#{position.route.summary}" />
+
+                                        <h:outputText value="Distance" />
+                                        <h:outputText value="#{position.step.distance.text}" />
+
+                                        <h:outputText value="Instructions" />
+                                        <h:outputText value="#{position.step.instructions}" escape="false" />
+                                    </p:panelGrid>
+
+                                </p:column>
+
+                            </p:row>
+                        </p:panelGrid>
+                    </p:rowExpansion>
+
                     <f:facet name="footer">
-                        <h:outputText value="#{trip.alterNativ.id}" />
+                        <h:outputText value="Deviation in " />
+                        <p:inputText id="deviation" value="#{positionListView.deviation}" >
+                            <p:ajax event="blur" update="RouteListForm" />
+                        </p:inputText>
+                        <h:outputText value=" meters" />
                     </f:facet>
                 </p:dataTable>
             </c:forEach>
