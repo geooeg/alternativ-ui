@@ -2,9 +2,16 @@ package com.vgilab.alternativ.ui;
 
 import com.vgilab.alternativ.business.geo.AnalysedTrip;
 import com.vgilab.alternativ.business.geo.Coordinate3D;
+import com.vgilab.alternativ.business.geo.FeatureService;
 import com.vgilab.alternativ.business.geo.Position;
 import com.vgilab.alternativ.business.geo.SpatialAnalysisService;
 import com.vgilab.alternativ.generated.AlterNativ;
+import com.vgilab.alternativ.generated.ChosenRoute;
+import com.vgilab.alternativ.generated.Destination;
+import com.vgilab.alternativ.generated.Location;
+import com.vgilab.alternativ.generated.Origin;
+import com.vgilab.alternativ.generated.Track;
+import com.vividsolutions.jts.geom.Coordinate;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -19,6 +26,7 @@ import org.primefaces.model.map.DefaultMapModel;
 import org.primefaces.model.map.LatLng;
 import org.primefaces.model.map.MapModel;
 import org.primefaces.model.map.Marker;
+import org.primefaces.model.map.Polyline;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -36,11 +44,16 @@ public class PositionListView {
     private List<AnalysedTrip> trips;
     private String deviation;
     private MapModel mapModel;
+    private MapModel routeMapModel;
     private String mapCenter;
     private Position selectedPosition;
+    private AnalysedTrip selectedTrip;
 
     @Autowired
     private SpatialAnalysisService spatialAnalysisService;
+
+    @Autowired
+    private FeatureService featureService;
 
     @PostConstruct
     public void init() {
@@ -104,13 +117,13 @@ public class PositionListView {
                     final Coordinate3D coordinate = this.selectedPosition.getCoordinateForTrack();
                     final LatLng latLng = new LatLng(coordinate.getLatitude(), coordinate.getLongitude());
                     this.mapModel.addOverlay(new Marker(latLng, "Track", ""));
-                    this.mapCenter = coordinate.getLatitude()  + "," +  coordinate.getLongitude();
+                    this.mapCenter = coordinate.getLatitude() + "," + coordinate.getLongitude();
                 }
                 if (null != this.selectedPosition.getCoordinateForStep()) {
                     final Coordinate3D coordinate = this.selectedPosition.getCoordinateForStep();
                     final LatLng latLng = new LatLng(coordinate.getLatitude(), coordinate.getLongitude());
                     this.mapModel.addOverlay(new Marker(latLng, "Step", ""));
-                    this.mapCenter = coordinate.getLatitude()  + "," +  coordinate.getLongitude();
+                    this.mapCenter = coordinate.getLatitude() + "," + coordinate.getLongitude();
                 }
             }
         }
@@ -122,6 +135,62 @@ public class PositionListView {
 
     public MapModel getMapModel() {
         return this.mapModel;
+    }
+
+    public String getRouteMapCenterForTrip(final AnalysedTrip trip) {
+        final AlterNativ alterNativ = trip.getAlterNativ();
+        final Origin origin = alterNativ.getOrigin();
+        return null != origin ? origin.getLat() + ", " + origin.getLng() : "37.335556, -122.009167";
+    }
+
+    public MapModel getRouteMapModelForTrip(final AnalysedTrip trip) {
+        if (this.selectedTrip != trip) {
+            this.selectedTrip = trip;
+            this.routeMapModel = new DefaultMapModel();
+            final AlterNativ alterNativ = trip.getAlterNativ();
+
+            // Chosen Routes
+            final Polyline choosenRoutePolyline = new Polyline();
+            choosenRoutePolyline.setStrokeWeight(2);
+            choosenRoutePolyline.setStrokeColor("green");
+            choosenRoutePolyline.setStrokeOpacity(0.7);
+            for (final ChosenRoute curChosenRoute : alterNativ.getChosenRoute()) {
+                for (final Coordinate curCoordinate : this.featureService.getCoordinatesFromChosenRoute(curChosenRoute)) {
+                    final LatLng latLng = new LatLng(curCoordinate.y, curCoordinate.x);
+                    choosenRoutePolyline.getPaths().add(latLng);
+                }
+            }
+            this.routeMapModel.addOverlay(choosenRoutePolyline);
+            // user tracks
+            final Origin origin = alterNativ.getOrigin();
+            final LatLng originLatLng = new LatLng(origin.getLat(), origin.getLng());
+            this.routeMapModel.addOverlay(new Marker(originLatLng, "UID: " + alterNativ.getId(), "Origin: " + origin.getAddress()));
+            final Polyline trackPolyline = new Polyline();
+            trackPolyline.setStrokeWeight(2);
+            trackPolyline.setStrokeColor("red");
+            trackPolyline.setStrokeOpacity(0.7);
+            trackPolyline.getPaths().add(originLatLng);
+            // Tracks
+            for (final Track curTrack : alterNativ.getTracks()) {
+                final Location location = curTrack.getLocation();
+                final LatLng latLng = new LatLng(location.getCoords().getLatitude(), location.getCoords().getLongitude());
+                trackPolyline.getPaths().add(latLng);
+                final StringBuilder message = new StringBuilder();
+                if (null != location.getActivity()) {
+                    message.append("Activity: ").append(location.getActivity().getType()).append(" | ");
+                }
+                if (null != location.getTimestamp()) {
+                    message.append("Timestamp: ").append(location.getTimestamp());
+                }
+                // this.routeMapModel.addOverlay(new Marker(latLng, "UID: " + curTrack.getId(), message));
+            }
+            final Destination destination = alterNativ.getDestination();
+            final LatLng destinationLatLng = new LatLng(destination.getLat(), destination.getLng());
+            this.routeMapModel.addOverlay(new Marker(destinationLatLng, "UID: " + alterNativ.getId(), "Destination: " + destination.getAddress()));
+            trackPolyline.getPaths().add(destinationLatLng);
+            this.routeMapModel.addOverlay(trackPolyline);
+        }
+        return this.routeMapModel;
     }
 
 }

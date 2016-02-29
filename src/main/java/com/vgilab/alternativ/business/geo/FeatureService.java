@@ -140,20 +140,25 @@ public class FeatureService {
         return features;
     }
 
+    private List<Coordinate> getCoordinatesFromRoute(final Route curRoute) {
+        final List<Coordinate> coordinates = new LinkedList<>();
+        if (null != curRoute.getLegs()) {
+            for (final Leg curLeg : curRoute.getLegs()) {
+                if (null != curLeg.getSteps()) {
+                    for (final Step curStep : curLeg.getSteps()) {
+                        coordinates.addAll(this.decodePolyline(curStep.getPolyline().getPoints()));
+                    }
+                }
+            }
+        }
+        return coordinates;
+    }
+
     public Map<Route, LineString> createRouteLineStringMapFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
         final Map<Route, LineString> stepFeatureMap = new HashMap<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         for (final Route curRoute : chosenRoute.getRoutes()) {
-            final List<Coordinate> coordinates = new LinkedList<>();
-            if (null != curRoute.getLegs()) {
-                for (final Leg curLeg : curRoute.getLegs()) {
-                    if (null != curLeg.getSteps()) {
-                        for (final Step curStep : curLeg.getSteps()) {
-                            coordinates.addAll(this.decodePolyline(curStep.getPolyline().getPoints()));
-                        }
-                    }
-                }
-            }
+            final List<Coordinate> coordinates = this.getCoordinatesFromRoute(curRoute);
             final LineString lineString = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
             stepFeatureMap.put(curRoute, lineString);
         }
@@ -182,6 +187,14 @@ public class FeatureService {
             routeStepPointMap.put(curRoute, stepPointMap);
         }
         return routeStepPointMap;
+    }
+
+    public List<Coordinate> getCoordinatesFromChosenRoute(final ChosenRoute chosenRoute) {
+        final List<Coordinate> coordinates = new LinkedList<>();
+        for (final Route curRoute : chosenRoute.getRoutes()) {
+            coordinates.addAll(this.getCoordinatesFromRoute(curRoute));
+        }
+        return coordinates;
     }
 
     public SimpleFeatureType getPointTypeForChosenRoute() {
