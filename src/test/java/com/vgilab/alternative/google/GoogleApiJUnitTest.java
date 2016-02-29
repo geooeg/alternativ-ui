@@ -1,7 +1,12 @@
 package com.vgilab.alternative.google;
 
+import com.vgilab.alternativ.google.Coordinate3D;
 import com.vgilab.alternativ.google.GoogleApi;
 import com.vgilab.alternativ.google.GoogleGeocoding;
+import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
+import com.vividsolutions.jts.geom.Coordinate;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -49,4 +54,12 @@ public class GoogleApiJUnitTest {
         final String status = googleGeocoding.getStatus();
         LOGGER.severe(status);
     }
+    
+    @Test
+    public void snapToRoads() {
+        List<Coordinate3D> coordinates = new LinkedList<>();
+        coordinates.add(new Coordinate3D(52.442222,9.745222,0.0));
+        GoogleMapsRoadsApi.snapToRoads(coordinates, true);
+    }
+    
 }
