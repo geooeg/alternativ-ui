@@ -18,7 +18,7 @@
         <h:form id="RouteListForm">
             <p:accordionPanel dynamic="true" cache="true">
                 <c:forEach var="trip" items="#{positionListView.trips}">
-                    <p:tab title="From #{trip.alterNativ.origin.address} to #{trip.alterNativ.destination.address}.">
+                    <p:tab title="From #{trip.alterNativ.origin.address} to #{trip.alterNativ.destination.address}. Tracks #{positionListView.getTrackPointCountForTrip(trip)}, Steps #{positionListView.getStepPointCountForTrip(trip)}">
                         <p:panelGrid columns="1">
 
                             <p:dataTable var="position" value="#{positionListView.getPositions(trip)}" paginator="true" rows="10" scrollable="true"

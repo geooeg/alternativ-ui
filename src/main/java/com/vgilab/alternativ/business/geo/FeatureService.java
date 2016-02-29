@@ -112,7 +112,23 @@ public class FeatureService {
         featureTypeBuilder.add("trip_id", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
-
+    
+    public Integer getPointCountForTracks(List<Track> tracks) {
+        return tracks.size();
+    }
+    
+    public Integer getPointCountForChosenRoutes(final List<ChosenRoute> chosenRoutes) {
+        int size = 0;
+        for(final ChosenRoute curChosenRoute : chosenRoutes) {
+            size += this.getCoordinatesFromChosenRoute(curChosenRoute).size();
+        }
+        return size;
+    }
+    
+    public Integer getPointCountForChosenRoute(final ChosenRoute chosenRoute) {
+        return this.getCoordinatesFromChosenRoute(chosenRoute).size();
+    }
+    
     public List<SimpleFeature> createPointsFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
         final List<SimpleFeature> features = new ArrayList<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();

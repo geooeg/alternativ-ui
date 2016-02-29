@@ -137,6 +137,14 @@ public class PositionListView {
         return this.mapModel;
     }
 
+    public Integer getTrackPointCountForTrip(final AnalysedTrip trip) {
+        return this.featureService.getPointCountForTracks(trip.getAlterNativ().getTracks());
+    }
+    
+    public Integer getStepPointCountForTrip(final AnalysedTrip trip) {
+        return this.featureService.getPointCountForChosenRoutes(trip.getAlterNativ().getChosenRoute());
+    }
+
     public String getRouteMapCenterForTrip(final AnalysedTrip trip) {
         final AlterNativ alterNativ = trip.getAlterNativ();
         final Origin origin = alterNativ.getOrigin();
