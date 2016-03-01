@@ -5,6 +5,8 @@ import com.vgilab.alternativ.generated.GoogleMapsRoads;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,8 +26,18 @@ public class GoogleMapsRoadsApi {
 
     private static final String GOOGLE_MAPS_ROADS_REST_URL = "https://roads.googleapis.com/v1/snapToRoads";
     private static final String GOOGLE_MAPS_ROADS_API_KEY = "AIzaSyCw7DLT2RpgkDbBT82raAt2kMJ5WqMjP7w";
+    private static final Integer GOOGLE_MAPS_ROADS_CHUNK_SIZE = 100;
 
     private final static Logger LOGGER = Logger.getGlobal();
+
+    public static List<Coordinate3D> snapToRoadsUsingBatches(final List<Coordinate3D> coordinates, final boolean interpolate) {
+        final List<Coordinate3D> snappedCoordinates = new LinkedList<>();
+        for (int i = 0; i < coordinates.size(); i += GOOGLE_MAPS_ROADS_CHUNK_SIZE) {
+            final Coordinate3D[] coordinatesChunk = (Coordinate3D[]) Arrays.copyOfRange(coordinates.toArray(), i, i + GOOGLE_MAPS_ROADS_CHUNK_SIZE);
+            final GoogleMapsRoads googleMapsRoads = GoogleMapsRoadsApi.snapToRoads(new LinkedList<>(Arrays.asList(coordinatesChunk)), interpolate);
+        }
+        return snappedCoordinates;
+    }
 
     public static GoogleMapsRoads snapToRoads(final List<Coordinate3D> coordinates, final boolean interpolate) {
         final String coordinatesToPath = GoogleMapsRoadsApi.coordinatesToPath(coordinates);
