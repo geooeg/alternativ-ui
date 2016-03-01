@@ -31,7 +31,6 @@ public class AlterNativApi {
         final HttpHeaders headers = new HttpHeaders();
         final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(ALTER_NATIV_REST_URL);
         final HttpEntity<?> entity = new HttpEntity<>(headers);
-
         // CORRECT: that would be the correct headers
         // headers.set("Accept", MediaType.APPLICATION_JSON_VALUE); 
         // FIXME: Workaround wrong MIME type!
@@ -50,18 +49,15 @@ public class AlterNativApi {
         try {
             // lets just get the plain response as a string
             final HttpEntity<String> response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entity, String.class);
-
-            LOGGER.severe(response.getBody());
-
+            LOGGER.finest(response.getBody());
             // Now deserialize/map the json data to our defined POJOs
             final ResponseEntity<List<AlterNativ>> alterNativResponse
                     = restTemplate.exchange(builder.build().encode().toUri(),
                             HttpMethod.GET, entity, new ParameterizedTypeReference<List<AlterNativ>>() {
                     });
             return alterNativResponse.getBody();
-
         } catch (Exception ex) {
-
+            LOGGER.severe(ex.getLocalizedMessage());
         }
         return null;
     }

@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://jsonschema.net",
+  "type": "object",
+  "properties": {
+    "snappedPoints": {
+      "id": "http://jsonschema.net/snappedPoints",
+      "type": "array",
+      "items": {
+        "id": "http://jsonschema.net/snappedPoints/0",
+        "type": "object",
+        "properties": {
+          "location": {
+            "id": "http://jsonschema.net/snappedPoints/0/location",
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "id": "http://jsonschema.net/snappedPoints/0/location/latitude",
+                "type": "number"
+              },
+              "longitude": {
+                "id": "http://jsonschema.net/snappedPoints/0/location/longitude",
+                "type": "number"
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ]
+          },
+          "originalIndex": {
+            "id": "http://jsonschema.net/snappedPoints/0/originalIndex",
+            "type": "integer"
+          },
+          "placeId": {
+            "id": "http://jsonschema.net/snappedPoints/0/placeId",
+            "type": "string"
+          }
+        },
+        "required": [
+          "location",
+          "originalIndex",
+          "placeId"
+        ]
+      },
+      "required": [
+        "0"
+      ]
+    }
+  },
+  "required": [
+    "snappedPoints"
+  ]
+}

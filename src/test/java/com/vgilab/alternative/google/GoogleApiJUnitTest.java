@@ -1,10 +1,9 @@
 package com.vgilab.alternative.google;
 
-import com.vgilab.alternativ.google.Coordinate3D;
+import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.google.GoogleApi;
 import com.vgilab.alternativ.google.GoogleGeocoding;
 import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
-import com.vividsolutions.jts.geom.Coordinate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
