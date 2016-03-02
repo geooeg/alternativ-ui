@@ -11,11 +11,13 @@ import com.vgilab.alternativ.generated.Destination;
 import com.vgilab.alternativ.generated.Location;
 import com.vgilab.alternativ.generated.Origin;
 import com.vgilab.alternativ.generated.Track;
+import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
 import com.vividsolutions.jts.geom.Coordinate;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
+import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -42,6 +44,7 @@ public class PositionListView {
 
     private List<AlterNativ> alterNativs;
     private List<AnalysedTrip> trips;
+    private List<Coordinate3D> snapedToRoad;
     private String deviation;
     private MapModel mapModel;
     private MapModel routeMapModel;
@@ -140,7 +143,7 @@ public class PositionListView {
     public Integer getTrackPointCountForTrip(final AnalysedTrip trip) {
         return this.featureService.getPointCountForTracks(trip.getAlterNativ().getTracks());
     }
-    
+
     public Integer getStepPointCountForTrip(final AnalysedTrip trip) {
         return this.featureService.getPointCountForChosenRoutes(trip.getAlterNativ().getChosenRoute());
     }
@@ -197,8 +200,29 @@ public class PositionListView {
             this.routeMapModel.addOverlay(new Marker(destinationLatLng, "UID: " + alterNativ.getId(), "Destination: " + destination.getAddress()));
             trackPolyline.getPaths().add(destinationLatLng);
             this.routeMapModel.addOverlay(trackPolyline);
+            // add
+            final List<Coordinate3D> coordinates = new LinkedList<>();
+            coordinates.add(new Coordinate3D(origin.getLng(), origin.getLat(), 0d));
+            for (final Track curTrack : alterNativ.getTracks()) {
+                final Location location = curTrack.getLocation();
+                coordinates.add(new Coordinate3D(location.getCoords().getLongitude(), location.getCoords().getLatitude(), 0d));
+            }
+            coordinates.add(new Coordinate3D(destination.getLng(), destination.getLat(), 0d));
+            this.snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
+            final Polyline googleMapsTrackPolyline = new Polyline();
+            googleMapsTrackPolyline.setStrokeWeight(2);
+            googleMapsTrackPolyline.setStrokeColor("blue");
+            googleMapsTrackPolyline.setStrokeOpacity(0.7);
+            for (final Coordinate3D curCoordinate : this.snapedToRoad) {
+                final LatLng latLng = new LatLng(curCoordinate.getLatitude(), curCoordinate.getLongitude());
+                googleMapsTrackPolyline.getPaths().add(latLng);
+            }
+            this.routeMapModel.addOverlay(googleMapsTrackPolyline);
         }
         return this.routeMapModel;
+    }
+
+    public void mapTracksWithGoogleForTrip(final AnalysedTrip trip) {
     }
 
 }

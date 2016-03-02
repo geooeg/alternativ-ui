@@ -2,6 +2,7 @@ package com.vgilab.alternativ.google;
 
 import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.generated.GoogleMapsRoads;
+import com.vgilab.alternativ.generated.SnappedPoint;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
@@ -33,8 +34,13 @@ public class GoogleMapsRoadsApi {
     public static List<Coordinate3D> snapToRoadsUsingBatches(final List<Coordinate3D> coordinates, final boolean interpolate) {
         final List<Coordinate3D> snappedCoordinates = new LinkedList<>();
         for (int i = 0; i < coordinates.size(); i += GOOGLE_MAPS_ROADS_CHUNK_SIZE) {
-            final Coordinate3D[] coordinatesChunk = (Coordinate3D[]) Arrays.copyOfRange(coordinates.toArray(), i, i + GOOGLE_MAPS_ROADS_CHUNK_SIZE);
-            final GoogleMapsRoads googleMapsRoads = GoogleMapsRoadsApi.snapToRoads(new LinkedList<>(Arrays.asList(coordinatesChunk)), interpolate);
+            final int chunk = (i + GOOGLE_MAPS_ROADS_CHUNK_SIZE > coordinates.size()) ? coordinates.size() : i + GOOGLE_MAPS_ROADS_CHUNK_SIZE;
+            final Coordinate3D[] coordinatesChunk = Arrays.copyOfRange(coordinates.toArray(new Coordinate3D[coordinates.size()]), i, chunk);
+            final LinkedList<Coordinate3D> coordinatesChunkList = new LinkedList<>(Arrays.asList(coordinatesChunk));
+            final GoogleMapsRoads googleMapsRoads = GoogleMapsRoadsApi.snapToRoads(coordinatesChunkList, interpolate);
+            for (final SnappedPoint curSnappedPoint : googleMapsRoads.getSnappedPoints()) {
+                snappedCoordinates.add(new Coordinate3D(curSnappedPoint.getLocation().getLongitude(), curSnappedPoint.getLocation().getLatitude(), 0d));
+            }
         }
         return snappedCoordinates;
     }

@@ -52,4 +52,18 @@ public class GoogleMapsRoadsApiJUnitTest {
             LOGGER.info(MessageFormat.format("Lng: {0}, Lat {1}, PlaceId {2}", curSnappedPoint.getLocation().getLongitude(), curSnappedPoint.getLocation().getLatitude(), curSnappedPoint.getPlaceId()));
         }
     }
+
+    @Test
+    public void snapToRoadsWithBatches() {
+        final List<Coordinate3D> coordinates = new LinkedList<>();
+        // fill 250 entries to coordinates
+        for(int i = 0; i <= 250; i++) {
+            final double increment = 0.1 * i;
+            coordinates.add(new Coordinate3D(24.942795 + increment, 60.170880 + increment, 0d));
+        }
+        final List<Coordinate3D> snapToRoadsUsingBatches = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
+        for(final Coordinate3D curCoordinate : snapToRoadsUsingBatches) {
+            LOGGER.info(MessageFormat.format("Lng: {0}, Lat {1}", curCoordinate.getLongitude(), curCoordinate.getLatitude()));
+        }
+    }
 }
