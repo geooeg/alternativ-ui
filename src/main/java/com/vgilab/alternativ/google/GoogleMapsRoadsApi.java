@@ -26,7 +26,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class GoogleMapsRoadsApi {
 
     private static final String GOOGLE_MAPS_ROADS_REST_URL = "https://roads.googleapis.com/v1/snapToRoads";
-    private static final String GOOGLE_MAPS_ROADS_API_KEY = "AIzaSyCw7DLT2RpgkDbBT82raAt2kMJ5WqMjP7w";
+    private static final String GOOGLE_MAPS_ROADS_API_KEY = "";
     private static final Integer GOOGLE_MAPS_ROADS_CHUNK_SIZE = 100;
 
     private final static Logger LOGGER = Logger.getGlobal();
