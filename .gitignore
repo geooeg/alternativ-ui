@@ -8,3 +8,4 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 /nbproject/
+src/main/resources/com/vgilab/alternativ/google/api.properties
