@@ -15,7 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Zhang
  */
 public class GoogleApi {
-    public static String GOOGLE_REST_URL = "https://maps.googleapis.com/maps/api/geocode/json?";
+    public static String GOOGLE_REST_URL = "https://maps.googleapis.com/maps/api/geocode/json";
     public static String GOOGLE_API_KEY = "";
     
     private final static Logger LOGGER = Logger.getGlobal();
