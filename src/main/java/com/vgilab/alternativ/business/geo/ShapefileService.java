@@ -89,6 +89,46 @@ public class ShapefileService {
         return null;
     }
 
+    public File exportToShapefile(final AlterNativ alterNativ, final List<Coordinate3D> snapedToRoad) {
+        final File shapeDir = Files.createTempDir();
+        final List<SimpleFeature> pointsForTracks = new LinkedList<>();
+        final List<SimpleFeature> linesForTracks = new LinkedList<>();
+        final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
+        for (final ChosenRoute curChosenRoute : alterNativ.getChosenRoute()) {
+            pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, alterNativ.getId()));
+        }
+        pointsForTracks.addAll(this.featureService.createPointsFromTracks(alterNativ.getTracks(), alterNativ.getId()));
+        linesForTracks.add(this.featureService.createLineFromTracks(alterNativ.getTracks(), alterNativ.getId()));
+        this.addChoosenRoute(shapeDir, pointsForChosenRoute);
+        this.addTracksAsPoints(shapeDir, pointsForTracks);
+        this.addTracksAsLine(shapeDir, linesForTracks);
+        if (null != snapedToRoad) {
+            final List<SimpleFeature> pointsForSnapedToRoad = this.featureService.createPointsForCoordinates(snapedToRoad);
+            this.addSnappedToRoadAsPoints(shapeDir, pointsForSnapedToRoad);
+            final List<SimpleFeature> linesForSnapedToRoad = this.featureService.createLinesForCoordinates(snapedToRoad);
+            this.addSnappedToRoadAsLines(shapeDir, linesForSnapedToRoad);
+        }
+        try {
+            shapeDir.deleteOnExit();
+            final File zipFile = new File(shapeDir + File.pathSeparator + alterNativ.getId() + "-shp.zip");
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
+                for (File file : shapeDir.listFiles()) {
+                    file.deleteOnExit();
+                    final ZipEntry entry = new ZipEntry(file.getName());
+                    zipOutputStream.putNextEntry(entry);
+                    final FileInputStream in = new FileInputStream(file);
+                    IOUtils.copy(in, zipOutputStream);
+                    IOUtils.closeQuietly(in);
+                }
+                zipOutputStream.flush();
+            }
+            return zipFile;
+        } catch (IOException ex) {
+            Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
     private void addChoosenRoute(File shapeDir, List<SimpleFeature> featuresForChosenRoute) {
         if (null != featuresForChosenRoute) {
             final File shapeFile = new File(shapeDir, "chosenroute.shp");
@@ -121,6 +161,20 @@ public class ShapefileService {
         if (null != pointsForTelofuns) {
             final File shapeFile = new File(shapeDir, "telofuns.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForTelofuns(), pointsForTelofuns);
+        }
+    }
+
+    private void addSnappedToRoadAsPoints(File shapeDir, List<SimpleFeature> features) {
+        if (null != features) {
+            final File shapeFile = new File(shapeDir, "snapped-track-points.shp");
+            this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForCoordinates(), features);
+        }
+    }
+
+    private void addSnappedToRoadAsLines(File shapeDir, List<SimpleFeature> features) {
+        if (null != features) {
+            final File shapeFile = new File(shapeDir, "snapped-track-lines.shp");
+            this.writeToShapeFile(shapeFile, this.featureService.getLineTypeForCoordinates(), features);
         }
     }
 

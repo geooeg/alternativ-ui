@@ -3,12 +3,16 @@ package com.vgilab.alternativ.google;
 import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.generated.GoogleMapsRoads;
 import com.vgilab.alternativ.generated.SnappedPoint;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -26,10 +30,22 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class GoogleMapsRoadsApi {
 
     private static final String GOOGLE_MAPS_ROADS_REST_URL = "https://roads.googleapis.com/v1/snapToRoads";
-    private static final String GOOGLE_MAPS_ROADS_API_KEY = "";
+    private static String GOOGLE_MAPS_ROADS_API_KEY;
     private static final Integer GOOGLE_MAPS_ROADS_CHUNK_SIZE = 100;
+    private static final Logger LOGGER = Logger.getGlobal();
 
-    private final static Logger LOGGER = Logger.getGlobal();
+    static {
+        final Properties p = new Properties();
+        try {
+            final InputStream in = GoogleMapsRoadsApi.class.getResourceAsStream("api.properties");
+            p.load(in);
+            GOOGLE_MAPS_ROADS_API_KEY = p.getProperty("API_KEY");
+        } catch (FileNotFoundException e) {
+            LOGGER.severe(e.getLocalizedMessage());
+        } catch (IOException e) {
+            LOGGER.severe(e.getLocalizedMessage());
+        }
+    }
 
     public static List<Coordinate3D> snapToRoadsUsingBatches(final List<Coordinate3D> coordinates, final boolean interpolate) {
         final List<Coordinate3D> snappedCoordinates = new LinkedList<>();

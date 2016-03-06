@@ -13,6 +13,7 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -112,23 +113,23 @@ public class FeatureService {
         featureTypeBuilder.add("trip_id", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
-    
+
     public Integer getPointCountForTracks(List<Track> tracks) {
         return tracks.size();
     }
-    
+
     public Integer getPointCountForChosenRoutes(final List<ChosenRoute> chosenRoutes) {
         int size = 0;
-        for(final ChosenRoute curChosenRoute : chosenRoutes) {
+        for (final ChosenRoute curChosenRoute : chosenRoutes) {
             size += this.getCoordinatesFromChosenRoute(curChosenRoute).size();
         }
         return size;
     }
-    
+
     public Integer getPointCountForChosenRoute(final ChosenRoute chosenRoute) {
         return this.getCoordinatesFromChosenRoute(chosenRoute).size();
     }
-    
+
     public List<SimpleFeature> createPointsFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
         final List<SimpleFeature> features = new ArrayList<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
@@ -274,6 +275,52 @@ public class FeatureService {
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", Point.class); // then add geometry
+        return featureTypeBuilder.buildFeatureType();
+    }
+
+    public List<SimpleFeature> createPointsForCoordinates(List<Coordinate3D> coordinates) {
+        final List<SimpleFeature> features = new ArrayList<>();
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForTelofuns());
+        for (final Coordinate3D curCoordinate : coordinates) {
+            final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+            final Coordinate coordinate = new Coordinate(curCoordinate.getLongitude(), curCoordinate.getLatitude(), curCoordinate.getAltitude());
+            final Point point = geometryFactory.createPoint(coordinate);
+            featureBuilder.add(point);
+            final SimpleFeature feature = featureBuilder.buildFeature(null);
+            features.add(feature);
+        }
+        return features;
+    }
+
+    public SimpleFeatureType getPointTypeForCoordinates() {
+        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.setName("Point");
+        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
+        featureTypeBuilder.add("the_geom", Point.class); // then add geometry
+        return featureTypeBuilder.buildFeatureType();
+    }
+
+    public List<SimpleFeature> createLinesForCoordinates(List<Coordinate3D> coordinates3D) {
+        final List<Coordinate> coordinates = new ArrayList<>();
+        for (final Coordinate3D curCoordinate3D : coordinates3D) {
+            final Coordinate coordinate = new Coordinate(curCoordinate3D.getLongitude(), curCoordinate3D.getLatitude(), curCoordinate3D.getAltitude());
+            coordinates.add(coordinate);
+        }
+        final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+        if (coordinates.size() > 1) {
+            final LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
+            final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
+            featureBuilder.add(line);
+            return Collections.singletonList(featureBuilder.buildFeature(null));
+        }
+        return null;
+    }
+
+    public SimpleFeatureType getLineTypeForCoordinates() {
+        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.setName("Line");
+        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
+        featureTypeBuilder.add("the_geom", LineString.class); // then add geometry
         return featureTypeBuilder.buildFeatureType();
     }
 

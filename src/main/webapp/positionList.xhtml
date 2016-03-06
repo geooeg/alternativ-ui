@@ -14,7 +14,19 @@
     </h:head>
 
     <h:body>
+        <script type="text/javascript">
+            function showStatus() {
+                PF('statusDialog').show();
+            }
+
+            function hideStatus() {
+                PF('statusDialog').hide();
+            }
+        </script>
         <p:growl id="growl" sticky="true" showDetail="true"/>
+        <p:dialog widgetVar="statusDialog" id="statusDialog" header="Status" modal="true" height="32" resizable="false" draggable="false">
+            <img src="resources/images/ajaxloadingbar.gif" width="220"/>
+        </p:dialog>
         <h:form id="RouteListForm">
             <p:accordionPanel dynamic="true" cache="true">
                 <c:forEach var="trip" items="#{positionListView.trips}">
@@ -108,6 +120,13 @@
                             <p:gmap model="#{positionListView.getRouteMapModelForTrip(trip)}" center="#{positionListView.getRouteMapCenterForTrip(trip)}" zoom="15" type="HYBRID" style="width:100%;height:500px">
                             </p:gmap>
                         </p:panelGrid>
+                        <p:toolbar>
+                            <f:facet name="right">
+                                <p:commandButton id="shapefileButton" ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" icon="ui-icon-arrowthick-1-s" value="Export...">
+                                    <p:fileDownload value="#{positionListView.exportTripToShapefile(trip)}" />
+                                </p:commandButton>
+                            </f:facet>
+                        </p:toolbar>
                     </p:tab>
                 </c:forEach>
             </p:accordionPanel>

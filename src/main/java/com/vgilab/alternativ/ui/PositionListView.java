@@ -4,6 +4,7 @@ import com.vgilab.alternativ.business.geo.AnalysedTrip;
 import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.business.geo.FeatureService;
 import com.vgilab.alternativ.business.geo.Position;
+import com.vgilab.alternativ.business.geo.ShapefileService;
 import com.vgilab.alternativ.business.geo.SpatialAnalysisService;
 import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
@@ -13,16 +14,25 @@ import com.vgilab.alternativ.generated.Origin;
 import com.vgilab.alternativ.generated.Track;
 import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
 import com.vividsolutions.jts.geom.Coordinate;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
 import org.primefaces.event.ToggleEvent;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 import org.primefaces.model.Visibility;
 import org.primefaces.model.map.DefaultMapModel;
 import org.primefaces.model.map.LatLng;
@@ -51,12 +61,16 @@ public class PositionListView {
     private String mapCenter;
     private Position selectedPosition;
     private AnalysedTrip selectedTrip;
+    private StreamedContent shapefile;
 
     @Autowired
     private SpatialAnalysisService spatialAnalysisService;
 
     @Autowired
     private FeatureService featureService;
+
+    @Autowired
+    private ShapefileService shapefileService;
 
     @PostConstruct
     public void init() {
@@ -159,7 +173,6 @@ public class PositionListView {
             this.selectedTrip = trip;
             this.routeMapModel = new DefaultMapModel();
             final AlterNativ alterNativ = trip.getAlterNativ();
-
             // Chosen Routes
             final Polyline choosenRoutePolyline = new Polyline();
             choosenRoutePolyline.setStrokeWeight(2);
@@ -222,7 +235,17 @@ public class PositionListView {
         return this.routeMapModel;
     }
 
-    public void mapTracksWithGoogleForTrip(final AnalysedTrip trip) {
+    public StreamedContent exportTripToShapefile(final AnalysedTrip trip) {
+        try {
+            final AlterNativ alterNativ = trip.getAlterNativ();
+            File zippedShapefiles = this.shapefileService.exportToShapefile(alterNativ, this.snapedToRoad);
+            this.shapefile = new DefaultStreamedContent(new FileInputStream(zippedShapefiles), "application/zip", alterNativ.getId() + "-shp.zip");
+        } catch (FileNotFoundException ex) {
+            FacesMessage message = new FacesMessage("Failed", "Please import first data.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return this.shapefile;
     }
 
 }
