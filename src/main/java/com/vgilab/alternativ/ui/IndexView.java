@@ -33,6 +33,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -68,7 +69,7 @@ public class IndexView implements Serializable {
 
     private Marker marker;
 
-    private UploadedFile file;
+    private UploadedFile tenCityFile;
 
     private UploadedFile busStopFile;
 
@@ -153,24 +154,28 @@ public class IndexView implements Serializable {
     public void clearList() {
         this.alterNativs.clear();
     }
-    
-    public void upload() {
-        if (this.file != null && this.file.getSize() > 0) {
-            FacesMessage message = new FacesMessage("Succesful", this.file.getFileName() + " is uploaded.");
+
+    public void handleTenCityFileUpload(final FileUploadEvent event) {
+        event.getComponent().setTransient(false);
+        if (event.getFile() != null && event.getFile().getSize() > 0) {
+            final FacesMessage message = new FacesMessage("Successful", event.getFile().getFileName() + " is uploaded.");
             FacesContext.getCurrentInstance().addMessage(null, message);
-
-            final String content = new String(this.file.getContents());
+            final String content = new String(event.getFile().getContents());
             final ObjectMapper objectMapper = new ObjectMapper();
-
             try {
                 final List<AlterNativ> readValue = objectMapper.readValue(content, new TypeReference<List<AlterNativ>>() {
                 });
                 this.alterNativs.addAll(readValue);
-                this.updateMapModel();
             } catch (IOException ex) {
                 Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                
+            this.updateMapModel();
             }
         }
+    }
+    
+    public void upload() {
         if (this.busStopFile != null && this.busStopFile.getSize() > 0) {
             FacesMessage message = new FacesMessage("Succesful", this.busStopFile.getFileName() + " bus stops are uploaded.");
             FacesContext.getCurrentInstance().addMessage(null, message);
@@ -241,12 +246,18 @@ public class IndexView implements Serializable {
         this.updateMapModel();
     }
 
-    public UploadedFile getFile() {
-        return file;
+    /**
+     * @return the tenCityFile
+     */
+    public UploadedFile getTenCityFile() {
+        return tenCityFile;
     }
 
-    public void setFile(UploadedFile file) {
-        this.file = file;
+    /**
+     * @param tenCityFile the tenCityFile to set
+     */
+    public void setTenCityFile(UploadedFile tenCityFile) {
+        this.tenCityFile = tenCityFile;
     }
 
     /**

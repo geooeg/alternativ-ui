@@ -20,6 +20,12 @@
         <param-value>true</param-value>
     </context-param>
     
+    <!-- Primefaces -->
+    <context-param>
+        <param-name>primefaces.UPLOADER</param-name>
+        <param-value>auto</param-value>
+    </context-param>
+    
     <!-- Add Support for Spring -->
     <listener>
         <listener-class>

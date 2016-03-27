@@ -65,7 +65,7 @@
         <h:form id="form" style="height: 100%" enctype="multipart/form-data">
             <p:growl id="growl" life="3000" showDetail = "true" />
             <div id="content">
-                <p:gmap widgetVar="w_gmap" center="32.064019, 34.76977199999999" zoom="8" type="HYBRID" model="#{indexView.mapModel}" styleClass="gmap">
+                <p:gmap id="map" widgetVar="w_gmap" center="32.064019, 34.76977199999999" zoom="8" type="HYBRID" model="#{indexView.mapModel}" styleClass="gmap">
                     <p:ajax event="overlaySelect" listener="#{indexView.onMarkerSelect}" />
                     <p:gmapInfoWindow id="infoWindow">
                         <p:outputPanel style="text-align: center; display: block; margin: auto">
@@ -86,7 +86,12 @@
                         </p:commandLink>
                     </p:dataList>
                 </p:dialog>
-                <p:fileUpload label="10city .json" value="#{indexView.file}" mode="simple" skinSimple="true"/>
+                <p:commandButton value="10city Upload" type="button" onclick="PF('UploadTenCityDialog').show();" /> 
+                <p:dialog header="10city .json Upload" widgetVar="UploadTenCityDialog" showEffect="clip" hideEffect="clip">
+                    <p:fileUpload fileUploadListener="#{indexView.handleTenCityFileUpload}" 
+                                  mode="advanced" dragDropSupport="false" update="@form, growl"
+                                  multiple="true" auto="true" />
+                </p:dialog>
                 <p:fileUpload label="Busstop .csv" value="#{indexView.busStopFile}" mode="simple" skinSimple="true" />
                 <p:fileUpload label="Telofun .json" value="#{indexView.telofunFile}" mode="simple" skinSimple="true" />
                 <p:commandButton value="Submit" ajax="false" actionListener="#{indexView.upload}" disabled="false" />
