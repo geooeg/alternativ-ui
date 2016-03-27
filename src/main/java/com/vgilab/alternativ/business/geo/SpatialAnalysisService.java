@@ -40,7 +40,6 @@ public class SpatialAnalysisService {
             for (final AlterNativ curAlterNativ : alterNativs) {
                 final List<Position> positions = new LinkedList<>();
                 // Create Feature Maps
-                // final Map<Track, Point> trackPointMap = this.featureService.createTrackPointMapFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId());
                 final Map<Point, Track> pointTrackMap = this.featureService.createPointTrackMapFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId());
                 final Map<Route, Map<Step, List<Point>>> routeStepPointMap = new HashMap<>();
                 final Map<Route, LineString> stepLineStringMap = new HashMap<>();

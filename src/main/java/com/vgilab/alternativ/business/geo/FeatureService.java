@@ -157,7 +157,6 @@ public class FeatureService {
     }
 
     public SimpleFeature createLineFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
-
         final List<Coordinate> coordinates = new ArrayList<>();
         for (final Route curRoute : chosenRoute.getRoutes()) {
             if (null != curRoute.getLegs()) {
@@ -165,7 +164,6 @@ public class FeatureService {
                     if (null != curLeg.getSteps()) {
                         for (final Step curStep : curLeg.getSteps()) {
                             coordinates.addAll(this.decodePolyline(curStep.getPolyline().getPoints()));
-
                         }
                     }
                 }
@@ -200,8 +198,10 @@ public class FeatureService {
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         for (final Route curRoute : chosenRoute.getRoutes()) {
             final List<Coordinate> coordinates = this.getCoordinatesFromRoute(curRoute);
-            final LineString lineString = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
-            stepFeatureMap.put(curRoute, lineString);
+            if (coordinates.size() > 1) {
+                final LineString lineString = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
+                stepFeatureMap.put(curRoute, lineString);
+            }
         }
         return stepFeatureMap;
     }
