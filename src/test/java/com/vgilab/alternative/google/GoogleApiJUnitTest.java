@@ -1,11 +1,7 @@
 package com.vgilab.alternative.google;
 
-import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.google.GoogleApi;
 import com.vgilab.alternativ.google.GoogleGeocoding;
-import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;

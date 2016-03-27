@@ -1,18 +1,10 @@
 package com.vgilab.alternative.google;
 
-import com.vgilab.alternativ.business.geo.Coordinate3D;
-import com.vgilab.alternativ.generated.GoogleMapsRoads;
-import com.vgilab.alternativ.generated.SnappedPoint;
-import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
-import java.text.MessageFormat;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  *

@@ -40,7 +40,7 @@ public class GoogleMapsRoadsApi {
             final InputStream inputStream = GoogleMapsRoadsApi.class.getResourceAsStream("api.properties");
             if (null != inputStream) {
                 properties.load(inputStream);
-                GOOGLE_MAPS_ROADS_API_KEY = properties.getProperty("API_KEY");
+                GOOGLE_MAPS_ROADS_API_KEY = properties.getProperty("GOOGLE_MAPS_ROADS_API_KEY");
             } else {
                 LOGGER.severe("Google Maps Roads API inactive. Missing api properties file!");
             }

@@ -63,7 +63,7 @@ public class ShapefileService {
                 linesForTracks.add(this.featureService.createLineFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
                 if(snapToRoad) {
                     final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(curAlterNativ);
-                    if(coordinates.size() > 10) {
+                    if(coordinates.size() > 2) {
                         final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
                         pointsForSnapedToRoad.addAll(this.featureService.createPointsForCoordinates(snapedToRoad));
                         linesForSnapedToRoad.addAll(this.featureService.createLinesForCoordinates(snapedToRoad));

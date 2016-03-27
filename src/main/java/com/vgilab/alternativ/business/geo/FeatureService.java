@@ -113,7 +113,7 @@ public class FeatureService {
         return featureTypeBuilder.buildFeatureType();
     }
 
-    public Integer getPointCountForTracks(List<Track> tracks) {
+    public Integer getPointCountForTracks(final List<Track> tracks) {
         return tracks.size();
     }
 
@@ -257,7 +257,7 @@ public class FeatureService {
         return featureTypeBuilder.buildFeatureType();
     }
 
-    public List<SimpleFeature> createPointsFromBusStops(List<BusStop> busStops) {
+    public List<SimpleFeature> createPointsFromBusStops(final List<BusStop> busStops) {
         final List<SimpleFeature> features = new ArrayList<>();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForBusStops());
         for (final BusStop curBusStop : busStops) {
@@ -287,7 +287,7 @@ public class FeatureService {
         return featureTypeBuilder.buildFeatureType();
     }
 
-    public List<SimpleFeature> createPointsFromTelofuns(List<com.vgilab.alternativ.generated.Feature> telofuns) {
+    public List<SimpleFeature> createPointsFromTelofuns(final List<com.vgilab.alternativ.generated.Feature> telofuns) {
         final List<SimpleFeature> features = new ArrayList<>();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForTelofuns());
         for (final Feature curFeature : telofuns) {
@@ -311,11 +311,11 @@ public class FeatureService {
         return featureTypeBuilder.buildFeatureType();
     }
 
-    public List<SimpleFeature> createPointsForCoordinates(List<Coordinate3D> coordinates) {
+    public List<SimpleFeature> createPointsForCoordinates(final List<Coordinate3D> coordinates) {
         final List<SimpleFeature> features = new ArrayList<>();
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForTelofuns());
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForCoordinates());
+        final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         for (final Coordinate3D curCoordinate : coordinates) {
-            final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
             final Coordinate coordinate = new Coordinate(curCoordinate.getLongitude(), curCoordinate.getLatitude(), curCoordinate.getAltitude());
             final Point point = geometryFactory.createPoint(coordinate);
             featureBuilder.add(point);
@@ -333,13 +333,13 @@ public class FeatureService {
         return featureTypeBuilder.buildFeatureType();
     }
 
-    public List<SimpleFeature> createLinesForCoordinates(List<Coordinate3D> coordinates3D) {
+    public List<SimpleFeature> createLinesForCoordinates(final List<Coordinate3D> coordinates3D) {
         final List<Coordinate> coordinates = new ArrayList<>();
         for (final Coordinate3D curCoordinate3D : coordinates3D) {
             final Coordinate coordinate = new Coordinate(curCoordinate3D.getLongitude(), curCoordinate3D.getLatitude(), curCoordinate3D.getAltitude());
             coordinates.add(coordinate);
         }
-        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForCoordinates());
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         if (coordinates.size() > 1) {
             final LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));

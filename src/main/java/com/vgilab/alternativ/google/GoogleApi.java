@@ -1,5 +1,9 @@
 package com.vgilab.alternativ.google;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -17,8 +21,24 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class GoogleApi {
     public static String GOOGLE_REST_URL = "https://maps.googleapis.com/maps/api/geocode/json";
     public static String GOOGLE_API_KEY = "";
-    
-    private final static Logger LOGGER = Logger.getGlobal();
+    private static final Logger LOGGER = Logger.getGlobal();
+
+    static {
+        final Properties properties = new Properties();
+        try {
+            final InputStream inputStream = GoogleMapsRoadsApi.class.getResourceAsStream("api.properties");
+            if (null != inputStream) {
+                properties.load(inputStream);
+                GOOGLE_API_KEY = properties.getProperty("GOOGLE_API_KEY");
+            } else {
+                LOGGER.severe("Google Maps Roads API inactive. Missing api properties file!");
+            }
+        } catch (FileNotFoundException e) {
+            LOGGER.severe(e.getLocalizedMessage());
+        } catch (IOException e) {
+            LOGGER.severe(e.getLocalizedMessage());
+        }
+    }
     
     public static GoogleGeocoding googleGeocoding (final String address, final String language) {
         final RestTemplate restTemplate = new RestTemplate();
