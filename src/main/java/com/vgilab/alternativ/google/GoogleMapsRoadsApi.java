@@ -35,11 +35,15 @@ public class GoogleMapsRoadsApi {
     private static final Logger LOGGER = Logger.getGlobal();
 
     static {
-        final Properties p = new Properties();
+        final Properties properties = new Properties();
         try {
-            final InputStream in = GoogleMapsRoadsApi.class.getResourceAsStream("api.properties");
-            p.load(in);
-            GOOGLE_MAPS_ROADS_API_KEY = p.getProperty("API_KEY");
+            final InputStream inputStream = GoogleMapsRoadsApi.class.getResourceAsStream("api.properties");
+            if (null != inputStream) {
+                properties.load(inputStream);
+                GOOGLE_MAPS_ROADS_API_KEY = properties.getProperty("API_KEY");
+            } else {
+                LOGGER.severe("Google Maps Roads API inactive. Missing api properties file!");
+            }
         } catch (FileNotFoundException e) {
             LOGGER.severe(e.getLocalizedMessage());
         } catch (IOException e) {
@@ -54,8 +58,10 @@ public class GoogleMapsRoadsApi {
             final Coordinate3D[] coordinatesChunk = Arrays.copyOfRange(coordinates.toArray(new Coordinate3D[coordinates.size()]), i, chunk);
             final LinkedList<Coordinate3D> coordinatesChunkList = new LinkedList<>(Arrays.asList(coordinatesChunk));
             final GoogleMapsRoads googleMapsRoads = GoogleMapsRoadsApi.snapToRoads(coordinatesChunkList, interpolate);
-            for (final SnappedPoint curSnappedPoint : googleMapsRoads.getSnappedPoints()) {
-                snappedCoordinates.add(new Coordinate3D(curSnappedPoint.getLocation().getLongitude(), curSnappedPoint.getLocation().getLatitude(), 0d));
+            if (null != googleMapsRoads) {
+                for (final SnappedPoint curSnappedPoint : googleMapsRoads.getSnappedPoints()) {
+                    snappedCoordinates.add(new Coordinate3D(curSnappedPoint.getLocation().getLongitude(), curSnappedPoint.getLocation().getLatitude(), 0d));
+                }
             }
         }
         return snappedCoordinates;

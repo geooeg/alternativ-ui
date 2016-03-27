@@ -88,7 +88,6 @@
                         </span>
                         <p:commandButton value="Analyse" ajax="false" actionListener="#{indexView.startAnalysis}" icon="ui-icon-calculator" />
                         <p:commandButton value="Select Route" type="button" onclick="PF('RoutesDialog').show();" icon="ui-icon-folder-open" /> 
-
                     </f:facet>
                     <f:facet name="right">
                         <p:commandButton value="Clear" ajax="false" actionListener="#{indexView.clearList}" icon="ui-icon-trash" />  
@@ -97,13 +96,13 @@
             </div>
             <p:dialog header="Upload Files" widgetVar="UploadDialog" showEffect="clip" hideEffect="clip" width="90%" height="90%">
                 <h:panelGrid columns="1" cellpadding="10" width="100%">
+                    <p:fileUpload fileUploadListener="#{indexView.handleTenCityFileUpload}" 
+                                  label="ZenCity .json" update="@form, growl"
+                                  mode="advanced" dragDropSupport="false" multiple="true" auto="true" />
                     <p:fileUpload fileUploadListener="#{indexView.handleBusstopFileUpload}" 
                                   label="Busstop .csv" mode="advanced" skinSimple="true" auto="true" />
                     <p:fileUpload fileUploadListener="#{indexView.handleTelofunFileUpload}" 
                                   label="Telofun .json" mode="advanced" skinSimple="true" auto="true" />
-                    <p:fileUpload fileUploadListener="#{indexView.handleTenCityFileUpload}" 
-                                  label="ZenCity .json" update="@form, growl"
-                                  mode="advanced" dragDropSupport="false" multiple="true" auto="true" />
                 </h:panelGrid>
             </p:dialog>
             <p:dialog header="Routes" widgetVar="RoutesDialog" showEffect="clip" hideEffect="clip" width="90%" height="90%">
