@@ -14,8 +14,8 @@
         <style type="text/css">
             html, body {
                 height: 100%;
-                min-width: 480px;
-                min-height: 320px;
+                min-width: 640px;
+                min-height: 480px;
                 margin: 0;
             }
             .gmap {
@@ -34,14 +34,13 @@
             }
             #footer {
                 bottom:0px;
-                height:40px;
+                height:45px;
                 right:0%;
                 left:0%;
                 position:fixed!important;
                 position:absolute;
                 text-align:left;
                 visibility:visible;
-                background-color: #fff;
                 border: 1px solid;
                 border-color: #e5e6e9 #dfe0e4 #d0d1d5;
                 z-index: 9999;
@@ -77,30 +76,44 @@
                 </p:gmap>
             </div>
             <div id="footer">
-                <p:commandButton value="Select Route" type="button" onclick="PF('RoutesDialog').show();" /> 
-                <p:dialog header="Routes" widgetVar="RoutesDialog" showEffect="clip" hideEffect="clip" width="90%" height="90%">
-                    <p:dataList value="#{indexView.alterNativs}" var="alterNativ" type="ordered" paginator="true" rows="20">
-                        <p:commandLink update=":form" oncomplete="PF('RoutesDialog').hide()" title="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" >
-                            <f:setPropertyActionListener value="#{alterNativ}" target="#{indexView.selectedAlterNativ}" />
-                            <h:outputText value="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" />
-                        </p:commandLink>
-                    </p:dataList>
-                </p:dialog>
-                <p:commandButton value="10city Upload" type="button" onclick="PF('UploadTenCityDialog').show();" /> 
-                <p:dialog header="10city .json Upload" widgetVar="UploadTenCityDialog" showEffect="clip" hideEffect="clip" width="90%" height="90%">
-                    <p:fileUpload fileUploadListener="#{indexView.handleTenCityFileUpload}" 
-                                  mode="advanced" dragDropSupport="false" update="@form, growl"
-                                  multiple="true" auto="true" />
-                </p:dialog>
-                <p:fileUpload label="Busstop .csv" value="#{indexView.busStopFile}" mode="simple" skinSimple="true" />
-                <p:fileUpload label="Telofun .json" value="#{indexView.telofunFile}" mode="simple" skinSimple="true" />
-                <p:commandButton value="Submit" ajax="false" actionListener="#{indexView.upload}" disabled="false" />
-                <p:commandButton id="shapefileButton" ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" icon="ui-icon-arrowthick-1-s" value="Export...">
-                    <p:fileDownload value="#{indexView.shapefile}" />
-                </p:commandButton>
-                <p:commandButton value="Clear" ajax="false" actionListener="#{indexView.clearList}" />   
-                <p:commandButton value="Analyse" ajax="false" actionListener="#{indexView.startAnalysis}"  />
+                <p:toolbar>
+                    <f:facet name="left">
+                        <p:commandButton value="Upload..." type="button" onclick="PF('UploadDialog').show();" icon="ui-icon-arrowthick-1-n" /> 
+
+                        <p:commandButton id="shapefileButton" ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" icon="ui-icon-arrowthick-1-s" value="Export...">
+                            <p:fileDownload value="#{indexView.shapefile}" />
+                        </p:commandButton>
+                        <span class="ui-separator">
+                            <span class="ui-icon ui-icon-grip-dotted-vertical" />
+                        </span>
+                        <p:commandButton value="Analyse" ajax="false" actionListener="#{indexView.startAnalysis}" icon="ui-icon-calculator" />
+                        <p:commandButton value="Select Route" type="button" onclick="PF('RoutesDialog').show();" icon="ui-icon-folder-open" /> 
+
+                    </f:facet>
+                    <f:facet name="right">
+                        <p:commandButton value="Clear" ajax="false" actionListener="#{indexView.clearList}" icon="ui-icon-trash" />  
+                    </f:facet>
+                </p:toolbar>
             </div>
+            <p:dialog header="Upload Files" widgetVar="UploadDialog" showEffect="clip" hideEffect="clip" width="90%" height="90%">
+                <h:panelGrid columns="1" cellpadding="10" width="100%">
+                    <p:fileUpload fileUploadListener="#{indexView.handleBusstopFileUpload}" 
+                                  label="Busstop .csv" mode="advanced" skinSimple="true" auto="true" />
+                    <p:fileUpload fileUploadListener="#{indexView.handleTelofunFileUpload}" 
+                                  label="Telofun .json" mode="advanced" skinSimple="true" auto="true" />
+                    <p:fileUpload fileUploadListener="#{indexView.handleTenCityFileUpload}" 
+                                  label="ZenCity .json" update="@form, growl"
+                                  mode="advanced" dragDropSupport="false" multiple="true" auto="true" />
+                </h:panelGrid>
+            </p:dialog>
+            <p:dialog header="Routes" widgetVar="RoutesDialog" showEffect="clip" hideEffect="clip" width="90%" height="90%">
+                <p:dataList value="#{indexView.alterNativs}" var="alterNativ" type="ordered" paginator="true" rows="20">
+                    <p:commandLink update=":form" oncomplete="PF('RoutesDialog').hide()" title="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" >
+                        <f:setPropertyActionListener value="#{alterNativ}" target="#{indexView.selectedAlterNativ}" />
+                        <h:outputText value="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" />
+                    </p:commandLink>
+                </p:dataList>
+            </p:dialog>
         </h:form>   
     </h:body>
 </html>

@@ -36,7 +36,6 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.UploadedFile;
 import org.primefaces.model.map.DefaultMapModel;
 import org.primefaces.model.map.LatLng;
 import org.primefaces.model.map.MapModel;
@@ -67,12 +66,6 @@ public class IndexView implements Serializable {
     private MapModel mapModel;
 
     private Marker marker;
-
-    private UploadedFile tenCityFile;
-
-    private UploadedFile busStopFile;
-
-    private UploadedFile telofunFile;
 
     private StreamedContent shapefile;
 
@@ -167,23 +160,28 @@ public class IndexView implements Serializable {
             }
         }
     }
-    
-    public void upload() {
-        if (this.busStopFile != null && this.busStopFile.getSize() > 0) {
-            FacesMessage message = new FacesMessage("Succesful", this.busStopFile.getFileName() + " bus stops are uploaded.");
+
+    public void handleBusstopFileUpload(final FileUploadEvent event) {
+        event.getComponent().setTransient(false);
+        if (event.getFile() != null && event.getFile().getSize() > 0) {
+            FacesMessage message = new FacesMessage("Successful", event.getFile().getFileName() + " bus stops are uploaded.");
             FacesContext.getCurrentInstance().addMessage(null, message);
             try {
-                this.setBusStops(BusStopParser.getBusStops(this.busStopFile.getInputstream()));
+                this.setBusStops(BusStopParser.getBusStops(event.getFile().getInputstream()));
                 this.updateMapModel();
             } catch (IOException ex) {
                 Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        if (this.telofunFile != null && this.telofunFile.getSize() > 0) {
-            FacesMessage message = new FacesMessage("Succesful", this.telofunFile.getFileName() + " telofun stops are uploaded.");
+    }
+    
+    public void handleTelofunFileUpload(final FileUploadEvent event) {
+        event.getComponent().setTransient(false);
+        if (event.getFile() != null && event.getFile().getSize() > 0) {
+             FacesMessage message = new FacesMessage("Successful", event.getFile().getFileName() + " telofun stops are uploaded.");
             FacesContext.getCurrentInstance().addMessage(null, message);
             try {
-                final Telofun telofun = TelofunParser.getTelofun(this.telofunFile.getContents());
+                final Telofun telofun = TelofunParser.getTelofun(event.getFile().getContents());
                 this.telofuns = telofun.getFeatures();
                 this.updateMapModel();
             } catch (IOException ex) {
@@ -240,34 +238,6 @@ public class IndexView implements Serializable {
     }
 
     /**
-     * @return the tenCityFile
-     */
-    public UploadedFile getTenCityFile() {
-        return tenCityFile;
-    }
-
-    /**
-     * @param tenCityFile the tenCityFile to set
-     */
-    public void setTenCityFile(UploadedFile tenCityFile) {
-        this.tenCityFile = tenCityFile;
-    }
-
-    /**
-     * @return the busStopFile
-     */
-    public UploadedFile getBusStopFile() {
-        return busStopFile;
-    }
-
-    /**
-     * @param busStopFile the busStopFile to set
-     */
-    public void setBusStopFile(UploadedFile busStopFile) {
-        this.busStopFile = busStopFile;
-    }
-
-    /**
      * @return the busStops
      */
     public List<BusStop> getBusStops() {
@@ -279,20 +249,6 @@ public class IndexView implements Serializable {
      */
     public void setBusStops(List<BusStop> busStops) {
         this.busStops = busStops;
-    }
-
-    /**
-     * @return the telofunFile
-     */
-    public UploadedFile getTelofunFile() {
-        return telofunFile;
-    }
-
-    /**
-     * @param telofunFile the telofunFile to set
-     */
-    public void setTelofunFile(UploadedFile telofunFile) {
-        this.telofunFile = telofunFile;
     }
 
     /**
