@@ -265,10 +265,10 @@ public class IndexView implements Serializable {
         this.telofuns = telofuns;
     }
 
-    public StreamedContent getShapefile() {
+    public StreamedContent getShapefile(boolean snapToRoad) {
         if (null != this.alterNativs || null != this.busStops || null != this.telofuns) {
             try {
-                this.shapefile = new DefaultStreamedContent(new FileInputStream(this.shapefileService.exportToShapefile(this.alterNativs, this.busStops, this.telofuns)), "application/zip", "alternativ-shp.zip");
+                this.shapefile = new DefaultStreamedContent(new FileInputStream(this.shapefileService.exportToShapefile(this.alterNativs, this.busStops, this.telofuns, snapToRoad)), "application/zip", "alternativ-shp.zip");
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
             }

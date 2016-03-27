@@ -5,6 +5,7 @@ import com.vgilab.alternativ.business.busstop.BusStop;
 import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
 import com.vgilab.alternativ.generated.Feature;
+import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -31,6 +32,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 /**
  * http://mapstarter.com http://www.mapshaper.org
@@ -43,11 +45,13 @@ public class ShapefileService {
     @Autowired
     private FeatureService featureService;
 
-    public File exportToShapefile(List<AlterNativ> alterNativs, List<BusStop> busStops, List<Feature> telofuns) {
+    public File exportToShapefile(final List<AlterNativ> alterNativs, final List<BusStop> busStops, final List<Feature> telofuns, final boolean snapToRoad) {
         final File shapeDir = Files.createTempDir();
         if (null != alterNativs) {
             final List<SimpleFeature> pointsForTracks = new LinkedList<>();
             final List<SimpleFeature> linesForTracks = new LinkedList<>();
+            final List<SimpleFeature> pointsForSnapedToRoad = new LinkedList<>();
+            final List<SimpleFeature> linesForSnapedToRoad = new LinkedList<>();
             final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
             final List<SimpleFeature> linesForChosenRoute = new LinkedList<>();
             for (final AlterNativ curAlterNativ : alterNativs) {
@@ -57,9 +61,19 @@ public class ShapefileService {
                 }
                 pointsForTracks.addAll(this.featureService.createPointsFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
                 linesForTracks.add(this.featureService.createLineFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
+                if(snapToRoad) {
+                    final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(curAlterNativ);
+                    if(coordinates.size() > 10) {
+                        final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
+                        pointsForSnapedToRoad.addAll(this.featureService.createPointsForCoordinates(snapedToRoad));
+                        linesForSnapedToRoad.addAll(this.featureService.createLinesForCoordinates(snapedToRoad));
+                    }
+                }
             }
             this.addChoosenRouteAsPoints(shapeDir, pointsForChosenRoute);
             this.addChoosenRouteAsLine(shapeDir, linesForChosenRoute);
+            this.addSnappedToRoadAsPoints(shapeDir, pointsForSnapedToRoad);
+            this.addSnappedToRoadAsLines(shapeDir, linesForSnapedToRoad);
             this.addTracksAsPoints(shapeDir, pointsForTracks);
             this.addTracksAsLine(shapeDir, linesForTracks);
         }
@@ -136,56 +150,56 @@ public class ShapefileService {
     }
 
     private void addChoosenRouteAsPoints(File shapeDir, List<SimpleFeature> featuresForChosenRoute) {
-        if (null != featuresForChosenRoute) {
+        if (!CollectionUtils.isEmpty(featuresForChosenRoute)) {
             final File shapeFile = new File(shapeDir, "chosenroute-points.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForChosenRoute(), featuresForChosenRoute);
         }
     }
 
     private void addChoosenRouteAsLine(File shapeDir, List<SimpleFeature> featuresForChosenRoute) {
-        if (null != featuresForChosenRoute) {
+        if (!CollectionUtils.isEmpty(featuresForChosenRoute)) {
             final File shapeFile = new File(shapeDir, "chosenroute-lines.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getLineTypeForChosenRoute(), featuresForChosenRoute);
         }
     }
 
     private void addTracksAsPoints(File shapeDir, List<SimpleFeature> featuresForTracks) {
-        if (null != featuresForTracks) {
+        if (!CollectionUtils.isEmpty(featuresForTracks))  {
             final File shapeFile = new File(shapeDir, "tracks-points.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForTracks(), featuresForTracks);
         }
     }
 
     private void addTracksAsLine(File shapeDir, List<SimpleFeature> featuresForTracks) {
-        if (null != featuresForTracks) {
+        if (!CollectionUtils.isEmpty(featuresForTracks)) {
             final File shapeFile = new File(shapeDir, "tracks-lines.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getLineTypeForTracks(), featuresForTracks);
         }
     }
 
     private void addBusStopsAsPoints(File shapeDir, List<SimpleFeature> pointsForBusStops) {
-        if (null != pointsForBusStops) {
+        if (!CollectionUtils.isEmpty(pointsForBusStops)) {
             final File shapeFile = new File(shapeDir, "busstops-points.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForBusStops(), pointsForBusStops);
         }
     }
 
     private void addTelofunsAsPoints(File shapeDir, List<SimpleFeature> pointsForTelofuns) {
-        if (null != pointsForTelofuns) {
+        if (!CollectionUtils.isEmpty(pointsForTelofuns)) {
             final File shapeFile = new File(shapeDir, "telofuns-points.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForTelofuns(), pointsForTelofuns);
         }
     }
 
     private void addSnappedToRoadAsPoints(File shapeDir, List<SimpleFeature> features) {
-        if (null != features) {
+        if (!CollectionUtils.isEmpty(features)) {
             final File shapeFile = new File(shapeDir, "snapped-track-points.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForCoordinates(), features);
         }
     }
 
     private void addSnappedToRoadAsLines(File shapeDir, List<SimpleFeature> features) {
-        if (null != features) {
+        if (!CollectionUtils.isEmpty(features)) {
             final File shapeFile = new File(shapeDir, "snapped-track-lines.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getLineTypeForCoordinates(), features);
         }

@@ -79,10 +79,15 @@
                 <p:toolbar>
                     <f:facet name="left">
                         <p:commandButton value="Upload..." type="button" onclick="PF('UploadDialog').show();" icon="ui-icon-arrowthick-1-n" /> 
-
-                        <p:commandButton id="shapefileButton" ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" icon="ui-icon-arrowthick-1-s" value="Export...">
-                            <p:fileDownload value="#{indexView.shapefile}" />
-                        </p:commandButton>
+                        <p:menuButton value="Export...">
+                            <p:menuitem ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" value=".shp (Road Snap)" icon="ui-icon-arrowthick-1-s">
+                                <p:fileDownload value="#{indexView.getShapefile(true)}" />
+                            </p:menuitem>
+                            <p:menuitem ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" value=".shp" icon="ui-icon-arrowthick-1-s">
+                                <p:fileDownload value="#{indexView.getShapefile(false)}" />
+                            </p:menuitem>
+                            <p:separator />
+                        </p:menuButton>
                         <span class="ui-separator">
                             <span class="ui-icon ui-icon-grip-dotted-vertical" />
                         </span>

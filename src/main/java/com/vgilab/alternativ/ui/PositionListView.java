@@ -1,5 +1,6 @@
 package com.vgilab.alternativ.ui;
 
+import com.vgilab.alternativ.business.geo.AlterNativUtil;
 import com.vgilab.alternativ.business.geo.AnalysedTrip;
 import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.business.geo.FeatureService;
@@ -21,7 +22,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -213,14 +213,8 @@ public class PositionListView {
             this.routeMapModel.addOverlay(new Marker(destinationLatLng, "UID: " + alterNativ.getId(), "Destination: " + destination.getAddress()));
             trackPolyline.getPaths().add(destinationLatLng);
             this.routeMapModel.addOverlay(trackPolyline);
-            // add
-            final List<Coordinate3D> coordinates = new LinkedList<>();
-            coordinates.add(new Coordinate3D(origin.getLng(), origin.getLat(), 0d));
-            for (final Track curTrack : alterNativ.getTracks()) {
-                final Location location = curTrack.getLocation();
-                coordinates.add(new Coordinate3D(location.getCoords().getLongitude(), location.getCoords().getLatitude(), 0d));
-            }
-            coordinates.add(new Coordinate3D(destination.getLng(), destination.getLat(), 0d));
+            // create a list of coordinates for the google maps roads api
+            final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(alterNativ);;
             this.snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
             final Polyline googleMapsTrackPolyline = new Polyline();
             googleMapsTrackPolyline.setStrokeWeight(2);
