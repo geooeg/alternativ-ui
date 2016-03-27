@@ -168,9 +168,6 @@ public class IndexView implements Serializable {
                 this.alterNativs.addAll(readValue);
             } catch (IOException ex) {
                 Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-                
-            this.updateMapModel();
             }
         }
     }

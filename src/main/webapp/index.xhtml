@@ -78,8 +78,8 @@
             </div>
             <div id="footer">
                 <p:commandButton value="Select Route" type="button" onclick="PF('RoutesDialog').show();" /> 
-                <p:dialog header="Routes" widgetVar="RoutesDialog" showEffect="clip" hideEffect="clip">
-                    <p:dataList value="#{indexView.alterNativs}" var="alterNativ" type="ordered">
+                <p:dialog header="Routes" widgetVar="RoutesDialog" showEffect="clip" hideEffect="clip" width="90%" height="90%">
+                    <p:dataList value="#{indexView.alterNativs}" var="alterNativ" type="ordered" paginator="true" rows="20">
                         <p:commandLink update=":form" oncomplete="PF('RoutesDialog').hide()" title="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" >
                             <f:setPropertyActionListener value="#{alterNativ}" target="#{indexView.selectedAlterNativ}" />
                             <h:outputText value="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" />
@@ -87,7 +87,7 @@
                     </p:dataList>
                 </p:dialog>
                 <p:commandButton value="10city Upload" type="button" onclick="PF('UploadTenCityDialog').show();" /> 
-                <p:dialog header="10city .json Upload" widgetVar="UploadTenCityDialog" showEffect="clip" hideEffect="clip">
+                <p:dialog header="10city .json Upload" widgetVar="UploadTenCityDialog" showEffect="clip" hideEffect="clip" width="90%" height="90%">
                     <p:fileUpload fileUploadListener="#{indexView.handleTenCityFileUpload}" 
                                   mode="advanced" dragDropSupport="false" update="@form, growl"
                                   multiple="true" auto="true" />
