@@ -57,7 +57,7 @@ import org.springframework.stereotype.Component;
 @SessionScoped
 public class IndexView implements Serializable {
 
-    private List<AlterNativ> alterNativs = new LinkedList<>();
+    private final List<AlterNativ> alterNativs = new LinkedList<>();
 
     private List<BusStop> busStops;
     private List<Feature> telofuns;
@@ -84,8 +84,9 @@ public class IndexView implements Serializable {
 
     @PostConstruct
     public void init() {
-        this.alterNativs = AlterNativApi.getAll();
-        if (null != this.alterNativs) {
+        final List<AlterNativ> alterNativApi = AlterNativApi.getAll();
+        if(null != alterNativApi) {
+            this.alterNativs.addAll(AlterNativApi.getAll());
             this.updateMapModel();
         }
     }
@@ -162,7 +163,7 @@ public class IndexView implements Serializable {
             final ObjectMapper objectMapper = new ObjectMapper();
 
             try {
-                final List readValue = objectMapper.readValue(content, new TypeReference<List<AlterNativ>>() {
+                final List<AlterNativ> readValue = objectMapper.readValue(content, new TypeReference<List<AlterNativ>>() {
                 });
                 this.alterNativs.addAll(readValue);
                 this.updateMapModel();
