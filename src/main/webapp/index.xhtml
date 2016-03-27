@@ -92,7 +92,8 @@
                 <p:commandButton value="Submit" ajax="false" actionListener="#{indexView.upload}" disabled="false" />
                 <p:commandButton id="shapefileButton" ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" icon="ui-icon-arrowthick-1-s" value="Export...">
                     <p:fileDownload value="#{indexView.shapefile}" />
-                </p:commandButton>  
+                </p:commandButton>
+                <p:commandButton value="Clear" ajax="false" actionListener="#{indexView.clearList}" />   
                 <p:commandButton value="Analyse" ajax="false" actionListener="#{indexView.startAnalysis}"  />
             </div>
         </h:form>   

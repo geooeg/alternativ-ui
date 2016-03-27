@@ -54,11 +54,11 @@ public class GoogleApiJUnitTest {
         LOGGER.severe(status);
     }
     
-    @Test
+   /* @Test
     public void snapToRoads() {
         List<Coordinate3D> coordinates = new LinkedList<>();
         coordinates.add(new Coordinate3D(52.442222,9.745222,0.0));
         GoogleMapsRoadsApi.snapToRoads(coordinates, true);
-    }
+    }*/
     
 }

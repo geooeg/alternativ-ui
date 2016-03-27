@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
@@ -56,7 +57,7 @@ import org.springframework.stereotype.Component;
 @SessionScoped
 public class IndexView implements Serializable {
 
-    private List<AlterNativ> alterNativs;
+    private List<AlterNativ> alterNativs = new LinkedList<>();
 
     private List<BusStop> busStops;
     private List<Feature> telofuns;
@@ -147,6 +148,10 @@ public class IndexView implements Serializable {
             }
         }
     }
+  
+    public void clearList() {
+        this.alterNativs.clear();
+    }
     
     public void upload() {
         if (this.file != null && this.file.getSize() > 0) {
@@ -157,8 +162,9 @@ public class IndexView implements Serializable {
             final ObjectMapper objectMapper = new ObjectMapper();
 
             try {
-                this.alterNativs = objectMapper.readValue(content, new TypeReference<List<AlterNativ>>() {
+                final List readValue = objectMapper.readValue(content, new TypeReference<List<AlterNativ>>() {
                 });
+                this.alterNativs.addAll(readValue);
                 this.updateMapModel();
             } catch (IOException ex) {
                 Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);

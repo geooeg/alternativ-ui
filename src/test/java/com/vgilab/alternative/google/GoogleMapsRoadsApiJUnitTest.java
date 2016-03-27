@@ -41,7 +41,7 @@ public class GoogleMapsRoadsApiJUnitTest {
     public void tearDown() {
     }
 
-    @Test
+    /*@Test
     public void snapToRoads() {
         final List<Coordinate3D> coordinates = new LinkedList<>();
         coordinates.add(new Coordinate3D(24.942795, 60.170880, 0d));
@@ -65,5 +65,5 @@ public class GoogleMapsRoadsApiJUnitTest {
         for(final Coordinate3D curCoordinate : snapToRoadsUsingBatches) {
             LOGGER.info(MessageFormat.format("Lng: {0}, Lat {1}", curCoordinate.getLongitude(), curCoordinate.getLatitude()));
         }
-    }
+    }*/
 }
