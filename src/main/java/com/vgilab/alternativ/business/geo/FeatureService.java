@@ -61,14 +61,13 @@ public class FeatureService {
             }
         }
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
         if (coordinates.size() > 1) {
             final LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
-            final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
             featureBuilder.add(line);
             featureBuilder.add(tripId);
-            return featureBuilder.buildFeature(null);
         }
-        return null;
+        return featureBuilder.buildFeature(null);
     }
 
     public Map<Track, Point> createTrackPointMapFromTracks(final List<Track> tracks, final String tripId) {
@@ -172,15 +171,14 @@ public class FeatureService {
                 }
             }
         }
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForChosenRoute());
         if (coordinates.size() > 1) {
             final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-            final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForChosenRoute());
             final LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
             featureBuilder.add(line);
             featureBuilder.add(tripId);
-            return featureBuilder.buildFeature(null);
         }
-        return null;
+        return featureBuilder.buildFeature(null);
     }
 
     private List<Coordinate> getCoordinatesFromRoute(final Route curRoute) {
@@ -341,14 +339,13 @@ public class FeatureService {
             final Coordinate coordinate = new Coordinate(curCoordinate3D.getLongitude(), curCoordinate3D.getLatitude(), curCoordinate3D.getAltitude());
             coordinates.add(coordinate);
         }
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         if (coordinates.size() > 1) {
             final LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
-            final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
             featureBuilder.add(line);
-            return Collections.singletonList(featureBuilder.buildFeature(null));
         }
-        return null;
+        return Collections.singletonList(featureBuilder.buildFeature(null));
     }
 
     public SimpleFeatureType getLineTypeForCoordinates() {
