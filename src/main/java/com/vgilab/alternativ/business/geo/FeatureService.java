@@ -157,6 +157,32 @@ public class FeatureService {
         return features;
     }
 
+    public SimpleFeature createLineFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
+
+        final List<Coordinate> coordinates = new ArrayList<>();
+        for (final Route curRoute : chosenRoute.getRoutes()) {
+            if (null != curRoute.getLegs()) {
+                for (final Leg curLeg : curRoute.getLegs()) {
+                    if (null != curLeg.getSteps()) {
+                        for (final Step curStep : curLeg.getSteps()) {
+                            coordinates.addAll(this.decodePolyline(curStep.getPolyline().getPoints()));
+
+                        }
+                    }
+                }
+            }
+        }
+        if (coordinates.size() > 1) {
+            final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+            final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForChosenRoute());
+            final LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
+            featureBuilder.add(line);
+            featureBuilder.add(tripId);
+            return featureBuilder.buildFeature(null);
+        }
+        return null;
+    }
+
     private List<Coordinate> getCoordinatesFromRoute(final Route curRoute) {
         final List<Coordinate> coordinates = new LinkedList<>();
         if (null != curRoute.getLegs()) {
@@ -221,6 +247,15 @@ public class FeatureService {
         featureTypeBuilder.add("the_geom", Point.class); // then add geometry
         featureTypeBuilder.add("trip_id", String.class);
         featureTypeBuilder.add("travelmode", String.class);
+        return featureTypeBuilder.buildFeatureType();
+    }
+
+    public SimpleFeatureType getLineTypeForChosenRoute() {
+        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.setName("Line");
+        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
+        featureTypeBuilder.add("the_geom", LineString.class); // then add geometry
+        featureTypeBuilder.add("trip_id", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 

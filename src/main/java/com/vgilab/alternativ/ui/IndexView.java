@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vgilab.alternativ.business.busstop.BusStop;
 import com.vgilab.alternativ.business.busstop.BusStopParser;
 import com.vgilab.alternativ.business.geo.ShapefileService;
-import com.vgilab.alternativ.business.geo.SpatialAnalysisService;
 import com.vgilab.alternativ.business.telofun.TelofunParser;
 import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
@@ -79,9 +78,6 @@ public class IndexView implements Serializable {
 
     @Autowired
     private ShapefileService shapefileService;
-    
-    @Autowired
-    private SpatialAnalysisService spatialAnalysisService;
 
     @PostConstruct
     public void init() {

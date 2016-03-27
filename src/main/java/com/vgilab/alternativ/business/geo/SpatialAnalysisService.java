@@ -33,10 +33,8 @@ public class SpatialAnalysisService {
     @Autowired
     private FeatureService featureService;
 
-    public List<AnalysedTrip> analyseRoutes(final List<AlterNativ> alterNativs, Double deviationInMeters) {
-        if (null == deviationInMeters) {
-            deviationInMeters = 20d;
-        }
+    public List<AnalysedTrip> analyseRoutes(final List<AlterNativ> alterNativs, final Double deviationInMeters) {
+        final Double deviation = null == deviationInMeters ? 20d : deviationInMeters;
         final List<AnalysedTrip> trips = new LinkedList<>();
         if (null != alterNativs) {
             for (final AlterNativ curAlterNativ : alterNativs) {
@@ -50,15 +48,9 @@ public class SpatialAnalysisService {
                     routeStepPointMap.putAll(this.featureService.createRouteStepPointMapFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
                     stepLineStringMap.putAll(this.featureService.createRouteLineStringMapFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
                 }
-                // 
                 final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                 final Point origin = geometryFactory.createPoint(new Coordinate(curAlterNativ.getOrigin().getLng(), curAlterNativ.getOrigin().getLat()));
                 final Point destination = geometryFactory.createPoint(new Coordinate(curAlterNativ.getDestination().getLng(), curAlterNativ.getDestination().getLat()));
-                /*    final CoordinateReferenceSystem WGS = DefaultGeographicCRS.WGS84;
-            final CoordinateReferenceSystem lambert = CRS.decode("EPSG:31300");
-            final MathTransform convertToMeter = CRS.findMathTransform(WGS, lambert, false);
-            final MathTransform convertFromMeter = CRS.findMathTransform(lambert, WGS, false);
-                 */
                 // get origin
                 origin_loop:
                 for (Map.Entry<Route, LineString> curStepLineString : stepLineStringMap.entrySet()) {
@@ -96,7 +88,7 @@ public class SpatialAnalysisService {
                                     gc.setStartingPosition(JTS.toDirectPosition(curPointForTrack.getKey().getCoordinate(), DefaultGeographicCRS.WGS84));
                                     gc.setDestinationPosition(JTS.toDirectPosition(curPointForStep.getCoordinate(), DefaultGeographicCRS.WGS84));
                                     double orthodromicDistance = gc.getOrthodromicDistance();
-                                    if (orthodromicDistance < deviationInMeters) {
+                                    if (orthodromicDistance < deviation) {
                                         position.setTrack(curPointForTrack.getValue());
                                         position.setDistance(orthodromicDistance);
                                         position.setCoordinateForTrack(new Coordinate3D(coordinate.x, coordinate.y, coordinate.z));
