@@ -51,7 +51,7 @@ public class GoogleMapsRoadsApi {
         }
     }
 
-    public static List<Coordinate3D> snapToRoadsUsingBatches(final List<Coordinate3D> coordinates, final boolean interpolate) {
+    public static List<Coordinate3D> snapToRoadsUsingBatches(final List<Coordinate3D> coordinates, final boolean interpolate) throws SecurityException {
         final List<Coordinate3D> snappedCoordinates = new LinkedList<>();
         for (int i = 0; i < coordinates.size(); i += GOOGLE_MAPS_ROADS_CHUNK_SIZE) {
             final int chunk = (i + GOOGLE_MAPS_ROADS_CHUNK_SIZE > coordinates.size()) ? coordinates.size() : i + GOOGLE_MAPS_ROADS_CHUNK_SIZE;
@@ -67,7 +67,7 @@ public class GoogleMapsRoadsApi {
         return snappedCoordinates;
     }
 
-    public static GoogleMapsRoads snapToRoads(final List<Coordinate3D> coordinates, final boolean interpolate) {
+    public static GoogleMapsRoads snapToRoads(final List<Coordinate3D> coordinates, final boolean interpolate) throws SecurityException {
         final String coordinatesToPath = GoogleMapsRoadsApi.coordinatesToPath(coordinates);
         final RestTemplate restTemplate = new RestTemplate();
         final HttpHeaders headers = new HttpHeaders();
@@ -90,8 +90,8 @@ public class GoogleMapsRoadsApi {
             return googleMapsRoadsResponse.getBody();
         } catch (Exception ex) {
             LOGGER.severe(ex.getLocalizedMessage());
+            throw new SecurityException(ex);
         }
-        return null;
     }
 
     public static String coordinatesToPath(final List<Coordinate3D> coordinates) {

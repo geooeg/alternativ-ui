@@ -42,6 +42,8 @@ import org.springframework.util.CollectionUtils;
 @Service
 public class ShapefileService {
 
+    private final static Logger LOGGER = Logger.getGlobal();
+
     @Autowired
     private FeatureService featureService;
 
@@ -61,12 +63,16 @@ public class ShapefileService {
                 }
                 pointsForTracks.addAll(this.featureService.createPointsFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
                 linesForTracks.add(this.featureService.createLineFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
-                if(snapToRoad) {
+                if (snapToRoad) {
                     final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(curAlterNativ);
-                    if(coordinates.size() > 2) {
-                        final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
-                        pointsForSnapedToRoad.addAll(this.featureService.createPointsForCoordinates(snapedToRoad));
-                        linesForSnapedToRoad.addAll(this.featureService.createLinesForCoordinates(snapedToRoad));
+                    if (coordinates.size() > 2) {
+                        try {
+                            final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
+                            pointsForSnapedToRoad.addAll(this.featureService.createPointsForCoordinates(snapedToRoad));
+                            linesForSnapedToRoad.addAll(this.featureService.createLinesForCoordinates(snapedToRoad));
+                        } catch (final SecurityException ex) {
+                            LOGGER.severe(ex.getLocalizedMessage());
+                        }
                     }
                 }
             }
@@ -164,7 +170,7 @@ public class ShapefileService {
     }
 
     private void addTracksAsPoints(File shapeDir, List<SimpleFeature> featuresForTracks) {
-        if (!CollectionUtils.isEmpty(featuresForTracks))  {
+        if (!CollectionUtils.isEmpty(featuresForTracks)) {
             final File shapeFile = new File(shapeDir, "tracks-points.shp");
             this.writeToShapeFile(shapeFile, this.featureService.getPointTypeForTracks(), featuresForTracks);
         }

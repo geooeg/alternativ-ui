@@ -40,21 +40,15 @@ public class GoogleApiJUnitTest {
     public void googleGeocodingHebrew() {
         final GoogleGeocoding googleGeocoding = GoogleApi.googleGeocoding("מונטיפיורי 2, תל אביב יפו, ישראל", "iw");
         final String status = googleGeocoding.getStatus();
-        LOGGER.severe(status);
+        LOGGER.info(status);
+        assert("OK".equalsIgnoreCase(status));
     }
     
     @Test
     public void googleGeocodingEnglish() {
         final GoogleGeocoding googleGeocoding = GoogleApi.googleGeocoding("USA, New York, 1st Avenue", "en");
         final String status = googleGeocoding.getStatus();
-        LOGGER.severe(status);
+        LOGGER.info(status);
+        assert("OK".equalsIgnoreCase(status));
     }
-    
-   /* @Test
-    public void snapToRoads() {
-        List<Coordinate3D> coordinates = new LinkedList<>();
-        coordinates.add(new Coordinate3D(52.442222,9.745222,0.0));
-        GoogleMapsRoadsApi.snapToRoads(coordinates, true);
-    }*/
-    
 }

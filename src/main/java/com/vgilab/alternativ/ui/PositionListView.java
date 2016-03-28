@@ -62,6 +62,7 @@ public class PositionListView {
     private Position selectedPosition;
     private AnalysedTrip selectedTrip;
     private StreamedContent shapefile;
+    private String errorMessage;
 
     @Autowired
     private SpatialAnalysisService spatialAnalysisService;
@@ -121,7 +122,8 @@ public class PositionListView {
             final BigDecimal deviationNumber = (BigDecimal) decimalFormat.parse(deviation);
             this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, deviationNumber.doubleValue());
         } catch (final ParseException pex) {
-
+            FacesMessage message = new FacesMessage("Parse Error", pex.getLocalizedMessage());
+            FacesContext.getCurrentInstance().addMessage(null, message);
         }
     }
 
@@ -166,6 +168,10 @@ public class PositionListView {
         final AlterNativ alterNativ = trip.getAlterNativ();
         final Origin origin = alterNativ.getOrigin();
         return null != origin ? origin.getLat() + ", " + origin.getLng() : "37.335556, -122.009167";
+    }
+
+    public String getErrorMessage() {
+        return this.errorMessage;
     }
 
     public MapModel getRouteMapModelForTrip(final AnalysedTrip trip) {
@@ -214,17 +220,24 @@ public class PositionListView {
             trackPolyline.getPaths().add(destinationLatLng);
             this.routeMapModel.addOverlay(trackPolyline);
             // create a list of coordinates for the google maps roads api
-            final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(alterNativ);;
-            this.snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
-            final Polyline googleMapsTrackPolyline = new Polyline();
-            googleMapsTrackPolyline.setStrokeWeight(2);
-            googleMapsTrackPolyline.setStrokeColor("blue");
-            googleMapsTrackPolyline.setStrokeOpacity(0.7);
-            for (final Coordinate3D curCoordinate : this.snapedToRoad) {
-                final LatLng latLng = new LatLng(curCoordinate.getLatitude(), curCoordinate.getLongitude());
-                googleMapsTrackPolyline.getPaths().add(latLng);
+            final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(alterNativ);
+            try {
+                this.snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
+                final Polyline googleMapsTrackPolyline = new Polyline();
+                googleMapsTrackPolyline.setStrokeWeight(2);
+                googleMapsTrackPolyline.setStrokeColor("blue");
+                googleMapsTrackPolyline.setStrokeOpacity(0.7);
+                for (final Coordinate3D curCoordinate : this.snapedToRoad) {
+                    final LatLng latLng = new LatLng(curCoordinate.getLatitude(), curCoordinate.getLongitude());
+                    googleMapsTrackPolyline.getPaths().add(latLng);
+                }
+                this.routeMapModel.addOverlay(googleMapsTrackPolyline);
+            } catch (final SecurityException ex) {
+                Logger.getLogger(PositionListView.class.getName()).log(Level.SEVERE, null, ex);
+                FacesMessage message = new FacesMessage("Security Error", ex.getLocalizedMessage());
+                FacesContext.getCurrentInstance().addMessage(null, message);
+                this.errorMessage = ex.getLocalizedMessage();
             }
-            this.routeMapModel.addOverlay(googleMapsTrackPolyline);
         }
         return this.routeMapModel;
     }
@@ -235,9 +248,10 @@ public class PositionListView {
             File zippedShapefiles = this.shapefileService.exportToShapefile(alterNativ, this.snapedToRoad);
             this.shapefile = new DefaultStreamedContent(new FileInputStream(zippedShapefiles), "application/zip", alterNativ.getId() + "-shp.zip");
         } catch (FileNotFoundException ex) {
+            Logger.getLogger(PositionListView.class.getName()).log(Level.SEVERE, null, ex);
             FacesMessage message = new FacesMessage("Failed", "Please import first data.");
             FacesContext.getCurrentInstance().addMessage(null, message);
-            Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
+            this.errorMessage = ex.getLocalizedMessage();
         }
         return this.shapefile;
     }

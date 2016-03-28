@@ -53,7 +53,7 @@ public class GoogleApi {
         // lets just get the plain response as a string
         final HttpEntity<String> response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entity, String.class);
 
-        LOGGER.severe(response.getBody());
+        LOGGER.finest(response.getBody());
 
         // Now deserialize/map the json data to our defined POJOs  ???? i dont understand this part
         final ResponseEntity<GoogleGeocoding> geocodingResponse

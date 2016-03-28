@@ -1,10 +1,19 @@
 package com.vgilab.alternative.google;
 
+import com.vgilab.alternativ.business.geo.Coordinate3D;
+import com.vgilab.alternativ.generated.GoogleMapsRoads;
+import com.vgilab.alternativ.generated.SnappedPoint;
+import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
+import java.text.MessageFormat;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  *
@@ -33,7 +42,8 @@ public class GoogleMapsRoadsApiJUnitTest {
     public void tearDown() {
     }
 
-    /*@Test
+    @Ignore
+    @Test
     public void snapToRoads() {
         final List<Coordinate3D> coordinates = new LinkedList<>();
         coordinates.add(new Coordinate3D(24.942795, 60.170880, 0d));
@@ -45,6 +55,7 @@ public class GoogleMapsRoadsApiJUnitTest {
         }
     }
 
+    @Ignore
     @Test
     public void snapToRoadsWithBatches() {
         final List<Coordinate3D> coordinates = new LinkedList<>();
@@ -57,5 +68,5 @@ public class GoogleMapsRoadsApiJUnitTest {
         for(final Coordinate3D curCoordinate : snapToRoadsUsingBatches) {
             LOGGER.info(MessageFormat.format("Lng: {0}, Lat {1}", curCoordinate.getLongitude(), curCoordinate.getLatitude()));
         }
-    }*/
+    }
 }

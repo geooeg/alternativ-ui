@@ -11,6 +11,12 @@
         <title><ui:insert name="title">#{bundle.Routes}</ui:insert></title>
         <script type='text/javascript' src='http://maps.google.com/maps/api/js?sensor=true'></script>
         <script src="http://www.google.com/jsapi" type="text/javascript" ></script>
+        <style>
+            .tableFooterGrid.ui-panelgrid>*>tr,
+            .tableFooterGrid.ui-panelgrid .ui-panelgrid-cell {
+                border: none;
+            }
+        </style>
     </h:head>
 
     <h:body>
@@ -23,19 +29,18 @@
                 PF('statusDialog').hide();
             }
         </script>
-        <p:growl id="growl" sticky="true" showDetail="true"/>
-        <p:dialog widgetVar="statusDialog" id="statusDialog" header="Status" modal="true" height="32" resizable="false" draggable="false">
-            <img src="resources/images/ajaxloadingbar.gif" width="220"/>
-        </p:dialog>
         <h:form id="RouteListForm">
+            <p:growl id="growl" sticky="true" showDetail="true"/>
+            <p:dialog widgetVar="statusDialog" id="statusDialog" header="Status" modal="true" height="32" resizable="false" draggable="false">
+                <img src="resources/images/ajaxloadingbar.gif" width="220"/>
+            </p:dialog>
             <p:accordionPanel dynamic="true" cache="true">
                 <c:forEach var="trip" items="#{positionListView.trips}">
                     <p:tab title="From #{trip.alterNativ.origin.address} to #{trip.alterNativ.destination.address}. Tracks #{positionListView.getTrackPointCountForTrip(trip)}, Steps #{positionListView.getStepPointCountForTrip(trip)}">
                         <p:panelGrid columns="1">
-
                             <p:dataTable var="position" value="#{positionListView.getPositions(trip)}" paginator="true" rows="10" scrollable="true"
                                          paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15,30,60,100,1000" id="positiondatalist" lazy="true">
+                                         rowsPerPageTemplate="5,10,15,30,60,100,1000" id="positionDataTable" lazy="true">
                                 <p:ajax event="rowToggle" listener="#{positionListView.onRowToggle}" />
                                 <f:facet name="header">
                                     <h:outputText value="Chosen type: #{trip.alterNativ.chosenType} | ID: #{trip.alterNativ.id}" />
@@ -115,9 +120,13 @@
                                         <p:ajax event="blur" update="RouteListForm" />
                                     </p:inputText>
                                     <h:outputText value=" meters" />
+                                    <p:panelGrid columns="1" styleClass="tableFooterGrid" rendered="#{not empty positionListView.errorMessage}">
+                                        <h:outputText value="#{positionListView.errorMessage}" />
+                                    </p:panelGrid>
                                 </f:facet>
                             </p:dataTable>
                             <p:gmap model="#{positionListView.getRouteMapModelForTrip(trip)}" center="#{positionListView.getRouteMapCenterForTrip(trip)}" zoom="15" type="HYBRID" style="width:100%;height:500px">
+                                <p:ajax event="stateChange" update="@(.tableFooterGrid)" />
                             </p:gmap>
                         </p:panelGrid>
                         <p:toolbar>
