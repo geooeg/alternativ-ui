@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -40,7 +41,7 @@ public class GoogleMapsRoadsApi {
             final InputStream inputStream = GoogleMapsRoadsApi.class.getResourceAsStream("api.properties");
             if (null != inputStream) {
                 properties.load(inputStream);
-                GOOGLE_MAPS_ROADS_API_KEY = properties.getProperty("GOOGLE_MAPS_ROADS_API_KEY");
+                GOOGLE_MAPS_ROADS_API_KEY = StringUtils.trimWhitespace(properties.getProperty("GOOGLE_MAPS_ROADS_API_KEY"));
             } else {
                 LOGGER.severe("Google Maps Roads API inactive. Missing api properties file!");
             }

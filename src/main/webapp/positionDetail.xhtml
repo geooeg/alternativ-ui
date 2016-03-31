@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title><ui:insert name="title">#{bundle.Routes}</ui:insert></title>
+        <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"></script>
+        <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    </h:head>
+
+    <h:body>
+        <h:form id="RouteDetailForm">
+            <p:growl id="growl" sticky="true" showDetail="true"/>
+            <p:toolbar styleClass="no-print">
+                <f:facet name="right">
+                    <p:commandButton id="printButton" value="Print" icon="ui-icon-print" onclick="window.print()"/>
+                </f:facet>
+            </p:toolbar>
+            <p:panelGrid id="tripPanelGrid" columns="1" style="width:1280px"> 
+                <h:outputText value="From #{positionDetailView.selectedTrip.alterNativ.origin.address} to #{positionDetailView.selectedTrip.alterNativ.destination.address}. Tracks #{positionDetailView.getTrackPointCountForTrip()}, Steps #{positionDetailView.getStepPointCountForTrip()}" />
+                <h:outputText value="Chosen type: #{positionDetailView.selectedTrip.alterNativ.chosenType} | ID: #{positionDetailView.selectedTrip.alterNativ.id}" />
+                <p:gmap widgetVar="widgetRouteMap" id="routeMap" zoom="15" type="HYBRID" 
+                        model="#{positionDetailView.getRouteMapModelForTrip()}" 
+                        center="#{positionDetailView.getRouteMapCenterForTrip()}" 
+                        style="width:100%;height:720px">
+                </p:gmap>
+                <p:gmap id="map" zoom="15" type="HYBRID" 
+                        model="#{positionDetailView.getRouteMapModelForTrip()}" 
+                        center="#{positionDetailView.getRouteMapCenterForTrip()}" 
+                        style="width:100%;height:720px">
+                </p:gmap>
+            </p:panelGrid>
+        </h:form>
+    </h:body>
+</html>

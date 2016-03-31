@@ -26,10 +26,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
+import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import org.primefaces.event.ToggleEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -168,6 +170,14 @@ public class PositionListView {
         final AlterNativ alterNativ = trip.getAlterNativ();
         final Origin origin = alterNativ.getOrigin();
         return null != origin ? origin.getLat() + ", " + origin.getLng() : "37.335556, -122.009167";
+    }
+
+    public void showTrip(final ActionEvent actionEvent) {
+        final AnalysedTrip analysedTrip = (AnalysedTrip) actionEvent.getComponent().getAttributes().get("trip");
+        final PositionDetailView positionDetailView = (PositionDetailView) FacesContext.getCurrentInstance().getApplication().getELResolver().getValue(FacesContext.getCurrentInstance().getELContext(), null, "positionDetailView");
+        positionDetailView.setSelectedTrip(analysedTrip);
+        final ConfigurableNavigationHandler configurableNavigationHandler = (ConfigurableNavigationHandler) FacesContext.getCurrentInstance().getApplication().getNavigationHandler();
+        configurableNavigationHandler.performNavigation("/positionDetail.xhtml?faces-redirect=true");
     }
 
     public String getErrorMessage() {

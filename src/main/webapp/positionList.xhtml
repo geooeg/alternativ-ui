@@ -37,6 +37,16 @@
             <p:accordionPanel dynamic="true" cache="true">
                 <c:forEach var="trip" items="#{positionListView.trips}">
                     <p:tab title="From #{trip.alterNativ.origin.address} to #{trip.alterNativ.destination.address}. Tracks #{positionListView.getTrackPointCountForTrip(trip)}, Steps #{positionListView.getStepPointCountForTrip(trip)}">
+                        <p:toolbar>
+                            <f:facet name="right">
+                                <p:commandButton id="shapefileButton" ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" icon="ui-icon-arrowthick-1-s" value="Export...">
+                                    <p:fileDownload value="#{positionListView.exportTripToShapefile(trip)}" />
+                                </p:commandButton>
+                                <p:commandButton id="showTripButton" ajax="false" value="Show Trip" icon="ui-icon-print" actionListener="#{positionListView.showTrip}">
+                                    <f:attribute name="trip" value="#{trip}" />
+                                </p:commandButton>
+                            </f:facet>
+                        </p:toolbar>
                         <p:panelGrid columns="1">
                             <p:dataTable var="position" value="#{positionListView.getPositions(trip)}" paginator="true" rows="10" scrollable="true"
                                          paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -107,9 +117,7 @@
                                                     <h:outputText value="Instructions" />
                                                     <h:outputText value="#{position.step.instructions}" escape="false" />
                                                 </p:panelGrid>
-
                                             </p:column>
-
                                         </p:row>
                                     </p:panelGrid>
                                 </p:rowExpansion>
@@ -129,13 +137,6 @@
                                 <p:ajax event="stateChange" update="@(.tableFooterGrid)" />
                             </p:gmap>
                         </p:panelGrid>
-                        <p:toolbar>
-                            <f:facet name="right">
-                                <p:commandButton id="shapefileButton" ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" icon="ui-icon-arrowthick-1-s" value="Export...">
-                                    <p:fileDownload value="#{positionListView.exportTripToShapefile(trip)}" />
-                                </p:commandButton>
-                            </f:facet>
-                        </p:toolbar>
                     </p:tab>
                 </c:forEach>
             </p:accordionPanel>
