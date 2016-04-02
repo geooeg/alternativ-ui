@@ -102,7 +102,8 @@
                                     <p:panelGrid>
                                         <p:row>
                                             <p:column style="width:300px">
-                                                <p:gmap model="#{positionListView.mapModel}" center="#{positionListView.mapCenter}" zoom="15" type="HYBRID" style="width:300px;height:300px">
+                                                <p:gmap model="#{positionListView.mapModel}" center="37.335556,-122.009167"
+                                                        fitBounds="true" zoom="15" type="HYBRID" style="width:300px;height:300px">
                                                 </p:gmap>
                                             </p:column>
                                             <p:column>
@@ -133,7 +134,8 @@
                                     </p:panelGrid>
                                 </f:facet>
                             </p:dataTable>
-                            <p:gmap model="#{positionListView.getRouteMapModelForTrip(trip)}" center="#{positionListView.getRouteMapCenterForTrip(trip)}" zoom="15" type="HYBRID" style="width:100%;height:500px">
+                            <p:gmap model="#{positionListView.getRouteMapModelForTrip(trip)}" center="37.335556,-122.009167"
+                                    fitBounds="true" zoom="15" type="HYBRID" style="width:100%;height:500px">
                                 <p:ajax event="stateChange" update="@(.tableFooterGrid)" />
                             </p:gmap>
                         </p:panelGrid>

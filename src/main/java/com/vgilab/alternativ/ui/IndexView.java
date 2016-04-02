@@ -15,7 +15,6 @@ import com.vgilab.alternativ.generated.Origin;
 import com.vgilab.alternativ.generated.Route;
 import com.vgilab.alternativ.generated.Telofun;
 import com.vgilab.alternativ.generated.Track;
-import java.awt.Color;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,7 +22,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -95,7 +93,7 @@ public class IndexView implements Serializable {
                 this.mapModel.addOverlay(new Marker(originLatLng, "UID: " + curAlterNativ.getId(), "Origin: " + origin.getAddress()));
                 final Polyline polyline = new Polyline();
                 polyline.setStrokeWeight(2);
-                polyline.setStrokeColor(this.getRandomHTMLColor());
+                polyline.setStrokeColor(HtmlUtil.getRandomHTMLColor());
                 polyline.setStrokeOpacity(0.7);
                 polyline.getPaths().add(originLatLng);
                 // Chosen Routes
@@ -195,16 +193,6 @@ public class IndexView implements Serializable {
         positionListView.setAlterNativs(this.alterNativs);
         final ConfigurableNavigationHandler configurableNavigationHandler = (ConfigurableNavigationHandler) FacesContext.getCurrentInstance().getApplication().getNavigationHandler();
         configurableNavigationHandler.performNavigation("/positionList.xhtml?faces-redirect=true");
-    }
-
-    private String getRandomHTMLColor() {
-        final Random ra = new Random();
-        final int r, g, b;
-        r = ra.nextInt(255);
-        g = ra.nextInt(255);
-        b = ra.nextInt(255);
-        final Color color = new Color(r, g, b);
-        return "#" + Integer.toHexString(color.getRGB()).substring(2);
     }
 
     public MapModel getMapModel() {

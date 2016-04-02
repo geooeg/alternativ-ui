@@ -43,7 +43,6 @@ import org.primefaces.model.map.Marker;
 import org.primefaces.model.map.Polyline;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 /**
  *
@@ -56,7 +55,6 @@ public class PositionListView {
 
     private List<AlterNativ> alterNativs;
     private List<AnalysedTrip> trips;
-    private List<Coordinate3D> snapedToRoad;
     private String deviation;
     private MapModel mapModel;
     private MapModel routeMapModel;
@@ -149,11 +147,7 @@ public class PositionListView {
             }
         }
     }
-
-    public String getMapCenter() {
-        return StringUtils.isEmpty(this.mapCenter) ? "37.335556, -122.009167" : this.mapCenter;
-    }
-
+    
     public MapModel getMapModel() {
         return this.mapModel;
     }
@@ -164,12 +158,6 @@ public class PositionListView {
 
     public Integer getStepPointCountForTrip(final AnalysedTrip trip) {
         return this.featureService.getPointCountForChosenRoutes(trip.getAlterNativ().getChosenRoute());
-    }
-
-    public String getRouteMapCenterForTrip(final AnalysedTrip trip) {
-        final AlterNativ alterNativ = trip.getAlterNativ();
-        final Origin origin = alterNativ.getOrigin();
-        return null != origin ? origin.getLat() + ", " + origin.getLng() : "37.335556, -122.009167";
     }
 
     public void showTrip(final ActionEvent actionEvent) {
@@ -232,16 +220,17 @@ public class PositionListView {
             // create a list of coordinates for the google maps roads api
             final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(alterNativ);
             try {
-                this.snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
+                final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
                 final Polyline googleMapsTrackPolyline = new Polyline();
                 googleMapsTrackPolyline.setStrokeWeight(2);
                 googleMapsTrackPolyline.setStrokeColor("blue");
                 googleMapsTrackPolyline.setStrokeOpacity(0.7);
-                for (final Coordinate3D curCoordinate : this.snapedToRoad) {
+                for (final Coordinate3D curCoordinate : snapedToRoad) {
                     final LatLng latLng = new LatLng(curCoordinate.getLatitude(), curCoordinate.getLongitude());
                     googleMapsTrackPolyline.getPaths().add(latLng);
                 }
                 this.routeMapModel.addOverlay(googleMapsTrackPolyline);
+                trip.setSnapedToRoad(snapedToRoad);
             } catch (final SecurityException ex) {
                 Logger.getLogger(PositionListView.class.getName()).log(Level.SEVERE, null, ex);
                 FacesMessage message = new FacesMessage("Security Error", ex.getLocalizedMessage());
@@ -255,7 +244,8 @@ public class PositionListView {
     public StreamedContent exportTripToShapefile(final AnalysedTrip trip) {
         try {
             final AlterNativ alterNativ = trip.getAlterNativ();
-            File zippedShapefiles = this.shapefileService.exportToShapefile(alterNativ, this.snapedToRoad);
+            final List<Coordinate3D> snapedToRoad = trip.getSnapedToRoad();
+            final File zippedShapefiles = this.shapefileService.exportToShapefile(alterNativ, snapedToRoad);
             this.shapefile = new DefaultStreamedContent(new FileInputStream(zippedShapefiles), "application/zip", alterNativ.getId() + "-shp.zip");
         } catch (FileNotFoundException ex) {
             Logger.getLogger(PositionListView.class.getName()).log(Level.SEVERE, null, ex);

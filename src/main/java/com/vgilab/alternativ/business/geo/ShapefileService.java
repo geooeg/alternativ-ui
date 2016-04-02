@@ -6,11 +6,17 @@ import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
 import com.vgilab.alternativ.generated.Feature;
 import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,8 +24,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFinder;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
 import org.geotools.data.collection.ListFeatureCollection;
@@ -28,8 +38,17 @@ import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureIterator;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -241,5 +260,89 @@ public class ShapefileService {
         } catch (IOException ex) {
             Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public Map<String, List<Coordinate3D>> importCoordinatesFromArchive(final byte[] contents) throws IOException {
+        final String destinationPath = System.getProperty("java.io.tmpdir");
+        final List<File> files = new LinkedList<>();
+        ZipInputStream zis = null;
+        try {
+            CoordinateReferenceSystem crs;
+            try {
+                crs = CRS.decode("EPSG:28193");
+            } catch (FactoryException ex) {
+                crs = DefaultGeographicCRS.WGS84;
+            }
+            zis = new ZipInputStream(new ByteArrayInputStream(contents));
+            ZipEntry entry;
+            final Map<String, URL> map = new HashMap<>();
+            while ((entry = zis.getNextEntry()) != null) {
+                final File entryFile = new File(destinationPath, entry.getName());
+                if (!entry.isDirectory()) {
+                    entryFile.createNewFile();
+                    entryFile.deleteOnExit();
+                    if (entryFile.exists()) {
+                        files.add(entryFile);
+                        final String ext = Files.getFileExtension(entryFile.getName());
+                        if (StringUtils.equalsIgnoreCase("shp", ext)) {
+                            map.put("url", entryFile.toURI().toURL());
+                        } else if (StringUtils.equalsIgnoreCase("prj", ext)) {
+                            try {
+                                crs = CRS.parseWKT(IOUtils.toString(entryFile.toURI()));
+                            } catch (FactoryException ex) {
+                                Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        // and rewrite data from stream
+                        OutputStream os = null;
+                        try {
+                            os = new FileOutputStream(entryFile);
+                            IOUtils.copy(zis, os);
+                        } finally {
+                            IOUtils.closeQuietly(os);
+                        }
+                    }
+                }
+            }
+            final DataStore dataStore = DataStoreFinder.getDataStore(map);
+            FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = dataStore.getFeatureSource(dataStore.getTypeNames()[0]).getFeatures();
+            return this.getCoordinatesFromFeatureCollection(crs, featureCollection);
+        } finally {
+            IOUtils.closeQuietly(zis);
+            for (final File file : files) {
+                file.delete();
+            }
+        }
+    }
+
+    private Map<String, List<Coordinate3D>> getCoordinatesFromFeatureCollection(final CoordinateReferenceSystem crs, final FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection) {
+        final Map<String, List<Coordinate3D>> coordinateMap = new HashMap<>();
+        if (null != featureCollection) {
+            try (FeatureIterator iterator = featureCollection.features()) {
+                while (iterator.hasNext()) {
+                    final SimpleFeature feature = (SimpleFeature) iterator.next();
+                    final Geometry defaultGeometry = (Geometry) feature.getDefaultGeometry();
+                    try {
+                        final Geometry transformedGeometry = transformToGeo(crs, defaultGeometry, true);
+                        final List<Coordinate> coordinates = new LinkedList<>();
+                        coordinates.addAll(Arrays.asList(transformedGeometry.getCoordinates()));
+                        final List<Coordinate3D> coordinates3D = new LinkedList<>();
+                        for (final Coordinate curCoordinate : coordinates) {
+                            coordinates3D.add(new Coordinate3D(curCoordinate.x, curCoordinate.y, curCoordinate.z));
+                        }
+                        coordinateMap.put(feature.getID(), coordinates3D);
+                    } catch (FactoryException | TransformException ex) {
+                        Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+        return coordinateMap;
+    }
+
+    private static Geometry transformToGeo(CoordinateReferenceSystem srcCRS, Geometry source, boolean lenient) throws FactoryException, TransformException {
+        final CoordinateReferenceSystem destCRS = DefaultGeographicCRS.WGS84;
+        final MathTransform transform = CRS.findMathTransform(srcCRS, destCRS, lenient);
+        return JTS.transform(source, transform);
     }
 }

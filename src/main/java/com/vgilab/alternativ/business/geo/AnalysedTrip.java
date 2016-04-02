@@ -10,6 +10,7 @@ import java.util.List;
 public class AnalysedTrip {
     private AlterNativ alterNativ;
     private List<Position> positions;
+    private List<Coordinate3D> snapedToRoad;
 
     public AnalysedTrip(AlterNativ curAlterNativ, List<Position> positions) {
         this.alterNativ = curAlterNativ;
@@ -42,5 +43,19 @@ public class AnalysedTrip {
      */
     public void setPositions(List<Position> positions) {
         this.positions = positions;
+    }
+
+    /**
+     * @return the snapedToRoad
+     */
+    public List<Coordinate3D> getSnapedToRoad() {
+        return snapedToRoad;
+    }
+
+    /**
+     * @param snapedToRoad the snapedToRoad to set
+     */
+    public void setSnapedToRoad(List<Coordinate3D> snapedToRoad) {
+        this.snapedToRoad = snapedToRoad;
     }
 }

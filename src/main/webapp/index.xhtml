@@ -64,7 +64,9 @@
         <h:form id="form" style="height: 100%" enctype="multipart/form-data">
             <p:growl id="growl" life="3000" showDetail = "true" />
             <div id="content">
-                <p:gmap id="map" widgetVar="w_gmap" center="32.064019, 34.76977199999999" zoom="8" type="HYBRID" model="#{indexView.mapModel}" styleClass="gmap">
+                <p:gmap id="map" widgetVar="w_gmap" center="32.064019, 34.76977199999999" 
+                        zoom="8" type="HYBRID" fitBounds="true" styleClass="gmap"
+                        model="#{indexView.mapModel}" >
                     <p:ajax event="overlaySelect" listener="#{indexView.onMarkerSelect}" />
                     <p:gmapInfoWindow id="infoWindow">
                         <p:outputPanel style="text-align: center; display: block; margin: auto">

@@ -86,7 +86,7 @@ public class SpatialAnalysisService {
                                 try {
                                     gc.setStartingPosition(JTS.toDirectPosition(curPointForTrack.getKey().getCoordinate(), DefaultGeographicCRS.WGS84));
                                     gc.setDestinationPosition(JTS.toDirectPosition(curPointForStep.getCoordinate(), DefaultGeographicCRS.WGS84));
-                                    double orthodromicDistance = gc.getOrthodromicDistance();
+                                    final double orthodromicDistance = gc.getOrthodromicDistance();
                                     if (orthodromicDistance < deviation) {
                                         position.setTrack(curPointForTrack.getValue());
                                         position.setDistance(orthodromicDistance);
