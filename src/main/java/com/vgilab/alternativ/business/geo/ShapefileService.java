@@ -62,6 +62,7 @@ import org.springframework.util.CollectionUtils;
 public class ShapefileService {
 
     private final static Logger LOGGER = Logger.getGlobal();
+    private final static String REFERENCE_ID = "Tripid";
 
     @Autowired
     private FeatureService featureService;
@@ -272,8 +273,8 @@ public class ShapefileService {
             ZipEntry entry;
             final Map<String, URL> map = new HashMap<>();
             while ((entry = zis.getNextEntry()) != null) {
-                final File entryFile = new File(destinationPath, entry.getName());
-                if (!entry.isDirectory()) {
+                if (isValid(entry)) {
+                    final File entryFile = new File(destinationPath, entry.getName());
                     entryFile.createNewFile();
                     entryFile.deleteOnExit();
                     if (entryFile.exists()) {
@@ -283,7 +284,10 @@ public class ShapefileService {
                             map.put("url", entryFile.toURI().toURL());
                         } else if (null != srcCrs && StringUtils.equalsIgnoreCase("prj", ext)) {
                             try {
-                                srcCrs = CRS.parseWKT(IOUtils.toString(entryFile.toURI()));
+                                final String wkt = IOUtils.toString(entry.getExtra(), null);
+                                if(StringUtils.isNotEmpty(wkt)) {
+                                    srcCrs = CRS.parseWKT(wkt);
+                                }
                             } catch (FactoryException ex) {
                                 Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
                             }
@@ -310,24 +314,34 @@ public class ShapefileService {
         }
     }
 
+    private boolean isValid(final ZipEntry entry) {
+        return !entry.isDirectory()
+                && StringUtils.isNotEmpty(entry.getName())
+                && !entry.getName().startsWith(".")
+                && !entry.getName().startsWith("__MACOSX");
+    }
+
     private Map<String, List<Coordinate3D>> getCoordinatesFromFeatureCollection(final CoordinateReferenceSystem crs, final String referenceId, final FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection) {
         final Map<String, List<Coordinate3D>> coordinateMap = new HashMap<>();
         if (null != featureCollection) {
             try (FeatureIterator iterator = featureCollection.features()) {
                 while (iterator.hasNext()) {
                     final SimpleFeature feature = (SimpleFeature) iterator.next();
-                    final Geometry defaultGeometry = (Geometry) feature.getDefaultGeometry();
-                    try {
-                        final Geometry transformedGeometry = null != crs ? transformToGeo(crs, defaultGeometry, true) : defaultGeometry;
-                        final List<Coordinate> coordinates = new LinkedList<>();
-                        coordinates.addAll(Arrays.asList(transformedGeometry.getCoordinates()));
-                        final List<Coordinate3D> coordinates3D = new LinkedList<>();
-                        for (final Coordinate curCoordinate : coordinates) {
-                            coordinates3D.add(new Coordinate3D(curCoordinate.x, curCoordinate.y, curCoordinate.z));
+                    Object attribute = feature.getAttribute(REFERENCE_ID);
+                    if (null != attribute && StringUtils.startsWithIgnoreCase(attribute.toString(), referenceId)) {
+                        final Geometry defaultGeometry = (Geometry) feature.getDefaultGeometry();
+                        try {
+                            final Geometry transformedGeometry = null != crs ? transformToGeo(crs, defaultGeometry, true) : defaultGeometry;
+                            final List<Coordinate> coordinates = new LinkedList<>();
+                            coordinates.addAll(Arrays.asList(transformedGeometry.getCoordinates()));
+                            final List<Coordinate3D> coordinates3D = new LinkedList<>();
+                            for (final Coordinate curCoordinate : coordinates) {
+                                coordinates3D.add(new Coordinate3D(curCoordinate.x, curCoordinate.y, curCoordinate.z));
+                            }
+                            coordinateMap.put(feature.getID(), coordinates3D);
+                        } catch (FactoryException | TransformException ex) {
+                            Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        coordinateMap.put(feature.getID(), coordinates3D);
-                    } catch (FactoryException | TransformException ex) {
-                        Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }

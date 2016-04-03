@@ -44,7 +44,7 @@ import org.springframework.util.CollectionUtils;
 @SessionScoped
 public class PositionDetailView {
  
-    private String coordinateReferenceSystem;
+    private String coordinateReferenceSystem = "EPSG:2039";
     private AnalysedTrip selectedTrip;
     private MapModel routeMapModel;
     private MapModel importedMapModel = new DefaultMapModel();

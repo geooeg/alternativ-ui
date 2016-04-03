@@ -47,9 +47,9 @@
                     <p:column>
                         <h:panelGrid columns="2" cellpadding="5">
                             <p:outputLabel for="crs" value="Coordinate Reference System (CRS):" />
-                            <p:selectOneMenu id="crs" value="#{positionDetailView.coordinateReferenceSystem}" effect="fold" editable="true">
-                                <f:selectItem itemLabel="Select One" itemValue="" />
-                                <f:selectItem itemLabel="EPSG:2039" itemValue="EPSG:2039" />
+                            <p:selectOneMenu id="crs" value="#{positionDetailView.coordinateReferenceSystem}" effect="fold" editable="true" immediate="true">
+                                <f:selectItem itemLabel="Select One" itemValue="" noSelectionOption="true" />
+                                <f:selectItem itemLabel="EPSG:2039" itemValue="EPSG:2039"  />
                             </p:selectOneMenu>
                         </h:panelGrid>
                         <p:fileUpload fileUploadListener="#{positionDetailView.handleFileUpload}" mode="advanced"
