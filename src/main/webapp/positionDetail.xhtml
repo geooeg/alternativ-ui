@@ -29,18 +29,41 @@
                     <p:commandButton id="printButton" value="Print" icon="ui-icon-print" onclick="window.print()"/>
                 </f:facet>
             </p:toolbar>
-            <p:panelGrid id="tripPanelGrid" columns="1" style="width:1280px"> 
-                <h:outputText value="From #{positionDetailView.selectedTrip.alterNativ.origin.address} to #{positionDetailView.selectedTrip.alterNativ.destination.address}. Tracks #{positionDetailView.getTrackPointCountForTrip()}, Steps #{positionDetailView.getStepPointCountForTrip()}" />
-                <h:outputText value="Chosen type: #{positionDetailView.selectedTrip.alterNativ.chosenType} | ID: #{positionDetailView.selectedTrip.alterNativ.id}" />
-                <p:gmap zoom="15" type="HYBRID" fitBounds="true"
-                        model="#{positionDetailView.getRouteMapModelForTrip()}" center="37.335556,-122.009167"
-                        style="width:100%;height:720px"/>
-                <p:fileUpload fileUploadListener="#{positionDetailView.handleFileUpload}" mode="advanced"
-                              update="growl, importedMap" auto="true" allowTypes="/(\.|\/)(zip)$/" 
-                              styleClass="no-print" />
-                <p:gmap id="importedMap" zoom="15" type="HYBRID" fitBounds="true" 
-                        model="#{positionDetailView.getImportedMapModel()}" center="37.335556,-122.009167"
-                        style="width:100%;height:720px"/>
+            <p:panelGrid id="tripPanelGrid" style="width:1280px"> 
+                <p:row>
+                    <p:column colspan="2" style="font-weight: bold;"><h:outputText value="From #{positionDetailView.selectedTrip.alterNativ.origin.address} to #{positionDetailView.selectedTrip.alterNativ.destination.address}. Tracks #{positionDetailView.getTrackPointCountForTrip()}, Steps #{positionDetailView.getStepPointCountForTrip()}" /></p:column>
+                </p:row>
+                <p:row>
+                    <p:column style="font-weight: bold;"><h:outputText value="Chosen type: #{positionDetailView.selectedTrip.alterNativ.chosenType} | ID: #{positionDetailView.selectedTrip.alterNativ.id}" /></p:column>
+                </p:row>
+                <p:row>
+                    <p:column>
+                        <p:gmap zoom="15" type="HYBRID" fitBounds="true"
+                                model="#{positionDetailView.getRouteMapModelForTrip()}" center="37.335556,-122.009167"
+                                style="width:100%;height:720px"/>
+                    </p:column>
+                </p:row>
+                <p:row styleClass="no-print">
+                    <p:column>
+                        <h:panelGrid columns="2" cellpadding="5">
+                            <p:outputLabel for="crs" value="Coordinate Reference System (CRS):" />
+                            <p:selectOneMenu id="crs" value="#{positionDetailView.coordinateReferenceSystem}" effect="fold" editable="true">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItem itemLabel="EPSG:2039" itemValue="EPSG:2039" />
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        <p:fileUpload fileUploadListener="#{positionDetailView.handleFileUpload}" mode="advanced"
+                                      update="growl, importedMap" auto="true" allowTypes="/(\.|\/)(zip)$/" 
+                                      styleClass="no-print" />
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>
+                        <p:gmap id="importedMap" zoom="15" type="HYBRID" fitBounds="true" 
+                                model="#{positionDetailView.getImportedMapModel()}" center="37.335556,-122.009167"
+                                style="width:100%;height:720px"/>
+                    </p:column>
+                </p:row>
             </p:panelGrid>
         </h:form>
     </h:body>

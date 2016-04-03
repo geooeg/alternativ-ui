@@ -262,17 +262,12 @@ public class ShapefileService {
         }
     }
 
-    public Map<String, List<Coordinate3D>> importCoordinatesFromArchive(final byte[] contents) throws IOException {
+    public Map<String, List<Coordinate3D>> importCoordinatesFromArchive(final String crs, final String referenceId, final byte[] contents) throws IOException, FactoryException {
         final String destinationPath = System.getProperty("java.io.tmpdir");
         final List<File> files = new LinkedList<>();
         ZipInputStream zis = null;
+        CoordinateReferenceSystem srcCrs = StringUtils.isNotEmpty(crs) ? CRS.decode(crs) : null;
         try {
-            CoordinateReferenceSystem crs;
-            try {
-                crs = CRS.decode("EPSG:28193");
-            } catch (FactoryException ex) {
-                crs = DefaultGeographicCRS.WGS84;
-            }
             zis = new ZipInputStream(new ByteArrayInputStream(contents));
             ZipEntry entry;
             final Map<String, URL> map = new HashMap<>();
@@ -286,9 +281,9 @@ public class ShapefileService {
                         final String ext = Files.getFileExtension(entryFile.getName());
                         if (StringUtils.equalsIgnoreCase("shp", ext)) {
                             map.put("url", entryFile.toURI().toURL());
-                        } else if (StringUtils.equalsIgnoreCase("prj", ext)) {
+                        } else if (null != srcCrs && StringUtils.equalsIgnoreCase("prj", ext)) {
                             try {
-                                crs = CRS.parseWKT(IOUtils.toString(entryFile.toURI()));
+                                srcCrs = CRS.parseWKT(IOUtils.toString(entryFile.toURI()));
                             } catch (FactoryException ex) {
                                 Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
                             }
@@ -305,8 +300,8 @@ public class ShapefileService {
                 }
             }
             final DataStore dataStore = DataStoreFinder.getDataStore(map);
-            FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = dataStore.getFeatureSource(dataStore.getTypeNames()[0]).getFeatures();
-            return this.getCoordinatesFromFeatureCollection(crs, featureCollection);
+            final FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = dataStore.getFeatureSource(dataStore.getTypeNames()[0]).getFeatures();
+            return this.getCoordinatesFromFeatureCollection(srcCrs, referenceId, featureCollection);
         } finally {
             IOUtils.closeQuietly(zis);
             for (final File file : files) {
@@ -315,7 +310,7 @@ public class ShapefileService {
         }
     }
 
-    private Map<String, List<Coordinate3D>> getCoordinatesFromFeatureCollection(final CoordinateReferenceSystem crs, final FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection) {
+    private Map<String, List<Coordinate3D>> getCoordinatesFromFeatureCollection(final CoordinateReferenceSystem crs, final String referenceId, final FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection) {
         final Map<String, List<Coordinate3D>> coordinateMap = new HashMap<>();
         if (null != featureCollection) {
             try (FeatureIterator iterator = featureCollection.features()) {
@@ -323,7 +318,7 @@ public class ShapefileService {
                     final SimpleFeature feature = (SimpleFeature) iterator.next();
                     final Geometry defaultGeometry = (Geometry) feature.getDefaultGeometry();
                     try {
-                        final Geometry transformedGeometry = transformToGeo(crs, defaultGeometry, true);
+                        final Geometry transformedGeometry = null != crs ? transformToGeo(crs, defaultGeometry, true) : defaultGeometry;
                         final List<Coordinate> coordinates = new LinkedList<>();
                         coordinates.addAll(Arrays.asList(transformedGeometry.getCoordinates()));
                         final List<Coordinate3D> coordinates3D = new LinkedList<>();

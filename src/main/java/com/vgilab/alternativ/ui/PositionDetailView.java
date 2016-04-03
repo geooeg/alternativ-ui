@@ -6,7 +6,6 @@ import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.business.geo.FeatureService;
 import com.vgilab.alternativ.business.geo.Position;
 import com.vgilab.alternativ.business.geo.ShapefileService;
-import com.vgilab.alternativ.business.geo.SpatialAnalysisService;
 import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
 import com.vgilab.alternativ.generated.Destination;
@@ -15,31 +14,18 @@ import com.vgilab.alternativ.generated.Origin;
 import com.vgilab.alternativ.generated.Track;
 import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
 import com.vividsolutions.jts.geom.Coordinate;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.ParseException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
-import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
+import org.opengis.referencing.FactoryException;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.event.ToggleEvent;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
-import org.primefaces.model.Visibility;
 import org.primefaces.model.map.DefaultMapModel;
 import org.primefaces.model.map.LatLng;
 import org.primefaces.model.map.MapModel;
@@ -57,7 +43,8 @@ import org.springframework.util.CollectionUtils;
 @ManagedBean(name = "positionDetailView")
 @SessionScoped
 public class PositionDetailView {
-
+ 
+    private String coordinateReferenceSystem;
     private AnalysedTrip selectedTrip;
     private MapModel routeMapModel;
     private MapModel importedMapModel = new DefaultMapModel();
@@ -147,17 +134,16 @@ public class PositionDetailView {
     public MapModel getImportedMapModel() {
         this.importedMapModel = new DefaultMapModel();
         if (!CollectionUtils.isEmpty(this.importedCoordinates)) {
-            final Polyline polyline = new Polyline();
             for (Map.Entry<String, List<Coordinate3D>> curCoordinateSet : this.importedCoordinates.entrySet()) {
+                final Polyline polyline = new Polyline();
                 polyline.setStrokeWeight(1);
                 polyline.setStrokeColor("green");
-                polyline.setStrokeOpacity(0.7);
                 for (final Coordinate3D curCoordinate3D : curCoordinateSet.getValue()) {
                     final LatLng latLng = new LatLng(curCoordinate3D.getLatitude(), curCoordinate3D.getLongitude());
                     polyline.getPaths().add(latLng);
                 }
+                this.importedMapModel.addOverlay(polyline);
             }
-            this.importedMapModel.addOverlay(polyline);
         }
         return this.importedMapModel;
     }
@@ -177,6 +163,20 @@ public class PositionDetailView {
     }
 
     /**
+     * @return the coordinateReferenceSystem
+     */
+    public String getCoordinateReferenceSystem() {
+        return coordinateReferenceSystem;
+    }
+
+    /**
+     * @param coordinateReferenceSystem the coordinateReferenceSystem to set
+     */
+    public void setCoordinateReferenceSystem(String coordinateReferenceSystem) {
+        this.coordinateReferenceSystem = coordinateReferenceSystem;
+    }
+
+    /**
      * @return the postions
      */
     public List<Position> getPositions() {
@@ -187,12 +187,13 @@ public class PositionDetailView {
         event.getComponent().setTransient(false);
         if (event.getFile() != null && event.getFile().getSize() > 0) {
             try {
-                this.importedCoordinates = this.shapefileService.importCoordinatesFromArchive(event.getFile().getContents());
+                final String referenceId = this.selectedTrip.getAlterNativ().getId();
+                this.importedCoordinates = this.shapefileService.importCoordinatesFromArchive(this.coordinateReferenceSystem, referenceId, event.getFile().getContents());
                 final FacesMessage message = new FacesMessage("Successful", event.getFile().getFileName() + " is uploaded.");
                 FacesContext.getCurrentInstance().addMessage(null, message);
-            } catch (IOException ex) {
+            } catch (FactoryException | IOException ex) {
                 Logger.getLogger(PositionDetailView.class.getName()).log(Level.SEVERE, null, ex);
-                final FacesMessage message = new FacesMessage("Security Error", ex.getLocalizedMessage());
+                final FacesMessage message = new FacesMessage("Error", ex.getLocalizedMessage());
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
         }
