@@ -57,7 +57,7 @@
                 PF('statusDialog').hide();
             }
         </script>
-        <p:growl id="growl" sticky="true" showDetail="true"/>
+        <p:growl id="growl" sticky="false" autoUpdate="true" life="3000" showDetail="true"/>
         <p:dialog widgetVar="statusDialog" id="statusDialog" header="Status" modal="true" height="32" resizable="false" draggable="false">
             <img src="resources/images/ajaxloadingbar.gif" width="220"/>
         </p:dialog>
@@ -65,7 +65,7 @@
             <p:growl id="growl" life="3000" showDetail = "true" />
             <div id="content">
                 <p:gmap id="map" widgetVar="w_gmap" center="32.064019, 34.76977199999999" 
-                        zoom="8" type="HYBRID" fitBounds="true" styleClass="gmap"
+                        zoom="15" type="HYBRID" fitBounds="true" styleClass="gmap"
                         model="#{indexView.mapModel}" >
                     <p:ajax event="overlaySelect" listener="#{indexView.onMarkerSelect}" />
                     <p:gmapInfoWindow id="infoWindow">
@@ -114,7 +114,7 @@
             </p:dialog>
             <p:dialog header="Routes" widgetVar="RoutesDialog" showEffect="clip" hideEffect="clip" width="90%" height="90%">
                 <p:dataList value="#{indexView.alterNativs}" var="alterNativ" type="ordered" paginator="true" rows="20">
-                    <p:commandLink update=":form" oncomplete="PF('RoutesDialog').hide()" title="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" >
+                    <p:commandLink update=":form, :form:map" oncomplete="PF('RoutesDialog').hide()" title="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" >
                         <f:setPropertyActionListener value="#{alterNativ}" target="#{indexView.selectedAlterNativ}" />
                         <h:outputText value="#{alterNativ.origin.address} -> #{alterNativ.destination.address}" />
                     </p:commandLink>

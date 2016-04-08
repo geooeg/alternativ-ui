@@ -63,6 +63,9 @@ public class ShapefileService {
 
     private final static Logger LOGGER = Logger.getGlobal();
     private final static String REFERENCE_ID = "Tripid";
+    private final static String TRAVEL_MODE_ID = "Type";
+    public final static String DEFAULT_CRS = "EPSG:2039";
+    
 
     @Autowired
     private FeatureService featureService;
@@ -263,33 +266,78 @@ public class ShapefileService {
         }
     }
 
-    public Map<String, List<Coordinate3D>> importCoordinatesFromArchive(final String crs, final String referenceId, final byte[] contents) throws IOException, FactoryException {
-        final String destinationPath = System.getProperty("java.io.tmpdir");
-        final List<File> files = new LinkedList<>();
-        ZipInputStream zis = null;
-        CoordinateReferenceSystem srcCrs = StringUtils.isNotEmpty(crs) ? CRS.decode(crs) : null;
-        try {
-            zis = new ZipInputStream(new ByteArrayInputStream(contents));
-            ZipEntry entry;
-            final Map<String, URL> map = new HashMap<>();
-            while ((entry = zis.getNextEntry()) != null) {
-                if (isValid(entry)) {
-                    final File entryFile = new File(destinationPath, entry.getName());
-                    entryFile.createNewFile();
-                    entryFile.deleteOnExit();
-                    if (entryFile.exists()) {
-                        files.add(entryFile);
-                        final String ext = Files.getFileExtension(entryFile.getName());
-                        if (StringUtils.equalsIgnoreCase("shp", ext)) {
-                            map.put("url", entryFile.toURI().toURL());
-                        } else if (null != srcCrs && StringUtils.equalsIgnoreCase("prj", ext)) {
+    public FeatureCollection<SimpleFeatureType, SimpleFeature> importFeaturesFromArchive(final byte[] contents) throws IOException, FactoryException {
+        if (null != contents) {
+            final String destinationPath = System.getProperty("java.io.tmpdir");
+            ZipInputStream zis = null;
+            try {
+                zis = new ZipInputStream(new ByteArrayInputStream(contents));
+                ZipEntry entry;
+                final Map<String, URL> map = new HashMap<>();
+                while ((entry = zis.getNextEntry()) != null) {
+                    if (isValid(entry)) {
+                        final File entryFile = new File(destinationPath, entry.getName());
+                        entryFile.createNewFile();
+                        entryFile.deleteOnExit();
+                        if (entryFile.exists()) {
+                            final String ext = Files.getFileExtension(entry.getName());
+                            if (StringUtils.equalsIgnoreCase("shp", ext)) {
+                                map.put("url", entryFile.toURI().toURL());
+                            }
+                            // and rewrite data from stream
+                            OutputStream os = null;
                             try {
-                                final String wkt = IOUtils.toString(entry.getExtra(), null);
-                                if(StringUtils.isNotEmpty(wkt)) {
-                                    srcCrs = CRS.parseWKT(wkt);
+                                os = new FileOutputStream(entryFile);
+                                IOUtils.copy(zis, os);
+                            } finally {
+                                IOUtils.closeQuietly(os);
+                            }
+                        }
+                    }
+                }
+                final DataStore dataStore = DataStoreFinder.getDataStore(map);
+                return dataStore.getFeatureSource(dataStore.getTypeNames()[0]).getFeatures();
+            } finally {
+                IOUtils.closeQuietly(zis);
+            }
+        }
+        return null;
+    }
+
+    public CoordinateReferenceSystem importCRSFromArchive(final String crs, final byte[] contents) throws IOException, FactoryException {
+        if (null != contents) {
+            final String destinationPath = System.getProperty("java.io.tmpdir");
+            final List<File> files = new LinkedList<>();
+            ZipInputStream zis = null;
+            CoordinateReferenceSystem srcCrs = StringUtils.isNotEmpty(crs) ? CRS.decode(crs) : null;
+            try {
+                zis = new ZipInputStream(new ByteArrayInputStream(contents));
+                ZipEntry entry;
+                while ((entry = zis.getNextEntry()) != null) {
+                    final String ext = Files.getFileExtension(entry.getName());
+                    if (isValid(entry) && (null != srcCrs && StringUtils.equalsIgnoreCase("prj", ext))) {
+                        final File entryFile = new File(destinationPath, entry.getName());
+                        entryFile.createNewFile();
+                        entryFile.deleteOnExit();
+                        if (entryFile.exists()) {
+                            files.add(entryFile);
+                            // and rewrite data from stream
+                            OutputStream os = null;
+                            try {
+                                os = new FileOutputStream(entryFile);
+                                IOUtils.copy(zis, os);
+                                try {
+                                    final String wkt = IOUtils.toString(entryFile.toURI());
+                                    if (StringUtils.isNotEmpty(wkt)) {
+                                        srcCrs = CRS.parseWKT(wkt);
+                                    }
+                                } catch (FactoryException ex) {
+                                    Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
+                                    srcCrs = CRS.decode(DEFAULT_CRS);
                                 }
-                            } catch (FactoryException ex) {
-                                Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
+                                return srcCrs;
+                            } finally {
+                                IOUtils.closeQuietly(os);
                             }
                         }
                         // and rewrite data from stream
@@ -302,16 +350,14 @@ public class ShapefileService {
                         }
                     }
                 }
-            }
-            final DataStore dataStore = DataStoreFinder.getDataStore(map);
-            final FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = dataStore.getFeatureSource(dataStore.getTypeNames()[0]).getFeatures();
-            return this.getCoordinatesFromFeatureCollection(srcCrs, referenceId, featureCollection);
-        } finally {
-            IOUtils.closeQuietly(zis);
-            for (final File file : files) {
-                file.delete();
+            } finally {
+                IOUtils.closeQuietly(zis);
+                for (final File file : files) {
+                    file.delete();
+                }
             }
         }
+        return null;
     }
 
     private boolean isValid(final ZipEntry entry) {
@@ -321,14 +367,15 @@ public class ShapefileService {
                 && !entry.getName().startsWith("__MACOSX");
     }
 
-    private Map<String, List<Coordinate3D>> getCoordinatesFromFeatureCollection(final CoordinateReferenceSystem crs, final String referenceId, final FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection) {
-        final Map<String, List<Coordinate3D>> coordinateMap = new HashMap<>();
+    public List<SubTrajectory> getCoordinatesFromFeatureCollection(final CoordinateReferenceSystem crs, final String referenceId, final FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection) {
+        final List<SubTrajectory> subTrajectories = new LinkedList<>();
         if (null != featureCollection) {
             try (FeatureIterator iterator = featureCollection.features()) {
                 while (iterator.hasNext()) {
                     final SimpleFeature feature = (SimpleFeature) iterator.next();
-                    Object attribute = feature.getAttribute(REFERENCE_ID);
-                    if (null != attribute && StringUtils.startsWithIgnoreCase(attribute.toString(), referenceId)) {
+                    final String attribute = null != feature.getAttribute(REFERENCE_ID) ? feature.getAttribute(REFERENCE_ID).toString() : null;
+                    final String travelModeId = null != feature.getAttribute(TRAVEL_MODE_ID) ? feature.getAttribute(TRAVEL_MODE_ID).toString() : null;
+                    if (StringUtils.containsIgnoreCase(referenceId, attribute) || (null == referenceId)) {
                         final Geometry defaultGeometry = (Geometry) feature.getDefaultGeometry();
                         try {
                             final Geometry transformedGeometry = null != crs ? transformToGeo(crs, defaultGeometry, true) : defaultGeometry;
@@ -338,7 +385,7 @@ public class ShapefileService {
                             for (final Coordinate curCoordinate : coordinates) {
                                 coordinates3D.add(new Coordinate3D(curCoordinate.x, curCoordinate.y, curCoordinate.z));
                             }
-                            coordinateMap.put(feature.getID(), coordinates3D);
+                            subTrajectories.add(new SubTrajectory(feature.getID(), TravelMode.fromInt(Integer.valueOf(travelModeId)), coordinates3D));
                         } catch (FactoryException | TransformException ex) {
                             Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -346,7 +393,7 @@ public class ShapefileService {
                 }
             }
         }
-        return coordinateMap;
+        return subTrajectories;
     }
 
     private static Geometry transformToGeo(CoordinateReferenceSystem srcCRS, Geometry source, boolean lenient) throws FactoryException, TransformException {

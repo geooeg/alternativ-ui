@@ -58,7 +58,6 @@ public class PositionListView {
     private String deviation;
     private MapModel mapModel;
     private MapModel routeMapModel;
-    private String mapCenter;
     private Position selectedPosition;
     private AnalysedTrip selectedTrip;
     private StreamedContent shapefile;
@@ -136,13 +135,11 @@ public class PositionListView {
                     final Coordinate3D coordinate = this.selectedPosition.getCoordinateForTrack();
                     final LatLng latLng = new LatLng(coordinate.getLatitude(), coordinate.getLongitude());
                     this.mapModel.addOverlay(new Marker(latLng, "Track", ""));
-                    this.mapCenter = coordinate.getLatitude() + "," + coordinate.getLongitude();
                 }
                 if (null != this.selectedPosition.getCoordinateForStep()) {
                     final Coordinate3D coordinate = this.selectedPosition.getCoordinateForStep();
                     final LatLng latLng = new LatLng(coordinate.getLatitude(), coordinate.getLongitude());
                     this.mapModel.addOverlay(new Marker(latLng, "Step", ""));
-                    this.mapCenter = coordinate.getLatitude() + "," + coordinate.getLongitude();
                 }
             }
         }
@@ -177,6 +174,10 @@ public class PositionListView {
             this.selectedTrip = trip;
             this.routeMapModel = new DefaultMapModel();
             final AlterNativ alterNativ = trip.getAlterNativ();
+            final Origin origin = alterNativ.getOrigin();
+            final LatLng originLatLng = new LatLng(origin.getLat(), origin.getLng());
+            final Marker originMarker = new Marker(originLatLng, "UID: " + alterNativ.getId(), "Origin: " + origin.getAddress(), "resources/images/startmarker.png");
+            this.routeMapModel.addOverlay(originMarker);
             // Chosen Routes
             final Polyline choosenRoutePolyline = new Polyline();
             choosenRoutePolyline.setStrokeWeight(2);
@@ -189,15 +190,15 @@ public class PositionListView {
                 }
             }
             this.routeMapModel.addOverlay(choosenRoutePolyline);
+            final Destination destination = alterNativ.getDestination();
+            final LatLng destinationLatLng = new LatLng(destination.getLat(), destination.getLng());
+            final Marker destinationMarker = new Marker(destinationLatLng, "UID: " + alterNativ.getId(), "Destination: " + destination.getAddress(), "resources/images/endmarker.png");
+            this.routeMapModel.addOverlay(destinationMarker);
             // user tracks
-            final Origin origin = alterNativ.getOrigin();
-            final LatLng originLatLng = new LatLng(origin.getLat(), origin.getLng());
-            this.routeMapModel.addOverlay(new Marker(originLatLng, "UID: " + alterNativ.getId(), "Origin: " + origin.getAddress()));
             final Polyline trackPolyline = new Polyline();
             trackPolyline.setStrokeWeight(2);
             trackPolyline.setStrokeColor("red");
             trackPolyline.setStrokeOpacity(0.7);
-            trackPolyline.getPaths().add(originLatLng);
             // Tracks
             for (final Track curTrack : alterNativ.getTracks()) {
                 final Location location = curTrack.getLocation();
@@ -212,10 +213,6 @@ public class PositionListView {
                 }
                 // this.routeMapModel.addOverlay(new Marker(latLng, "UID: " + curTrack.getId(), message));
             }
-            final Destination destination = alterNativ.getDestination();
-            final LatLng destinationLatLng = new LatLng(destination.getLat(), destination.getLng());
-            this.routeMapModel.addOverlay(new Marker(destinationLatLng, "UID: " + alterNativ.getId(), "Destination: " + destination.getAddress()));
-            trackPolyline.getPaths().add(destinationLatLng);
             this.routeMapModel.addOverlay(trackPolyline);
             // create a list of coordinates for the google maps roads api
             final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(alterNativ);

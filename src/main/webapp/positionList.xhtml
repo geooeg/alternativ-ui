@@ -30,7 +30,7 @@
             }
         </script>
         <h:form id="RouteListForm">
-            <p:growl id="growl" sticky="true" showDetail="true"/>
+            <p:growl id="growl" sticky="false" autoUpdate="true" life="3000" showDetail="true"/>
             <p:dialog widgetVar="statusDialog" id="statusDialog" header="Status" modal="true" height="32" resizable="false" draggable="false">
                 <img src="resources/images/ajaxloadingbar.gif" width="220"/>
             </p:dialog>
@@ -51,29 +51,32 @@
                             <p:dataTable var="position" value="#{positionListView.getPositions(trip)}" paginator="true" rows="10" scrollable="true"
                                          paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,15,30,60,100,1000" id="positionDataTable" lazy="true">
-                                <p:ajax event="rowToggle" listener="#{positionListView.onRowToggle}" />
+                                <p:ajax event="rowToggle" listener="#{positionListView.onRowToggle}" update="routeMap" />
                                 <f:facet name="header">
                                     <h:outputText value="Chosen type: #{trip.alterNativ.chosenType} | ID: #{trip.alterNativ.id}" />
                                 </f:facet>
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column headerText="" style="width:16px"/>
-                                        <p:column colspan="2" headerText="Choosen Route" />
+                                        <p:column colspan="3" headerText="Choosen Route" />
                                         <p:column colspan="2" headerText="Track" />
-                                        <p:column colspan="2" headerText="" />
+                                        <p:column colspan="1" headerText="" />
                                     </p:row>
                                     <p:row>
                                         <p:column headerText="" />
+                                        <p:column headerText="#{bundle.TravelMode}" sortBy="#{position.step.travelMode}" filterBy="#{position.step.travelMode}"/>
                                         <p:column headerText="#{bundle.Latitude}" sortBy="#{position.coordinateForStep.latitude}" filterBy="#{position.coordinateForStep.latitude}"/>
                                         <p:column headerText="#{bundle.Longitude}" sortBy="#{position.coordinateForStep.longitude}" filterBy="#{position.coordinateForStep.longitude}"/>
                                         <p:column headerText="#{bundle.Latitude}" sortBy="#{position.coordinateForTrack.latitude}" filterBy="#{position.coordinateForTrack.latitude}"/>
                                         <p:column headerText="#{bundle.Longitude}" sortBy="#{position.coordinateForTrack.longitude}" filterBy="#{position.coordinateForTrack.longitude}"/>
                                         <p:column headerText="#{bundle.Distance}" sortBy="#{position.distance}" filterBy="#{position.distance}"/>
-                                        <p:column headerText="#{bundle.TravelMode}" sortBy="#{position.step.travelMode}" filterBy="#{position.step.travelMode}"/>
                                     </p:row>
                                 </p:columnGroup>
                                 <p:column>
                                     <p:rowToggler />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{position.step.travelMode}" />
                                 </p:column>
                                 <p:column>
                                     <h:outputText value="#{position.coordinateForStep.latitude}" />
@@ -89,9 +92,6 @@
                                 </p:column>
                                 <p:column>
                                     <h:outputText value="#{position.distance}" />
-                                </p:column>
-                                <p:column>
-                                    <h:outputText value="#{position.step.travelMode}" />
                                 </p:column>
             <!--                    <p:column headerText="#{bundle.Timestamp}" sortBy="#{position.timestamp}">
                                     <h:outputText value="#{position.timestamp.time}">
@@ -132,12 +132,13 @@
                                     <p:panelGrid columns="1" styleClass="tableFooterGrid" rendered="#{not empty positionListView.errorMessage}">
                                         <h:outputText value="#{positionListView.errorMessage}" />
                                     </p:panelGrid>
+                                    <p:spacer height="20" />
+                                    <p:gmap id="routeMap" model="#{positionListView.getRouteMapModelForTrip(trip)}" center="37.335556,-122.009167"
+                                            fitBounds="true" zoom="15" type="HYBRID" style="width:100%;height:500px">
+                                        <p:ajax event="stateChange" update="@(.tableFooterGrid)" />
+                                    </p:gmap>
                                 </f:facet>
                             </p:dataTable>
-                            <p:gmap model="#{positionListView.getRouteMapModelForTrip(trip)}" center="37.335556,-122.009167"
-                                    fitBounds="true" zoom="15" type="HYBRID" style="width:100%;height:500px">
-                                <p:ajax event="stateChange" update="@(.tableFooterGrid)" />
-                            </p:gmap>
                         </p:panelGrid>
                     </p:tab>
                 </c:forEach>

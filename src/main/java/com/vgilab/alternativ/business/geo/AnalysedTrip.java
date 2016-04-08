@@ -12,7 +12,7 @@ public class AnalysedTrip {
     private List<Position> positions;
     private List<Coordinate3D> snapedToRoad;
 
-    public AnalysedTrip(AlterNativ curAlterNativ, List<Position> positions) {
+    public AnalysedTrip(final AlterNativ curAlterNativ, final List<Position> positions) {
         this.alterNativ = curAlterNativ;
         this.positions = positions;
     }

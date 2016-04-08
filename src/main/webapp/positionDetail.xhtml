@@ -7,7 +7,7 @@
       xmlns:p="http://primefaces.org/ui">
 
     <h:head>
-        <title><ui:insert name="title">#{bundle.Routes}</ui:insert></title>
+        <title><ui:insert name="title">Analysed_#{positionDetailView.selectedTrip.alterNativ.id}_#{positionDetailView.selectedTrip.alterNativ.chosenType}</ui:insert></title>
         <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"></script>
         <script src="http://www.google.com/jsapi" type="text/javascript"></script>
         <style>
@@ -23,7 +23,7 @@
 
     <h:body>
         <h:form id="RouteDetailForm">
-            <p:growl id="growl" sticky="true" showDetail="true"/>
+            <p:growl id="growl" sticky="false" autoUpdate="true" life="3000" showDetail="true"/>
             <p:toolbar styleClass="no-print">
                 <f:facet name="right">
                     <p:commandButton id="printButton" value="Print" icon="ui-icon-print" onclick="window.print()"/>
@@ -45,15 +45,22 @@
                 </p:row>
                 <p:row styleClass="no-print">
                     <p:column>
-                        <h:panelGrid columns="2" cellpadding="5">
+                        <h:panelGrid columns="5" cellpadding="5">
                             <p:outputLabel for="crs" value="Coordinate Reference System (CRS):" />
                             <p:selectOneMenu id="crs" value="#{positionDetailView.coordinateReferenceSystem}" effect="fold" editable="true" immediate="true">
                                 <f:selectItem itemLabel="Select One" itemValue="" noSelectionOption="true" />
                                 <f:selectItem itemLabel="EPSG:2039" itemValue="EPSG:2039"  />
                             </p:selectOneMenu>
+                            <p:spacer width="10"/>
+                            <p:outputLabel for="visibleRoutes" value="Visible Routes:" />
+                            <p:selectOneButton id="visibleRoutes" value="#{positionDetailView.visibleImportedRoute}">
+                                <f:selectItems var="visibleImportedRoute" value="#{positionDetailView.visibleImportedRouteValues}"
+                                               itemValue="#{visibleImportedRoute}" itemLabel="#{visibleImportedRoute.name()}" />
+                                <p:ajax event="change" update="importedMap"/>
+                            </p:selectOneButton>
                         </h:panelGrid>
                         <p:fileUpload fileUploadListener="#{positionDetailView.handleFileUpload}" mode="advanced"
-                                      update="growl, importedMap" auto="true" allowTypes="/(\.|\/)(zip)$/" 
+                                      update="growl, visibleRoutes, importedMap" auto="true" allowTypes="/(\.|\/)(zip)$/" 
                                       styleClass="no-print" />
                     </p:column>
                 </p:row>

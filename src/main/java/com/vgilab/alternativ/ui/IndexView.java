@@ -73,7 +73,7 @@ public class IndexView implements Serializable {
     @PostConstruct
     public void init() {
         final List<AlterNativ> alterNativApi = AlterNativApi.getAll();
-        if(null != alterNativApi) {
+        if (null != alterNativApi) {
             this.alterNativs.addAll(AlterNativApi.getAll());
             this.updateMapModel();
         }
@@ -88,20 +88,29 @@ public class IndexView implements Serializable {
         final List<AlterNativ> renderedAlterNativs = (null == this.selectedAlterNativ) ? this.getAlterNativs() : Collections.singletonList(this.selectedAlterNativ);
         if (null != renderedAlterNativs) {
             for (AlterNativ curAlterNativ : renderedAlterNativs) {
+                // Draw polyline for Chosen Routes 
                 final Origin origin = curAlterNativ.getOrigin();
                 final LatLng originLatLng = new LatLng(origin.getLat(), origin.getLng());
-                this.mapModel.addOverlay(new Marker(originLatLng, "UID: " + curAlterNativ.getId(), "Origin: " + origin.getAddress()));
-                final Polyline polyline = new Polyline();
-                polyline.setStrokeWeight(2);
-                polyline.setStrokeColor(HtmlUtil.getRandomHTMLColor());
-                polyline.setStrokeOpacity(0.7);
-                polyline.getPaths().add(originLatLng);
-                // Chosen Routes
+                final Marker originMarker = new Marker(originLatLng, "UID: " + curAlterNativ.getId(), "Origin: " + origin.getAddress(), "resources/images/startmarker.png");
+                originMarker.setFlat(true);
+                this.mapModel.addOverlay(originMarker);
+                final Polyline polylineChosenRoute = new Polyline();
+                polylineChosenRoute.getPaths().add(originLatLng);
                 for (ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
                     for (Route curRoute : curChosenRoute.getRoutes()) {
                         // TODO: curRoute.
                     }
                 }
+                final Destination destination = curAlterNativ.getDestination();
+                final LatLng destinationLatLng = new LatLng(destination.getLat(), destination.getLng());
+                final Marker destinationMarker = new Marker(destinationLatLng, "UID: " + curAlterNativ.getId(), "Destination: " + destination.getAddress(), "resources/images/endmarker.png");
+                this.mapModel.addOverlay(destinationMarker);
+                polylineChosenRoute.getPaths().add(destinationLatLng);
+                // Draw polyline for tracks
+                final Polyline polyline = new Polyline();
+                polyline.setStrokeWeight(2);
+                polyline.setStrokeColor(HtmlUtil.getRandomHTMLColor());
+                polyline.setStrokeOpacity(0.7);
                 // Tracks
                 for (Track curTrack : curAlterNativ.getTracks()) {
                     final Location location = curTrack.getLocation();
@@ -116,10 +125,7 @@ public class IndexView implements Serializable {
                     }
                     this.mapModel.addOverlay(new Marker(latLng, "UID: " + curTrack.getId(), message));
                 }
-                final Destination destination = curAlterNativ.getDestination();
-                final LatLng destinationLatLng = new LatLng(destination.getLat(), destination.getLng());
-                this.mapModel.addOverlay(new Marker(destinationLatLng, "UID: " + curAlterNativ.getId(), "Destination: " + destination.getAddress()));
-                polyline.getPaths().add(destinationLatLng);
+
                 this.mapModel.addOverlay(polyline);
             }
         }
@@ -137,7 +143,7 @@ public class IndexView implements Serializable {
             }
         }
     }
-  
+
     public void clearList() {
         this.alterNativs.clear();
     }
@@ -172,11 +178,11 @@ public class IndexView implements Serializable {
             }
         }
     }
-    
+
     public void handleTelofunFileUpload(final FileUploadEvent event) {
         event.getComponent().setTransient(false);
         if (event.getFile() != null && event.getFile().getSize() > 0) {
-             FacesMessage message = new FacesMessage("Successful", event.getFile().getFileName() + " telofun stops are uploaded.");
+            FacesMessage message = new FacesMessage("Successful", event.getFile().getFileName() + " telofun stops are uploaded.");
             FacesContext.getCurrentInstance().addMessage(null, message);
             try {
                 final Telofun telofun = TelofunParser.getTelofun(event.getFile().getContents());
@@ -187,7 +193,7 @@ public class IndexView implements Serializable {
             }
         }
     }
-    
+
     public void startAnalysis() {
         final PositionListView positionListView = (PositionListView) FacesContext.getCurrentInstance().getApplication().getELResolver().getValue(FacesContext.getCurrentInstance().getELContext(), null, "positionListView");
         positionListView.setAlterNativs(this.alterNativs);

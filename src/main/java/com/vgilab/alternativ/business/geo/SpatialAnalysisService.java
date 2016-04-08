@@ -69,7 +69,7 @@ public class SpatialAnalysisService {
                         }
                     }
                 }
-                // get tracks
+                // map step to points 
                 for (final Map.Entry<Route, Map<Step, List<Point>>> curRouteStepPoint : routeStepPointMap.entrySet()) {
                     final Route route = curRouteStepPoint.getKey();
                     final Map<Step, List<Point>> stepPointMap = curRouteStepPoint.getValue();
