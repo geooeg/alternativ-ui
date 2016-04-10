@@ -19,6 +19,10 @@
                     height: 0;
                 }
             }
+            .legend
+            {
+                height: 15px;
+            }
         </style>
     </h:head>
 
@@ -30,7 +34,7 @@
                     <p:commandButton id="printButton" value="Print" icon="ui-icon-print" onclick="window.print()"/>
                 </f:facet>
             </p:toolbar>
-            <p:panelGrid id="tripPanelGrid" style="width:1280px"> 
+            <p:panelGrid id="tripPanelGrid" style="width:1200px"> 
                 <p:row>
                     <p:column colspan="2" style="font-weight: bold;"><h:outputText value="From #{positionDetailView.selectedTrip.alterNativ.origin.address} to #{positionDetailView.selectedTrip.alterNativ.destination.address}. Tracks #{positionDetailView.getTrackPointCountForTrip()}, Steps #{positionDetailView.getStepPointCountForTrip()}" /></p:column>
                 </p:row>
@@ -44,7 +48,7 @@
                                 style="width:100%;height:700px"/>
                     </p:column>
                 </p:row>
-                <p:row>
+                <p:row styleClass="legend">
                     <p:column style="text-align: center; font-size: 12px;">
                         <h:outputText style="color: green" value="Chosen Route" />
                         <p:spacer width="25px"/>
@@ -53,7 +57,7 @@
                         <h:outputText style="color: blue" value="Snapped To Road" />
                     </p:column>
                 </p:row>
-                <p:row styleClass="no-print">
+                <p:row styleClass="no-print" style="font-size: 16px;">
                     <p:column>
                         <h:panelGrid columns="5" cellpadding="5">
                             <p:outputLabel for="crs" value="Coordinate Reference System (CRS):" />
@@ -81,7 +85,7 @@
                                 style="width:100%;height:700px"/>
                     </p:column>
                 </p:row>
-                <p:row>
+                <p:row styleClass="legend">
                     <p:column style="text-align: center; font-size: 12px;">
                         <c:forEach var="travelMode" items="#{positionDetailView.travelModes}">
                             <h:outputText style="color: #{positionDetailView.getColorFromTravelMode(travelMode)}" value="#{travelMode.getTravelModeCode()}: #{travelMode.name()}" />
