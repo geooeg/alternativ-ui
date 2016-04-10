@@ -7,6 +7,7 @@ import com.vgilab.alternativ.business.geo.FeatureService;
 import com.vgilab.alternativ.business.geo.Position;
 import com.vgilab.alternativ.business.geo.ShapefileService;
 import com.vgilab.alternativ.business.geo.SubTrajectory;
+import com.vgilab.alternativ.business.geo.TravelMode;
 import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
 import com.vgilab.alternativ.generated.Destination;
@@ -238,7 +239,23 @@ public class PositionDetailView {
     public VisibleImportedRoute[] getVisibleImportedRouteValues() {
         return VisibleImportedRoute.values();
     }
+    
+    /**
+     * @return the travelModes
+     */
+    public TravelMode[] getTravelModes() {
+        return TravelMode.values();
+    }
 
+    /**
+     * get Color from travelmode
+     * @param travelMode
+     * @return 
+     */
+    public String getColorFromTravelMode(final TravelMode travelMode) {
+        return HtmlUtil.getColorFromTravelMode(travelMode);
+    }
+    
     public void handleFileUpload(FileUploadEvent event) {
         event.getComponent().setTransient(false);
         if (event.getFile() != null && event.getFile().getSize() > 0) {

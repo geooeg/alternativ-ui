@@ -4,7 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 
     <h:head>
         <title><ui:insert name="title">Analysed_#{positionDetailView.selectedTrip.alterNativ.id}_#{positionDetailView.selectedTrip.alterNativ.chosenType}</ui:insert></title>
@@ -40,7 +41,16 @@
                     <p:column>
                         <p:gmap zoom="15" type="HYBRID" fitBounds="true"
                                 model="#{positionDetailView.getRouteMapModelForTrip()}" center="37.335556,-122.009167"
-                                style="width:100%;height:720px"/>
+                                style="width:100%;height:700px"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column style="text-align: center; font-size: 12px;">
+                        <h:outputText style="color: green" value="Chosen Route" />
+                        <p:spacer width="25px"/>
+                        <h:outputText style="color: red" value="Tracks" />
+                        <p:spacer width="25px"/>
+                        <h:outputText style="color: blue" value="Snapped To Road" />
                     </p:column>
                 </p:row>
                 <p:row styleClass="no-print">
@@ -49,7 +59,7 @@
                             <p:outputLabel for="crs" value="Coordinate Reference System (CRS):" />
                             <p:selectOneMenu id="crs" value="#{positionDetailView.coordinateReferenceSystem}" effect="fold" editable="true" immediate="true">
                                 <f:selectItem itemLabel="Select One" itemValue="" noSelectionOption="true" />
-                                <f:selectItem itemLabel="EPSG:2039" itemValue="EPSG:2039"  />
+                                <f:selectItem itemLabel="EPSG:2039" itemValue="EPSG:2039" />
                             </p:selectOneMenu>
                             <p:spacer width="10"/>
                             <p:outputLabel for="visibleRoutes" value="Visible Routes:" />
@@ -68,7 +78,15 @@
                     <p:column>
                         <p:gmap id="importedMap" zoom="15" type="HYBRID" fitBounds="true" 
                                 model="#{positionDetailView.getImportedMapModel()}" center="37.335556,-122.009167"
-                                style="width:100%;height:720px"/>
+                                style="width:100%;height:700px"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column style="text-align: center; font-size: 12px;">
+                        <c:forEach var="travelMode" items="#{positionDetailView.travelModes}">
+                            <h:outputText style="color: #{positionDetailView.getColorFromTravelMode(travelMode)}" value="#{travelMode.getTravelModeCode()}: #{travelMode.name()}" />
+                            <p:spacer width="25px"/>
+                        </c:forEach>
                     </p:column>
                 </p:row>
             </p:panelGrid>
