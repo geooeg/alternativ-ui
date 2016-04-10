@@ -50,7 +50,7 @@
                         <p:panelGrid columns="1">
                             <p:dataTable var="position" value="#{positionListView.getPositions(trip)}" paginator="true" rows="10" scrollable="true"
                                          paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15,30,60,100,1000" id="positionDataTable" lazy="true">
+                                         rowsPerPageTemplate="5,10,15,30,60,100,1000" id="positionDataTable" lazy="true" rowIndexVar="rowIndex">
                                 <p:ajax event="rowToggle" listener="#{positionListView.onRowToggle}" update="routeMap" />
                                 <f:facet name="header">
                                     <h:outputText value="Chosen type: #{trip.alterNativ.chosenType} | ID: #{trip.alterNativ.id}" />
@@ -58,12 +58,14 @@
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column headerText="" style="width:16px"/>
+                                        <p:column headerText="" style="width:64px" />
                                         <p:column colspan="3" headerText="Choosen Route" />
                                         <p:column colspan="2" headerText="Track" />
                                         <p:column colspan="1" headerText="" />
                                     </p:row>
                                     <p:row>
                                         <p:column headerText="" />
+                                        <p:column headerText="#" />
                                         <p:column headerText="#{bundle.TravelMode}" sortBy="#{position.step.travelMode}" filterBy="#{position.step.travelMode}"/>
                                         <p:column headerText="#{bundle.Latitude}" sortBy="#{position.coordinateForStep.latitude}" filterBy="#{position.coordinateForStep.latitude}"/>
                                         <p:column headerText="#{bundle.Longitude}" sortBy="#{position.coordinateForStep.longitude}" filterBy="#{position.coordinateForStep.longitude}"/>
@@ -74,6 +76,9 @@
                                 </p:columnGroup>
                                 <p:column>
                                     <p:rowToggler />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{rowIndex+1}"/>
                                 </p:column>
                                 <p:column>
                                     <h:outputText value="#{position.step.travelMode}" />
