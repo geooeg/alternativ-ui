@@ -1,4 +1,4 @@
-package com.vgilab.alternative.google;
+package com.vgilab.alternativ.google;
 
 import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.generated.GoogleMapsRoads;

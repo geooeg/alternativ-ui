@@ -1,4 +1,4 @@
-package com.vgilab.alternative.google;
+package com.vgilab.alternativ.google;
 
 import com.vgilab.alternativ.google.GoogleApi;
 import com.vgilab.alternativ.google.GoogleGeocoding;

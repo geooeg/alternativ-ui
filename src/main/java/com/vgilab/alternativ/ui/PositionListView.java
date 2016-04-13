@@ -32,6 +32,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.ToggleEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -80,7 +81,7 @@ public class PositionListView {
     /**
      * @param alterNativs the alterNativs to set
      */
-    public void setAlterNativs(List<AlterNativ> alterNativs) {
+    public void setAlterNativs(final List<AlterNativ> alterNativs) {
         this.alterNativs = alterNativs;
         this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, 20d);
     }
@@ -104,25 +105,27 @@ public class PositionListView {
      * @return the deviation
      */
     public String getDeviation() {
-        return deviation;
+        return this.deviation;
     }
 
     /**
      * @param deviation the deviation to set
      */
-    public void setDeviation(String deviation) {
+    public void setDeviation(final String deviation) {
         this.deviation = deviation;
-        try {
-            final DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-            symbols.setDecimalSeparator('.');
-            String pattern = "###0.0#";
-            final DecimalFormat decimalFormat = new DecimalFormat(pattern, symbols);
-            decimalFormat.setParseBigDecimal(true);
-            final BigDecimal deviationNumber = (BigDecimal) decimalFormat.parse(deviation);
-            this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, deviationNumber.doubleValue());
-        } catch (final ParseException pex) {
-            FacesMessage message = new FacesMessage("Parse Error", pex.getLocalizedMessage());
-            FacesContext.getCurrentInstance().addMessage(null, message);
+        if (StringUtils.isNotEmpty(deviation)) {
+            try {
+                final DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+                symbols.setDecimalSeparator('.');
+                String pattern = "###0.0#";
+                final DecimalFormat decimalFormat = new DecimalFormat(pattern, symbols);
+                decimalFormat.setParseBigDecimal(true);
+                final BigDecimal deviationNumber = (BigDecimal) decimalFormat.parse(deviation);
+                this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, deviationNumber.doubleValue());
+            } catch (final ParseException pex) {
+                FacesMessage message = new FacesMessage("Parse Error", pex.getLocalizedMessage());
+                FacesContext.getCurrentInstance().addMessage(null, message);
+            }
         }
     }
 
@@ -144,7 +147,7 @@ public class PositionListView {
             }
         }
     }
-    
+
     public MapModel getMapModel() {
         return this.mapModel;
     }
@@ -179,7 +182,7 @@ public class PositionListView {
             final Marker originMarker = new Marker(originLatLng, "UID: " + alterNativ.getId(), "Origin: " + origin.getAddress(), "resources/images/startmarker.png");
             this.routeMapModel.addOverlay(originMarker);
             // Chosen Routes
-            final Polyline choosenRoutePolyline = new Polyline();
+            final Polyline choosenRoutePolyline = new org.primefaces.model.map.Polyline();
             choosenRoutePolyline.setStrokeWeight(2);
             choosenRoutePolyline.setStrokeColor("green");
             choosenRoutePolyline.setStrokeOpacity(0.7);
@@ -195,7 +198,7 @@ public class PositionListView {
             final Marker destinationMarker = new Marker(destinationLatLng, "UID: " + alterNativ.getId(), "Destination: " + destination.getAddress(), "resources/images/endmarker.png");
             this.routeMapModel.addOverlay(destinationMarker);
             // user tracks
-            final Polyline trackPolyline = new Polyline();
+            final Polyline trackPolyline = new org.primefaces.model.map.Polyline();
             trackPolyline.setStrokeWeight(2);
             trackPolyline.setStrokeColor("red");
             trackPolyline.setStrokeOpacity(0.7);
@@ -218,7 +221,7 @@ public class PositionListView {
             final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(alterNativ);
             try {
                 final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
-                final Polyline googleMapsTrackPolyline = new Polyline();
+                final Polyline googleMapsTrackPolyline = new org.primefaces.model.map.Polyline();
                 googleMapsTrackPolyline.setStrokeWeight(2);
                 googleMapsTrackPolyline.setStrokeColor("blue");
                 googleMapsTrackPolyline.setStrokeOpacity(0.7);
@@ -229,7 +232,8 @@ public class PositionListView {
                 this.routeMapModel.addOverlay(googleMapsTrackPolyline);
                 trip.setSnapedToRoad(snapedToRoad);
             } catch (final SecurityException ex) {
-                Logger.getLogger(PositionListView.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(PositionListView.class
+                        .getName()).log(Level.SEVERE, null, ex);
                 FacesMessage message = new FacesMessage("Security Error", ex.getLocalizedMessage());
                 FacesContext.getCurrentInstance().addMessage(null, message);
                 this.errorMessage = ex.getLocalizedMessage();
@@ -245,12 +249,12 @@ public class PositionListView {
             final File zippedShapefiles = this.shapefileService.exportToShapefile(alterNativ, snapedToRoad);
             this.shapefile = new DefaultStreamedContent(new FileInputStream(zippedShapefiles), "application/zip", alterNativ.getId() + "-shp.zip");
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(PositionListView.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PositionListView.class
+                    .getName()).log(Level.SEVERE, null, ex);
             FacesMessage message = new FacesMessage("Failed", "Please import first data.");
             FacesContext.getCurrentInstance().addMessage(null, message);
             this.errorMessage = ex.getLocalizedMessage();
         }
         return this.shapefile;
     }
-
 }
