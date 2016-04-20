@@ -200,6 +200,14 @@ public class IndexView implements Serializable {
         final ConfigurableNavigationHandler configurableNavigationHandler = (ConfigurableNavigationHandler) FacesContext.getCurrentInstance().getApplication().getNavigationHandler();
         configurableNavigationHandler.performNavigation("/positionList.xhtml?faces-redirect=true");
     }
+    
+    
+    public void startReport() {
+        final ExportView exportView = (ExportView) FacesContext.getCurrentInstance().getApplication().getELResolver().getValue(FacesContext.getCurrentInstance().getELContext(), null, "exportView");
+        exportView.setAlterNativs(this.alterNativs);
+        final ConfigurableNavigationHandler configurableNavigationHandler = (ConfigurableNavigationHandler) FacesContext.getCurrentInstance().getApplication().getNavigationHandler();
+        configurableNavigationHandler.performNavigation("/reportForm.xhtml?faces-redirect=true");
+    }
 
     public MapModel getMapModel() {
         return mapModel;
@@ -272,4 +280,5 @@ public class IndexView implements Serializable {
         }
         return this.shapefile;
     }
+   
 }

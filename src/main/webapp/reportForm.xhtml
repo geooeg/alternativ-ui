@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:head>
+        <title>Report Generator</title>
+        <meta name="viewReport" content="width=device-width, initial-scale=1.0"/>
+    </h:head>
+    <h:body>
+        <h:form id="ReportForm">
+            <p:dataTable var="reportItem" value="#{exportView.reportItems}" paginator="true" rows="10" scrollable="true"
+                 paginatorTemplate=" {RowsPerPageDropdown} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                 rowsPerPageTemplate="5,10,15,30,60,100,1000" id="reportItemDataTable" lazy="true" rowIndexVar="rowIndex"
+                 style="margin-bottom:20px">
+                <f:facet name="{Exporters}">
+                    <h:commandLink>
+                        <p:graphicImage url="resources/images/excel.png" width="24"/>
+                        <p:dataExporter type="xls" target="reportItemDataTable" fileName="report" />
+                    </h:commandLink>
+                    <h:commandLink>
+                        <p:graphicImage url="resources/images/pdf.png" width="24"/>
+                        <p:dataExporter type="pdf" target="reportItemDataTable" fileName="report"/>
+                    </h:commandLink>
+                    <h:commandLink>
+                        <p:graphicImage url="resources/images/csv.png" width="24"/>
+                        <p:dataExporter type="csv" target="reportItemDataTable" fileName="report" />
+                    </h:commandLink>
+                    <h:commandLink>
+                        <p:graphicImage url="resources/images/xml.png" width="24"/>
+                        <p:dataExporter type="xml" target="reportItemDataTable" fileName="report" />
+                    </h:commandLink>
+                </f:facet>
+                <p:column headerText="idx">
+                    <h:outputText value="#{rowIndex+1}"/>
+                </p:column>
+                <p:column headerText="userId" sortBy="#{reportItem.userId}" filterBy="#{reportItem.userId}">
+                    <h:outputText value="#{reportItem.userId}" />
+                </p:column>
+                <p:column headerText="tripId" sortBy="#{reportItem.tripId}" filterBy="#{reportItem.tripId}">
+                    <h:outputText value="#{reportItem.tripId}" />
+                </p:column>
+                <p:column headerText="tripStartTime" sortBy="#{reportItem.tripStartTime}" filterBy="#{reportItem.tripStartTime}">
+                    <h:outputText value="#{reportItem.tripStartTime}" />
+                </p:column>
+                <p:column headerText="tripStartLocation">
+                    <h:outputText value="#{reportItem.tripStartLocation}" />
+                </p:column >
+                <p:column headerText="tripStartLocation">
+                    <h:outputText value="#{reportItem.tripEndLocation}" />
+                </p:column>
+                <p:column headerText="primaryModeChoosen" sortBy="#{reportItem.primaryModeChoosen}" 
+                          filterBy="#{reportItem.primaryModeChoosen}">
+                    <h:outputText value="#{reportItem.primaryModeChoosen}" />
+                </p:column>
+                <p:column headerText="primaryModeActual" sortBy="#{reportItem.primaryModeActual}" 
+                          filterBy="#{reportItem.primaryModeActual}">
+                    <h:outputText value="#{reportItem.primaryModeActual}" />
+                </p:column>
+                <p:column headerText="deviationFromChoosenRoute" sortBy="#{reportItem.deviationFromChoosenRoute}" 
+                          filterBy="#{reportItem.deviationFromChoosenRoute}">
+                    <h:outputText value="#{reportItem.deviationFromChoosenRoute}" />
+                </p:column>
+                <p:column headerText="distance" sortBy="#{reportItem.distance}" filterBy="#{reportItem.distance}">
+                    <h:outputText value="#{reportItem.distance}" />
+                </p:column>
+            </p:dataTable>                 
+        </h:form>
+    </h:body>
+</html>

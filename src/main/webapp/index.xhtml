@@ -94,7 +94,8 @@
                             <span class="ui-icon ui-icon-grip-dotted-vertical" />
                         </span>
                         <p:commandButton value="Analyse" ajax="false" actionListener="#{indexView.startAnalysis}" icon="ui-icon-calculator" />
-                        <p:commandButton value="Select Route" type="button" onclick="PF('RoutesDialog').show();" icon="ui-icon-folder-open" /> 
+                        <p:commandButton value="Select Route" type="button" onclick="PF('RoutesDialog').show();" icon="ui-icon-folder-open" />
+                        <p:commandButton value="Report" ajax="false" actionListener="#{indexView.startReport}" icon="ui-icon-calculator" />
                     </f:facet>
                     <f:facet name="right">
                         <p:commandButton value="Clear" ajax="false" actionListener="#{indexView.clearList}" icon="ui-icon-trash" />  
