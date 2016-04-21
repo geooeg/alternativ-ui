@@ -1,5 +1,7 @@
 package com.vgilab.alternativ.export;
 
+import java.util.Objects;
+
 /**
  *
  * @author Zhang
@@ -169,6 +171,18 @@ public class ReportItem {
      */
     public void setDistance(String distance) {
         this.distance = distance;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        return Objects.equals(this, obj);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 43 * hash + Objects.hashCode(this.tripId);
+        return hash;
     }
     
 }

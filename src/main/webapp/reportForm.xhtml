@@ -14,9 +14,9 @@
     <h:body>
         <h:form id="ReportForm">
             <p:dataTable var="reportItem" value="#{exportView.reportItems}" paginator="true" rows="10" scrollable="true"
-                 paginatorTemplate=" {RowsPerPageDropdown} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
-                 rowsPerPageTemplate="5,10,15,30,60,100,1000" id="reportItemDataTable" lazy="true" rowIndexVar="rowIndex"
-                 style="margin-bottom:20px">
+                         paginatorTemplate=" {RowsPerPageDropdown} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                         rowsPerPageTemplate="5,10,15,30,60,100,1000" id="reportItemDataTable" lazy="true" rowIndexVar="rowIndex"
+                         style="margin-bottom:20px">
                 <f:facet name="{Exporters}">
                     <h:commandLink>
                         <p:graphicImage url="resources/images/excel.png" width="24"/>
@@ -68,7 +68,10 @@
                 <p:column headerText="distance" sortBy="#{reportItem.distance}" filterBy="#{reportItem.distance}">
                     <h:outputText value="#{reportItem.distance}" />
                 </p:column>
-            </p:dataTable>                 
+            </p:dataTable>
+            <p:spacer />
+            <p:fileUpload fileUploadListener="#{exportView.handleFileUpload}" mode="advanced"
+                          update="growl, ReportForm" auto="true" allowTypes="/(\.|\/)(zip)$/" />
         </h:form>
     </h:body>
 </html>
