@@ -1,10 +1,15 @@
 package com.vgilab.alternativ.ui;
 
+import com.vgilab.alternativ.business.geo.Coordinate3D;
+import com.vgilab.alternativ.business.geo.Coordinate3DUtil;
+import com.vgilab.alternativ.business.geo.DistanceCalculation;
 import com.vgilab.alternativ.business.geo.ShapefileService;
 import com.vgilab.alternativ.business.geo.SubTrajectory;
+import com.vgilab.alternativ.business.geo.TravelMode;
 import com.vgilab.alternativ.export.ReportItem;
 import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
+import com.vividsolutions.jts.geom.Coordinate;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,8 +34,10 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.primefaces.event.FileUploadEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Distance;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -69,7 +76,6 @@ public class ExportView {
                 for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
                 }
                 this.getReportItems().add(report);
-                System.out.println("test");
             }
         }
     }
@@ -103,20 +109,26 @@ public class ExportView {
                 final FacesMessage message = new FacesMessage("Error", "Could not read CRS from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
-            final Map<String, String> map = new HashMap<>();
-            final List<ReportItem> filteredReportItems = reportItems.stream().distinct().collect(Collectors.toList());
-            filteredReportItems.stream().forEach((curReportItem) -> {
-                List<SubTrajectory> subTrajectories = this.shapefileService.getCoordinatesFromFeatureCollection(this.projectedCoordinateReferenceSystem, curReportItem.getTripId(), this.importedFeatures);
-                StringBuilder stringBuilder = new StringBuilder();
+            final DistanceCalculation distanceCalculation = new DistanceCalculation();
+            this.reportItems.stream().forEach((curReportItem) -> {
+                final List<SubTrajectory> subTrajectories = this.shapefileService.getCoordinatesFromFeatureCollection(this.projectedCoordinateReferenceSystem, curReportItem.getTripId(), this.importedFeatures);
+                final List<TravelMode> travelModes = new LinkedList<>();
+                final List<Coordinate> coordinates = new LinkedList<>();
                 subTrajectories.stream().forEach((curSubTrajectory) -> {
-                    stringBuilder.append(curSubTrajectory.getTravelMode().name()).append(" ,");
+                    travelModes.add(curSubTrajectory.getTravelMode());
+                    coordinates.addAll(Coordinate3DUtil.convert(curSubTrajectory.getCoordinates()));
                 });
-                map.put(curReportItem.getTripId(), stringBuilder.toString());
+                final StringBuilder appendedTavelModes = new StringBuilder();
+                travelModes.stream().distinct().forEach((curTravelMode) -> {
+                    appendedTavelModes.append(curTravelMode.name()).append(" ,");
+                });
+                curReportItem.setPrimaryModeActual(appendedTavelModes.toString());
+//                try {
+//                    curReportItem.setDistance(String.valueOf(distanceCalculation.calculate(coordinates, projectedCoordinateReferenceSystem)));
+//                } catch (TransformException ex) {
+//                    Logger.getLogger(ExportView.class.getName()).log(Level.SEVERE, null, ex);
+//                }
             });
-            reportItems.stream().forEach((curReportItem) -> {
-                curReportItem.setPrimaryModeActual(map.get(curReportItem.getTripId()));
-            });
-            
         }
     }
 }

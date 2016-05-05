@@ -13,6 +13,7 @@
     </h:head>
     <h:body>
         <h:form id="ReportForm">
+            <p:growl id="growl" sticky="false" autoUpdate="true" life="3000" showDetail="true"/>
             <p:dataTable var="reportItem" value="#{exportView.reportItems}" paginator="true" rows="10" scrollable="true"
                          paginatorTemplate=" {RowsPerPageDropdown} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
                          rowsPerPageTemplate="5,10,15,30,60,100,1000" id="reportItemDataTable" lazy="true" rowIndexVar="rowIndex"
