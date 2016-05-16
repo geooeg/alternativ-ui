@@ -1,6 +1,5 @@
 package com.vgilab.alternativ.ui;
 
-import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.business.geo.Coordinate3DUtil;
 import com.vgilab.alternativ.business.geo.DistanceCalculation;
 import com.vgilab.alternativ.business.geo.ShapefileService;
@@ -11,17 +10,10 @@ import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
 import com.vividsolutions.jts.geom.Coordinate;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -34,10 +26,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
 import org.primefaces.event.FileUploadEvent;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.geo.Distance;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -61,7 +51,7 @@ public class ExportView {
 
     public void setAlterNativs(final List<AlterNativ> alterNativs) {
         if (!CollectionUtils.isEmpty(alterNativs)) {
-            for (final AlterNativ curAlterNativ : alterNativs) {
+            alterNativs.stream().forEach((curAlterNativ) -> {
                 final ReportItem report = new ReportItem();
                 report.setTripId(curAlterNativ.getId());
                 report.setUserId(curAlterNativ.getUserId());
@@ -76,7 +66,7 @@ public class ExportView {
                 for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
                 }
                 this.getReportItems().add(report);
-            }
+            });
         }
     }
 
