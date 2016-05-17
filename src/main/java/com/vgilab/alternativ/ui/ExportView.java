@@ -12,6 +12,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -61,7 +62,6 @@ public class ExportView {
                 report.setPrimaryModeChoosen(curAlterNativ.getChosenType());
                 report.setTripStartLocation(curAlterNativ.getOrigin().getAddress());
                 report.setTripEndLocation(curAlterNativ.getDestination().getAddress());
-
                 // Chosen Routes
                 for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
                 }
@@ -108,17 +108,39 @@ public class ExportView {
                     travelModes.add(curSubTrajectory.getTravelMode());
                     coordinates.addAll(Coordinate3DUtil.convert(curSubTrajectory.getCoordinates()));
                 });
-                final StringBuilder appendedTavelModes = new StringBuilder();
-                travelModes.stream().distinct().forEach((curTravelMode) -> {
-                    appendedTavelModes.append(curTravelMode.name()).append(" ,");
+                final StringJoiner combinedTravelModes = new StringJoiner(",");
+                travelModes.stream().distinct().forEachOrdered(curTravelMode -> {
+                    combinedTravelModes.add(curTravelMode.name());
                 });
-                curReportItem.setPrimaryModeActual(appendedTavelModes.toString());
+                curReportItem.setPrimaryModeActual(combinedTravelModes.toString());
 //                try {
 //                    curReportItem.setDistance(String.valueOf(distanceCalculation.calculate(coordinates, projectedCoordinateReferenceSystem)));
 //                } catch (TransformException ex) {
 //                    Logger.getLogger(ExportView.class.getName()).log(Level.SEVERE, null, ex);
 //                }
             });
+            /*
+            final Map<String, String> map = new HashMap<>();
+            final List<ReportItem> filteredReportItems = reportItems.stream().distinct().collect(Collectors.toList());
+            filteredReportItems.stream().forEach((ReportItem curReportItem) -> {
+                final List<SubTrajectory> subTrajectories = this.shapefileService.getCoordinatesFromFeatureCollection(this.projectedCoordinateReferenceSystem, curReportItem.getTripId(), this.importedFeatures);
+                final List travelModes = new LinkedList<>();
+                subTrajectories.stream().forEach((curSubTrajectory) -> {
+                    travelModes.add(curSubTrajectory.getTravelMode());
+                });
+                map.put(curReportItem.getTripId(), combinedTravelModes.toString());
+            });
+            reportItems.stream().forEach((curReportItem) -> {
+                curReportItem.setPrimaryModeActual(map.get(curReportItem.getTripId()));
+            });
+                // full lambda 
+                // final String combinedTravelModes = (String) travelModes.stream().distinct().map(t -> t.toString()).collect(Collectors.joining(", "));
+                // mixed lambda
+                final StringJoiner combinedTravelModes = new StringJoiner(",");
+                travelModes.stream().distinct().forEachOrdered(t -> {
+                    combinedTravelModes.add(t.toString());
+                });
+*/
         }
     }
 }

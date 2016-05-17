@@ -36,6 +36,11 @@ public enum TravelMode {
     public int getTravelModeCode() {
         return travelModeCode;
     }
+    
+    @Override
+    public String toString() {
+        return this.name();
+    }
 
     public static TravelMode fromInt(final int code) {
         final TravelMode travelMode = travelModeMap.get(code);
