@@ -129,27 +129,27 @@ public class FeatureService {
         chosenRoute.getRoutes().stream().filter((curRoute) -> (null != curRoute.getLegs())).forEach((Route curRoute) -> {
             curRoute.getLegs().stream().filter((curLeg) -> (null != curLeg.getSteps())).forEach((Leg curLeg) -> {
                 curLeg.getSteps().stream().forEach((Step curStep) -> {
-                    final String startAddress = curLeg.getStartAddress();
-                    final String endAddress = curLeg.getEndAddress();
-                    final Integer totalDistance = null != curLeg.getDistance() ? curLeg.getDistance().getValue() : -1;
-                    final Integer totalDuration = null != curLeg.getDuration() ? curLeg.getDuration().getValue() : -1;
+                    final String startAddress = StringUtils.isNotEmpty(curLeg.getStartAddress()) ? curLeg.getStartAddress() : "-";
+                    final String endAddress = StringUtils.isNotEmpty(curLeg.getEndAddress()) ? curLeg.getEndAddress() : "-";
+                    final String totalDistance = null != curLeg.getDistance() ? curLeg.getDistance().getText(): "-";
+                    final String totalDuration = null != curLeg.getDuration() ? curLeg.getDuration().getText() : "-";
                     final String travelMode = StringUtils.isNotEmpty(curStep.getTravelMode()) ? curStep.getTravelMode() : "UNKNOWN";
-                    final String tag = StringUtils.isNotEmpty(curStep.getManeuver()) ? curStep.getManeuver() : "";
+                    final String maneuver = StringUtils.isNotEmpty(curStep.getManeuver()) ? curStep.getManeuver() : "-";
                     final List<Coordinate> coordinates = this.decodePolyline(curStep.getPolyline().getPoints());
-                    for (final Coordinate curCoordinate : coordinates) {
+                    coordinates.stream().forEach((Coordinate curCoordinate) -> {
                         final Point point = geometryFactory.createPoint(curCoordinate);
                         featureBuilder.add(point);
                         featureBuilder.add(tripId);
                         featureBuilder.add(userId);
                         featureBuilder.add(travelMode);
-                        featureBuilder.add(tag);
+                        featureBuilder.add("-");
+                        featureBuilder.add(maneuver);
                         featureBuilder.add(startAddress);
                         featureBuilder.add(endAddress);
                         featureBuilder.add(totalDistance);
                         featureBuilder.add(totalDuration);
-                        final SimpleFeature feature = featureBuilder.buildFeature(null);
-                        features.add(feature);
-                    }
+                        features.add(featureBuilder.buildFeature(null));
+                    });
                 });
             });
         });
@@ -242,10 +242,11 @@ public class FeatureService {
         featureTypeBuilder.add("user_id", String.class);
         featureTypeBuilder.add("travelmode", String.class);
         featureTypeBuilder.add("tags", String.class);
-        featureTypeBuilder.add("startAddress", String.class);
-        featureTypeBuilder.add("endAddress", String.class);
-        featureTypeBuilder.add("totalDistance", Integer.class);
-        featureTypeBuilder.add("totalDuration", Integer.class);
+        featureTypeBuilder.add("maneuver", String.class);
+        featureTypeBuilder.add("start_addr", String.class);
+        featureTypeBuilder.add("end_addr", String.class);
+        featureTypeBuilder.add("total_dist", String.class);
+        featureTypeBuilder.add("total_dura", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
