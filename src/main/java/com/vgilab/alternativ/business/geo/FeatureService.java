@@ -2,6 +2,7 @@ package com.vgilab.alternativ.business.geo;
 
 import com.vgilab.alternativ.business.busstop.BusStop;
 import com.vgilab.alternativ.generated.ChosenRoute;
+import com.vgilab.alternativ.generated.Distance;
 import com.vgilab.alternativ.generated.Feature;
 import com.vgilab.alternativ.generated.Leg;
 import com.vgilab.alternativ.generated.Route;
@@ -43,23 +44,17 @@ public class FeatureService {
     public List<SimpleFeature> createPointsFromTracks(final List<Track> tracks, final String tripId) {
         final List<SimpleFeature> features = new ArrayList<>();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForTracks());
-        for (final Track curTrack : tracks) {
-            if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
-                final SimpleFeature feature = this.buildFeatureFromTrack(curTrack, tripId, featureBuilder);
-                features.add(feature);
-            }
-        }
+        tracks.stream().filter((curTrack) -> (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords())).map((curTrack) -> this.buildFeatureFromTrack(curTrack, tripId, featureBuilder)).forEach((feature) -> {
+            features.add(feature);
+        });
         return features;
     }
 
     public SimpleFeature createLineFromTracks(final List<Track> tracks, final String tripId) {
         final List<Coordinate> coordinates = new ArrayList<>();
-        for (final Track curTrack : tracks) {
-            if (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords()) {
-                final Coordinate coordinate = new Coordinate(curTrack.getLocation().getCoords().getLongitude(), curTrack.getLocation().getCoords().getLatitude());
-                coordinates.add(coordinate);
-            }
-        }
+        tracks.stream().filter((curTrack) -> (null != curTrack.getLocation() && null != curTrack.getLocation().getCoords())).map((curTrack) -> new Coordinate(curTrack.getLocation().getCoords().getLongitude(), curTrack.getLocation().getCoords().getLatitude())).forEach((coordinate) -> {
+            coordinates.add(coordinate);
+        });
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForTracks());
         if (coordinates.size() > 1) {
@@ -119,9 +114,7 @@ public class FeatureService {
 
     public Integer getPointCountForChosenRoutes(final List<ChosenRoute> chosenRoutes) {
         int size = 0;
-        for (final ChosenRoute curChosenRoute : chosenRoutes) {
-            size += this.getCoordinatesFromChosenRoute(curChosenRoute).size();
-        }
+        size = chosenRoutes.stream().map((curChosenRoute) -> this.getCoordinatesFromChosenRoute(curChosenRoute).size()).reduce(size, Integer::sum);
         return size;
     }
 
@@ -129,52 +122,58 @@ public class FeatureService {
         return this.getCoordinatesFromChosenRoute(chosenRoute).size();
     }
 
-    public List<SimpleFeature> createPointsFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
+    public List<SimpleFeature> createPointsFromChosenRoute(final ChosenRoute chosenRoute, final String tripId, final String userId) {
         final List<SimpleFeature> features = new ArrayList<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForChosenRoute());
-        for (final Route curRoute : chosenRoute.getRoutes()) {
-            if (null != curRoute.getLegs()) {
-                for (final Leg curLeg : curRoute.getLegs()) {
-                    if (null != curLeg.getSteps()) {
-                        for (final Step curStep : curLeg.getSteps()) {
-                            final String travelMode = curStep.getTravelMode();
-                            final List<Coordinate> coordinates = this.decodePolyline(curStep.getPolyline().getPoints());
-                            for (final Coordinate curCoordinate : coordinates) {
-                                final Point point = geometryFactory.createPoint(curCoordinate);
-                                featureBuilder.add(point);
-                                featureBuilder.add(tripId);
-                                featureBuilder.add(travelMode);
-                                final SimpleFeature feature = featureBuilder.buildFeature(null);
-                                features.add(feature);
-                            }
-                        }
+        chosenRoute.getRoutes().stream().filter((curRoute) -> (null != curRoute.getLegs())).forEach((Route curRoute) -> {
+            curRoute.getLegs().stream().filter((curLeg) -> (null != curLeg.getSteps())).forEach((Leg curLeg) -> {
+                curLeg.getSteps().stream().forEach((Step curStep) -> {
+                    final String startAddress = curLeg.getStartAddress();
+                    final String endAddress = curLeg.getEndAddress();
+                    final Integer totalDistance = null != curLeg.getDistance() ? curLeg.getDistance().getValue() : -1;
+                    final Integer totalDuration = null != curLeg.getDuration() ? curLeg.getDuration().getValue() : -1;
+                    final String travelMode = StringUtils.isNotEmpty(curStep.getTravelMode()) ? curStep.getTravelMode() : "UNKNOWN";
+                    final String tag = StringUtils.isNotEmpty(curStep.getManeuver()) ? curStep.getManeuver() : "";
+                    final List<Coordinate> coordinates = this.decodePolyline(curStep.getPolyline().getPoints());
+                    for (final Coordinate curCoordinate : coordinates) {
+                        final Point point = geometryFactory.createPoint(curCoordinate);
+                        featureBuilder.add(point);
+                        featureBuilder.add(tripId);
+                        featureBuilder.add(userId);
+                        featureBuilder.add(travelMode);
+                        featureBuilder.add(tag);
+                        featureBuilder.add(startAddress);
+                        featureBuilder.add(endAddress);
+                        featureBuilder.add(totalDistance);
+                        featureBuilder.add(totalDuration);
+                        final SimpleFeature feature = featureBuilder.buildFeature(null);
+                        features.add(feature);
                     }
-                }
-            }
-        }
+                });
+            });
+        });
+        features.get(0).setAttribute("tags", "origin");
+        features.get(features.size() - 1).setAttribute("tags", "destination");
         return features;
     }
 
-    public SimpleFeature createLineFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
+    public SimpleFeature createLineFromChosenRoute(final ChosenRoute chosenRoute, final String tripId, final String userId) {
         final List<Coordinate> coordinates = new ArrayList<>();
-        for (final Route curRoute : chosenRoute.getRoutes()) {
-            if (null != curRoute.getLegs()) {
-                for (final Leg curLeg : curRoute.getLegs()) {
-                    if (null != curLeg.getSteps()) {
-                        for (final Step curStep : curLeg.getSteps()) {
-                            coordinates.addAll(this.decodePolyline(curStep.getPolyline().getPoints()));
-                        }
-                    }
-                }
-            }
-        }
+        chosenRoute.getRoutes().stream().filter((curRoute) -> (null != curRoute.getLegs())).forEach((Route curRoute) -> {
+            curRoute.getLegs().stream().filter((curLeg) -> (null != curLeg.getSteps())).forEach((Leg curLeg) -> {
+                curLeg.getSteps().stream().forEach((curStep) -> {
+                    coordinates.addAll(this.decodePolyline(curStep.getPolyline().getPoints()));
+                });
+            });
+        });
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForChosenRoute());
         if (coordinates.size() > 1) {
             final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
             final LineString line = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
             featureBuilder.add(line);
             featureBuilder.add(tripId);
+            featureBuilder.add(userId);
         }
         return featureBuilder.buildFeature(null);
     }
@@ -182,13 +181,11 @@ public class FeatureService {
     private List<Coordinate> getCoordinatesFromRoute(final Route curRoute) {
         final List<Coordinate> coordinates = new LinkedList<>();
         if (null != curRoute.getLegs()) {
-            for (final Leg curLeg : curRoute.getLegs()) {
-                if (null != curLeg.getSteps()) {
-                    for (final Step curStep : curLeg.getSteps()) {
-                        coordinates.addAll(this.decodePolyline(curStep.getPolyline().getPoints()));
-                    }
-                }
-            }
+            curRoute.getLegs().stream().filter((curLeg) -> (null != curLeg.getSteps())).forEach((Leg curLeg) -> {
+                curLeg.getSteps().stream().forEach((curStep) -> {
+                    coordinates.addAll(this.decodePolyline(curStep.getPolyline().getPoints()));
+                });
+            });
         }
         return coordinates;
     }
@@ -196,45 +193,43 @@ public class FeatureService {
     public Map<Route, LineString> createRouteLineStringMapFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
         final Map<Route, LineString> stepFeatureMap = new HashMap<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-        for (final Route curRoute : chosenRoute.getRoutes()) {
+        chosenRoute.getRoutes().stream().forEach((curRoute) -> {
             final List<Coordinate> coordinates = this.getCoordinatesFromRoute(curRoute);
             if (coordinates.size() > 1) {
                 final LineString lineString = geometryFactory.createLineString(coordinates.toArray(new Coordinate[coordinates.size()]));
                 stepFeatureMap.put(curRoute, lineString);
             }
-        }
+        });
         return stepFeatureMap;
     }
 
     public Map<Route, Map<Step, List<Point>>> createRouteStepPointMapFromChosenRoute(final ChosenRoute chosenRoute, final String tripId) {
         final Map<Route, Map<Step, List<Point>>> routeStepPointMap = new HashMap<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-        for (final Route curRoute : chosenRoute.getRoutes()) {
+        chosenRoute.getRoutes().stream().forEach((Route curRoute) -> {
             final Map<Step, List<Point>> stepPointMap = new HashMap<>();
             if (null != curRoute.getLegs()) {
-                for (final Leg curLeg : curRoute.getLegs()) {
-                    if (null != curLeg.getSteps()) {
-                        for (final Step curStep : curLeg.getSteps()) {
-                            final List<Point> points = new LinkedList<>();
-                            final List<Coordinate> coordinates = this.decodePolyline(curStep.getPolyline().getPoints());
-                            for (final Coordinate curCoordinate : coordinates) {
-                                points.add(geometryFactory.createPoint(curCoordinate));
-                            }
-                            stepPointMap.put(curStep, points);
-                        }
-                    }
-                }
+                curRoute.getLegs().stream().filter((Leg curLeg) -> (null != curLeg.getSteps())).forEach((curLeg) -> {
+                    curLeg.getSteps().stream().forEach((curStep) -> {
+                        final List<Point> points = new LinkedList<>();
+                        final List<Coordinate> coordinates = this.decodePolyline(curStep.getPolyline().getPoints());
+                        coordinates.stream().forEach((curCoordinate) -> {
+                            points.add(geometryFactory.createPoint(curCoordinate));
+                        });
+                        stepPointMap.put(curStep, points);
+                    });
+                });
             }
             routeStepPointMap.put(curRoute, stepPointMap);
-        }
+        });
         return routeStepPointMap;
     }
 
     public List<Coordinate> getCoordinatesFromChosenRoute(final ChosenRoute chosenRoute) {
         final List<Coordinate> coordinates = new LinkedList<>();
-        for (final Route curRoute : chosenRoute.getRoutes()) {
+        chosenRoute.getRoutes().stream().forEach((curRoute) -> {
             coordinates.addAll(this.getCoordinatesFromRoute(curRoute));
-        }
+        });
         return coordinates;
     }
 
@@ -244,7 +239,13 @@ public class FeatureService {
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", Point.class); // then add geometry
         featureTypeBuilder.add("trip_id", String.class);
+        featureTypeBuilder.add("user_id", String.class);
         featureTypeBuilder.add("travelmode", String.class);
+        featureTypeBuilder.add("tags", String.class);
+        featureTypeBuilder.add("startAddress", String.class);
+        featureTypeBuilder.add("endAddress", String.class);
+        featureTypeBuilder.add("totalDistance", Integer.class);
+        featureTypeBuilder.add("totalDuration", Integer.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
@@ -254,6 +255,7 @@ public class FeatureService {
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", LineString.class); // then add geometry
         featureTypeBuilder.add("trip_id", String.class);
+        featureTypeBuilder.add("user_id", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
@@ -315,13 +317,12 @@ public class FeatureService {
         final List<SimpleFeature> features = new ArrayList<>();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForCoordinates());
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-        for (final Coordinate3D curCoordinate : coordinates) {
-            final Coordinate coordinate = new Coordinate(curCoordinate.getLongitude(), curCoordinate.getLatitude(), curCoordinate.getAltitude());
-            final Point point = geometryFactory.createPoint(coordinate);
+        coordinates.stream().map((curCoordinate) -> new Coordinate(curCoordinate.getLongitude(), curCoordinate.getLatitude(), curCoordinate.getAltitude())).map((coordinate) -> geometryFactory.createPoint(coordinate)).map((point) -> {
             featureBuilder.add(point);
-            final SimpleFeature feature = featureBuilder.buildFeature(null);
+            return point;
+        }).map((_item) -> featureBuilder.buildFeature(null)).forEach((feature) -> {
             features.add(feature);
-        }
+        });
         return features;
     }
 
@@ -335,10 +336,9 @@ public class FeatureService {
 
     public List<SimpleFeature> createLinesForCoordinates(final List<Coordinate3D> coordinates3D) {
         final List<Coordinate> coordinates = new ArrayList<>();
-        for (final Coordinate3D curCoordinate3D : coordinates3D) {
-            final Coordinate coordinate = new Coordinate(curCoordinate3D.getLongitude(), curCoordinate3D.getLatitude(), curCoordinate3D.getAltitude());
+        coordinates3D.stream().map((curCoordinate3D) -> new Coordinate(curCoordinate3D.getLongitude(), curCoordinate3D.getLatitude(), curCoordinate3D.getAltitude())).forEach((coordinate) -> {
             coordinates.add(coordinate);
-        }
+        });
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForCoordinates());
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         if (coordinates.size() > 1) {

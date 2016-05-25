@@ -79,26 +79,29 @@ public class ShapefileService {
             final List<SimpleFeature> linesForSnapedToRoad = new LinkedList<>();
             final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
             final List<SimpleFeature> linesForChosenRoute = new LinkedList<>();
-            for (final AlterNativ curAlterNativ : alterNativs) {
-                for (final ChosenRoute curChosenRoute : curAlterNativ.getChosenRoute()) {
-                    pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
-                    linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, curAlterNativ.getId()));
-                }
+            alterNativs.stream().map((AlterNativ curAlterNativ) -> {
+                curAlterNativ.getChosenRoute().stream().map((ChosenRoute curChosenRoute) -> {
+                    pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, curAlterNativ.getId(), curAlterNativ.getUserId()));
+                    return curChosenRoute;
+                }).forEach((curChosenRoute) -> {
+                    linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, curAlterNativ.getId(), curAlterNativ.getUserId()));
+                });
+                return curAlterNativ;
+            }).map((AlterNativ curAlterNativ) -> {
                 pointsForTracks.addAll(this.featureService.createPointsFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
+                return curAlterNativ;
+            }).map((curAlterNativ) -> {
                 linesForTracks.add(this.featureService.createLineFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId()));
-                if (snapToRoad) {
-                    final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(curAlterNativ);
-                    if (coordinates.size() > 2) {
-                        try {
-                            final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
-                            pointsForSnapedToRoad.addAll(this.featureService.createPointsForCoordinates(snapedToRoad));
-                            linesForSnapedToRoad.addAll(this.featureService.createLinesForCoordinates(snapedToRoad));
-                        } catch (final SecurityException ex) {
-                            LOGGER.severe(ex.getLocalizedMessage());
-                        }
-                    }
+                return curAlterNativ;
+            }).filter((curAlterNativ) -> (snapToRoad)).map((curAlterNativ) -> AlterNativUtil.getCoordinatesFromTrack(curAlterNativ)).filter((coordinates) -> (coordinates.size() > 2)).forEach((coordinates) -> {
+                try {
+                    final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
+                    pointsForSnapedToRoad.addAll(this.featureService.createPointsForCoordinates(snapedToRoad));
+                    linesForSnapedToRoad.addAll(this.featureService.createLinesForCoordinates(snapedToRoad));
+                } catch (final SecurityException ex) {
+                    LOGGER.severe(ex.getLocalizedMessage());
                 }
-            }
+            });
             this.addChoosenRouteAsPoints(shapeDir, pointsForChosenRoute);
             this.addChoosenRouteAsLine(shapeDir, linesForChosenRoute);
             this.addSnappedToRoadAsPoints(shapeDir, pointsForSnapedToRoad);
@@ -141,10 +144,12 @@ public class ShapefileService {
         final List<SimpleFeature> linesForTracks = new LinkedList<>();
         final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
         final List<SimpleFeature> linesForChosenRoute = new LinkedList<>();
-        for (final ChosenRoute curChosenRoute : alterNativ.getChosenRoute()) {
-            pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, alterNativ.getId()));
-            linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, alterNativ.getId()));
-        }
+        alterNativ.getChosenRoute().stream().map((curChosenRoute) -> {
+            pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, alterNativ.getId(), alterNativ.getUserId()));
+            return curChosenRoute;
+        }).forEach((curChosenRoute) -> {
+            linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, alterNativ.getId(), alterNativ.getUserId()));
+        });
         pointsForTracks.addAll(this.featureService.createPointsFromTracks(alterNativ.getTracks(), alterNativ.getId()));
         linesForTracks.add(this.featureService.createLineFromTracks(alterNativ.getTracks(), alterNativ.getId()));
         this.addChoosenRouteAsPoints(shapeDir, pointsForChosenRoute);
@@ -259,7 +264,7 @@ public class ShapefileService {
                     transaction.close();
                 }
             } else {
-                System.out.println(typeName + " does not support read/write access");
+                Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, "{0} does not support read/write access", typeName);
             }
         } catch (IOException ex) {
             Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
@@ -352,9 +357,9 @@ public class ShapefileService {
                 }
             } finally {
                 IOUtils.closeQuietly(zis);
-                for (final File file : files) {
+                files.stream().forEach((file) -> {
                     file.delete();
-                }
+                });
             }
         }
         return null;
@@ -382,9 +387,9 @@ public class ShapefileService {
                             final List<Coordinate> coordinates = new LinkedList<>();
                             coordinates.addAll(Arrays.asList(transformedGeometry.getCoordinates()));
                             final List<Coordinate3D> coordinates3D = new LinkedList<>();
-                            for (final Coordinate curCoordinate : coordinates) {
+                            coordinates.stream().forEach((curCoordinate) -> {
                                 coordinates3D.add(new Coordinate3D(curCoordinate.x, curCoordinate.y, curCoordinate.z));
-                            }
+                            });
                             subTrajectories.add(new SubTrajectory(feature.getID(), TravelMode.fromInt(Integer.valueOf(travelModeId)), coordinates3D));
                         } catch (FactoryException | TransformException ex) {
                             Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
