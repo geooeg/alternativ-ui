@@ -2,7 +2,6 @@ package com.vgilab.alternativ.business.geo;
 
 import com.vgilab.alternativ.business.busstop.BusStop;
 import com.vgilab.alternativ.generated.ChosenRoute;
-import com.vgilab.alternativ.generated.Distance;
 import com.vgilab.alternativ.generated.Feature;
 import com.vgilab.alternativ.generated.Leg;
 import com.vgilab.alternativ.generated.Route;
@@ -416,8 +415,16 @@ public class FeatureService {
         final Point point = geometryFactory.createPoint(coordinate);
         featureBuilder.add(point);
         featureBuilder.add(tripId);
-        featureBuilder.add(curTrack.getLocation().getActivity().getType());
-        featureBuilder.add(curTrack.getLocation().getBattery().getLevel());
+        if(null != curTrack.getLocation().getActivity() && StringUtils.isNotEmpty(curTrack.getLocation().getActivity().getType())) {
+            featureBuilder.add(curTrack.getLocation().getActivity().getType());
+        } else {
+            featureBuilder.add("-");
+        }
+        if(null != curTrack.getLocation().getBattery() && null != curTrack.getLocation().getBattery().getLevel()) {
+            featureBuilder.add(curTrack.getLocation().getBattery().getLevel());
+        } else {
+            featureBuilder.add("-");
+        }
         Long timestampFromIso8601 = -1l;
         try {
             timestampFromIso8601 = this.getTimestampFromIso8601(curTrack.getLocation().getTimestamp());
