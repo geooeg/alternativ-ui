@@ -95,6 +95,8 @@ public class FeatureService {
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", Point.class); // then add geometry
         featureTypeBuilder.add("trip_id", String.class);
+        featureTypeBuilder.add("activity", String.class);
+        featureTypeBuilder.add("battery", Double.class);
         featureTypeBuilder.add("timestamp", Long.class);
         return featureTypeBuilder.buildFeatureType();
     }
@@ -122,7 +124,14 @@ public class FeatureService {
         return this.getCoordinatesFromChosenRoute(chosenRoute).size();
     }
 
-    public List<SimpleFeature> createPointsFromChosenRoute(final ChosenRoute chosenRoute, final String tripId, final String userId, final String chosenType) {
+    public List<SimpleFeature> createPointsFromChosenRoute(final ChosenRoute chosenRoute, final String tripId, final String userId, final String chosenType, final String createdAt) {
+        Long timestampFromIso8601 = -1l;  
+        try {
+            timestampFromIso8601 = this.getTimestampFromIso8601(createdAt);
+        } catch (IllegalArgumentException ex) {
+            LOGGER.severe(MessageFormat.format("Trip {0} contains a not ISO8601 conform timestamp {1}. Exception: {2} ", tripId, createdAt, ex.getLocalizedMessage()));
+        }
+        final Long createdAtAsTimestamp = timestampFromIso8601;
         final List<SimpleFeature> features = new ArrayList<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForChosenRoute());
@@ -131,7 +140,7 @@ public class FeatureService {
                 curLeg.getSteps().stream().forEach((Step curStep) -> {
                     final String startAddress = StringUtils.isNotEmpty(curLeg.getStartAddress()) ? curLeg.getStartAddress() : "-";
                     final String endAddress = StringUtils.isNotEmpty(curLeg.getEndAddress()) ? curLeg.getEndAddress() : "-";
-                    final String totalDistance = null != curLeg.getDistance() ? curLeg.getDistance().getText(): "-";
+                    final String totalDistance = null != curLeg.getDistance() ? curLeg.getDistance().getText() : "-";
                     final String totalDuration = null != curLeg.getDuration() ? curLeg.getDuration().getText() : "-";
                     final String travelMode = StringUtils.isNotEmpty(curStep.getTravelMode()) ? curStep.getTravelMode() : "UNKNOWN";
                     final String maneuver = StringUtils.isNotEmpty(curStep.getManeuver()) ? curStep.getManeuver() : "-";
@@ -149,6 +158,7 @@ public class FeatureService {
                         featureBuilder.add(totalDistance);
                         featureBuilder.add(totalDuration);
                         featureBuilder.add(chosenType);
+                        featureBuilder.add(createdAtAsTimestamp);
                         features.add(featureBuilder.buildFeature(null));
                     });
                 });
@@ -250,6 +260,7 @@ public class FeatureService {
         featureTypeBuilder.add("total_dist", String.class);
         featureTypeBuilder.add("total_dura", String.class);
         featureTypeBuilder.add("chosentype", String.class);
+        featureTypeBuilder.add("timestamp", Long.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
@@ -405,22 +416,29 @@ public class FeatureService {
         final Point point = geometryFactory.createPoint(coordinate);
         featureBuilder.add(point);
         featureBuilder.add(tripId);
-        String timestamp = curTrack.getLocation().getTimestamp();
-        if (StringUtils.isNotBlank(timestamp)) {
-            try {
-                // ISO8601: https://en.wikipedia.org/wiki/ISO_8601 
-                final DateTimeFormatter patternFormat = new DateTimeFormatterBuilder()
-                        .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
-                        .appendTimeZoneOffset("Z", true, 2, 4)
-                        .toFormatter();
-                final DateTime dateTime = patternFormat.parseDateTime(timestamp);
-                // 2016-01-10T14:47:35.820Z
-                final Long unixTimeStamp = dateTime.getMillis() / 1000;
-                featureBuilder.add(unixTimeStamp);
-            } catch (IllegalArgumentException ex) {
-                LOGGER.severe(MessageFormat.format("Track {0} contains a not ISO8601 conform timestamp {1}. Exception: {2} ", curTrack.getId(), timestamp, ex.getLocalizedMessage()));
-            }
+        featureBuilder.add(curTrack.getLocation().getActivity().getType());
+        featureBuilder.add(curTrack.getLocation().getBattery().getLevel());
+        Long timestampFromIso8601 = -1l;
+        try {
+            timestampFromIso8601 = this.getTimestampFromIso8601(curTrack.getLocation().getTimestamp());
+        } catch (IllegalArgumentException ex) {
+            LOGGER.severe(MessageFormat.format("Track {0} contains a not ISO8601 conform timestamp {1}. Exception: {2} ", curTrack.getId(), curTrack.getLocation().getTimestamp(), ex.getLocalizedMessage()));
         }
+        featureBuilder.add(timestampFromIso8601);
         return featureBuilder.buildFeature(null);
+    }
+
+    private Long getTimestampFromIso8601(final String timestamp) throws IllegalArgumentException {
+        if (StringUtils.isNotBlank(timestamp)) {
+            // ISO8601: https://en.wikipedia.org/wiki/ISO_8601 
+            final DateTimeFormatter patternFormat = new DateTimeFormatterBuilder()
+                    .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                    .appendTimeZoneOffset("Z", true, 2, 4)
+                    .toFormatter();
+            final DateTime dateTime = patternFormat.parseDateTime(timestamp);
+            // 2016-01-10T14:47:35.820Z
+            return dateTime.getMillis() / 1000;
+        }
+        return -1l;
     }
 }

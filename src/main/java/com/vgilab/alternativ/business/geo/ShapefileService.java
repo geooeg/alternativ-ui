@@ -81,7 +81,7 @@ public class ShapefileService {
             final List<SimpleFeature> linesForChosenRoute = new LinkedList<>();
             alterNativs.stream().map((AlterNativ curAlterNativ) -> {
                 curAlterNativ.getChosenRoute().stream().map((ChosenRoute curChosenRoute) -> {
-                    pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, curAlterNativ.getId(), curAlterNativ.getUserId(), curAlterNativ.getChosenType()));
+                    pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, curAlterNativ.getId(), curAlterNativ.getUserId(), curAlterNativ.getChosenType(), curAlterNativ.getCreatedAt()));
                     return curChosenRoute;
                 }).forEach((curChosenRoute) -> {
                     linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, curAlterNativ.getId(), curAlterNativ.getUserId(), curAlterNativ.getChosenType()));
@@ -145,7 +145,7 @@ public class ShapefileService {
         final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
         final List<SimpleFeature> linesForChosenRoute = new LinkedList<>();
         alterNativ.getChosenRoute().stream().map((curChosenRoute) -> {
-            pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, alterNativ.getId(), alterNativ.getUserId(), alterNativ.getChosenType()));
+            pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, alterNativ.getId(), alterNativ.getUserId(), alterNativ.getChosenType(), alterNativ.getCreatedAt()));
             return curChosenRoute;
         }).forEach((curChosenRoute) -> {
             linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, alterNativ.getId(), alterNativ.getUserId(), alterNativ.getChosenType()));
