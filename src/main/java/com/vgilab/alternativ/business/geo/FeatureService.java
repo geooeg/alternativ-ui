@@ -122,7 +122,7 @@ public class FeatureService {
         return this.getCoordinatesFromChosenRoute(chosenRoute).size();
     }
 
-    public List<SimpleFeature> createPointsFromChosenRoute(final ChosenRoute chosenRoute, final String tripId, final String userId) {
+    public List<SimpleFeature> createPointsFromChosenRoute(final ChosenRoute chosenRoute, final String tripId, final String userId, final String chosenType) {
         final List<SimpleFeature> features = new ArrayList<>();
         final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForChosenRoute());
@@ -148,6 +148,7 @@ public class FeatureService {
                         featureBuilder.add(endAddress);
                         featureBuilder.add(totalDistance);
                         featureBuilder.add(totalDuration);
+                        featureBuilder.add(chosenType);
                         features.add(featureBuilder.buildFeature(null));
                     });
                 });
@@ -158,7 +159,7 @@ public class FeatureService {
         return features;
     }
 
-    public SimpleFeature createLineFromChosenRoute(final ChosenRoute chosenRoute, final String tripId, final String userId) {
+    public SimpleFeature createLineFromChosenRoute(final ChosenRoute chosenRoute, final String tripId, final String userId, final String chosenType) {
         final List<Coordinate> coordinates = new ArrayList<>();
         chosenRoute.getRoutes().stream().filter((curRoute) -> (null != curRoute.getLegs())).forEach((Route curRoute) -> {
             curRoute.getLegs().stream().filter((curLeg) -> (null != curLeg.getSteps())).forEach((Leg curLeg) -> {
@@ -174,6 +175,7 @@ public class FeatureService {
             featureBuilder.add(line);
             featureBuilder.add(tripId);
             featureBuilder.add(userId);
+            featureBuilder.add(chosenType);
         }
         return featureBuilder.buildFeature(null);
     }
@@ -247,6 +249,7 @@ public class FeatureService {
         featureTypeBuilder.add("end_addr", String.class);
         featureTypeBuilder.add("total_dist", String.class);
         featureTypeBuilder.add("total_dura", String.class);
+        featureTypeBuilder.add("chosentype", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
@@ -257,6 +260,7 @@ public class FeatureService {
         featureTypeBuilder.add("the_geom", LineString.class); // then add geometry
         featureTypeBuilder.add("trip_id", String.class);
         featureTypeBuilder.add("user_id", String.class);
+        featureTypeBuilder.add("chosentype", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 

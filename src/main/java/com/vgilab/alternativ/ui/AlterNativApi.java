@@ -36,16 +36,15 @@ public class AlterNativApi {
         // FIXME: Workaround wrong MIME type!
         final RestTemplate restTemplate = new RestTemplate();
         final List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-        for (HttpMessageConverter<?> converter : converters) {
-            if (converter instanceof MappingJackson2HttpMessageConverter) {
-                final MappingJackson2HttpMessageConverter jsonConverter = (MappingJackson2HttpMessageConverter) converter;
-                jsonConverter.setObjectMapper(new ObjectMapper());
-                // MediaType types[] = new MediaType[]{new MediaType("application", "json", MappingJackson2HttpMessageConverter.DEFAULT_CHARSET), new MediaType("text", "javascript", MappingJackson2HttpMessageConverter.DEFAULT_CHARSET)};
-                final MediaType types[] = new MediaType[]{MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_JSON};
-                headers.setAccept(Arrays.asList(types));
-                jsonConverter.setSupportedMediaTypes(Arrays.asList(types));
-            }
-        }
+        converters.stream().filter((converter) -> (converter instanceof MappingJackson2HttpMessageConverter)).map((converter) -> (MappingJackson2HttpMessageConverter) converter).map((jsonConverter) -> {
+            jsonConverter.setObjectMapper(new ObjectMapper());
+            return jsonConverter;
+        }).forEach((jsonConverter) -> {
+            // MediaType types[] = new MediaType[]{new MediaType("application", "json", MappingJackson2HttpMessageConverter.DEFAULT_CHARSET), new MediaType("text", "javascript", MappingJackson2HttpMessageConverter.DEFAULT_CHARSET)};
+            final MediaType types[] = new MediaType[]{MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_JSON};
+            headers.setAccept(Arrays.asList(types));
+            jsonConverter.setSupportedMediaTypes(Arrays.asList(types));
+        });
         try {
             // lets just get the plain response as a string
             final HttpEntity<String> response = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, entity, String.class);

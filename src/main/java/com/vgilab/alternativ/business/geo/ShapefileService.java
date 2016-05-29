@@ -81,10 +81,10 @@ public class ShapefileService {
             final List<SimpleFeature> linesForChosenRoute = new LinkedList<>();
             alterNativs.stream().map((AlterNativ curAlterNativ) -> {
                 curAlterNativ.getChosenRoute().stream().map((ChosenRoute curChosenRoute) -> {
-                    pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, curAlterNativ.getId(), curAlterNativ.getUserId()));
+                    pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, curAlterNativ.getId(), curAlterNativ.getUserId(), curAlterNativ.getChosenType()));
                     return curChosenRoute;
                 }).forEach((curChosenRoute) -> {
-                    linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, curAlterNativ.getId(), curAlterNativ.getUserId()));
+                    linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, curAlterNativ.getId(), curAlterNativ.getUserId(), curAlterNativ.getChosenType()));
                 });
                 return curAlterNativ;
             }).map((AlterNativ curAlterNativ) -> {
@@ -145,10 +145,10 @@ public class ShapefileService {
         final List<SimpleFeature> pointsForChosenRoute = new LinkedList<>();
         final List<SimpleFeature> linesForChosenRoute = new LinkedList<>();
         alterNativ.getChosenRoute().stream().map((curChosenRoute) -> {
-            pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, alterNativ.getId(), alterNativ.getUserId()));
+            pointsForChosenRoute.addAll(this.featureService.createPointsFromChosenRoute(curChosenRoute, alterNativ.getId(), alterNativ.getUserId(), alterNativ.getChosenType()));
             return curChosenRoute;
         }).forEach((curChosenRoute) -> {
-            linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, alterNativ.getId(), alterNativ.getUserId()));
+            linesForChosenRoute.add(this.featureService.createLineFromChosenRoute(curChosenRoute, alterNativ.getId(), alterNativ.getUserId(), alterNativ.getChosenType()));
         });
         pointsForTracks.addAll(this.featureService.createPointsFromTracks(alterNativ.getTracks(), alterNativ.getId()));
         linesForTracks.add(this.featureService.createLineFromTracks(alterNativ.getTracks(), alterNativ.getId()));
