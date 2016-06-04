@@ -42,6 +42,9 @@
                     <p:column style="font-weight: bold;"><h:outputText value="Chosen type: #{positionDetailView.selectedTrip.alterNativ.chosenType} | ID: #{positionDetailView.selectedTrip.alterNativ.id}" /></p:column>
                 </p:row>
                 <p:row>
+                    <p:column style="font-weight: bold;"><h:outputText value="Deviation Area: #{positionDetailView.selectedTrip.deviationArea} | Deviation Count: #{positionDetailView.selectedTrip.deviationsFromTrip}" /></p:column>
+                </p:row>
+                <p:row>
                     <p:column>
                         <p:gmap zoom="15" type="HYBRID" fitBounds="true"
                                 model="#{positionDetailView.getRouteMapModelForTrip()}" center="37.335556,-122.009167"

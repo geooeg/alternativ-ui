@@ -11,6 +11,8 @@ public class AnalysedTrip {
     private AlterNativ alterNativ;
     private List<Position> positions;
     private List<Coordinate3D> snapedToRoad;
+    private Double deviationArea;
+    private Integer deviationsFromTrip;
 
     public AnalysedTrip(final AlterNativ curAlterNativ, final List<Position> positions) {
         this.alterNativ = curAlterNativ;
@@ -57,5 +59,33 @@ public class AnalysedTrip {
      */
     public void setSnapedToRoad(List<Coordinate3D> snapedToRoad) {
         this.snapedToRoad = snapedToRoad;
+    }
+
+    /**
+     * @return the deviationArea
+     */
+    public Double getDeviationArea() {
+        return deviationArea;
+    }
+
+    /**
+     * @param deviationArea the deviationArea to set
+     */
+    public void setDeviationArea(Double deviationArea) {
+        this.deviationArea = deviationArea;
+    }
+
+    /**
+     * @return the deviationsFromTrip
+     */
+    public Integer getDeviationsFromTrip() {
+        return deviationsFromTrip;
+    }
+
+    /**
+     * @param deviationsFromTrip the deviationsFromTrip to set
+     */
+    public void setDeviationsFromTrip(Integer deviationsFromTrip) {
+        this.deviationsFromTrip = deviationsFromTrip;
     }
 }

@@ -3,8 +3,6 @@ package com.vgilab.alternativ.business.geo;
 import com.vividsolutions.jts.geom.Coordinate;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -19,7 +17,7 @@ public class DistanceCalculation {
 
     final GeodeticCalculator geodeticCalculator = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
 
-    public Double calculate(List<Coordinate> coordinates, CoordinateReferenceSystem crs) throws TransformException {
+    public Double calculate(final List<Coordinate> coordinates, final CoordinateReferenceSystem crs) throws TransformException {
         final Iterator<Coordinate> iterator = coordinates.iterator();
         Double distance = 0d;
         Coordinate previous = null;
@@ -34,7 +32,7 @@ public class DistanceCalculation {
         return distance;
     }
 
-    public Double calculate(Coordinate p0, Coordinate p1, CoordinateReferenceSystem crs) throws TransformException {
+    public Double calculate(final Coordinate p0, final Coordinate p1, final CoordinateReferenceSystem crs) throws TransformException {
         this.geodeticCalculator.setStartingPosition(JTS.toDirectPosition(p0, crs));
         this.geodeticCalculator.setDestinationPosition(JTS.toDirectPosition(p1, crs));
         return this.geodeticCalculator.getOrthodromicDistance();
