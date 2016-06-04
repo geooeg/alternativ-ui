@@ -7,6 +7,11 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -26,6 +31,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class DeviationAnalysisService {
+
+    private final static Logger LOGGER = Logger.getGlobal();
 
     private final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
 
@@ -50,13 +57,21 @@ public class DeviationAnalysisService {
         if (null == lineX || null == lineY) {
             return null;
         }
+        LOGGER.info(MessageFormat.format("Coordinates in Line X %d and Line Y %d", lineX.getCoordinates().length, lineY.getCoordinates().length));
         final List<DeviationSegment> segments = new LinkedList<>();
         final Geometry intersections = lineX.intersection(lineY);
+        final Geometry intersectionsY = lineY.intersection(lineX);
+        final Geometry diff = intersections.difference(intersectionsY);
         if (null != intersections.getCoordinates() && intersections.getCoordinates().length > 0) {
             final Coordinate[] intersectingCoordinates = intersections.getCoordinates();
+            LOGGER.info(MessageFormat.format("Found %d intersections", intersectingCoordinates.length));
             final CoordinateList coordinatesX = new CoordinateList(lineX.getCoordinates());
             final CoordinateList coordinatesY = new CoordinateList(lineY.getCoordinates());
-            for (final Coordinate curCoordinate : intersectingCoordinates) {
+            for (final Coordinate curIntersectingCoordinate : intersectingCoordinates) {
+                LOGGER.info(MessageFormat.format("Intersecting Coordinate at X %d , Y %d", curIntersectingCoordinate.x, curIntersectingCoordinate.y));
+                final Point intersectingPoint = this.geometryFactory.createPoint(curIntersectingCoordinate);
+                final Geometry intersectingBufferedGeometry = intersectingPoint.buffer(0.002);
+                final PreparedGeometry preparedIntersectingGeometry = PreparedGeometryFactory.prepare(intersectingBufferedGeometry);
                 final CoordinateList segmentCoordinatesX = new CoordinateList();
                 Coordinate prevCoordinateX = null;
                 for (final Coordinate curCoordinateX : coordinatesX.toCoordinateArray()) {
@@ -65,7 +80,8 @@ public class DeviationAnalysisService {
                         coordinates.add(prevCoordinateX);
                         coordinates.add(curCoordinateX);
                         final LineString line = this.geometryFactory.createLineString(coordinates.toCoordinateArray());
-                        if (line.intersects(this.geometryFactory.createPoint(curCoordinate))) {
+                        if (preparedIntersectingGeometry.intersects(line)) {
+                            LOGGER.info(MessageFormat.format("Found intersection on Line X after %d coordinates", segmentCoordinatesX.size()));
                             break;
                         }
                     }
@@ -73,7 +89,7 @@ public class DeviationAnalysisService {
                     prevCoordinateX = curCoordinateX;
                 }
                 coordinatesX.removeAll(segmentCoordinatesX);
-                segmentCoordinatesX.add(curCoordinate);
+                segmentCoordinatesX.add(curIntersectingCoordinate);
                 final CoordinateList segmentCoordinatesY = new CoordinateList();
                 Coordinate prevCoordinateY = null;
                 for (final Coordinate curCoordinateY : coordinatesY.toCoordinateArray()) {
@@ -82,7 +98,8 @@ public class DeviationAnalysisService {
                         coordinates.add(prevCoordinateY);
                         coordinates.add(curCoordinateY);
                         final LineString line = this.geometryFactory.createLineString(coordinates.toCoordinateArray());
-                        if (line.intersects(this.geometryFactory.createPoint(curCoordinate))) {
+                        if (preparedIntersectingGeometry.intersects(line)) {
+                            LOGGER.info(MessageFormat.format("Found intersection on Line X after %d coordinates", segmentCoordinatesY.size()));
                             break;
                         }
                     }
@@ -90,7 +107,7 @@ public class DeviationAnalysisService {
                     prevCoordinateY = curCoordinateY;
                 }
                 coordinatesY.removeAll(segmentCoordinatesY);
-                segmentCoordinatesY.add(curCoordinate);
+                segmentCoordinatesY.add(curIntersectingCoordinate);
                 if (segmentCoordinatesX.size() > 1 && segmentCoordinatesY.size() > 1) {
                     final LineString segmentLineX = this.geometryFactory.createLineString(segmentCoordinatesX.toCoordinateArray());
                     final LineString segmentLineY = this.geometryFactory.createLineString(segmentCoordinatesY.toCoordinateArray());
@@ -100,26 +117,15 @@ public class DeviationAnalysisService {
         }
         return segments;
     }
-
-    private LinearRing createRingFromSegment(final DeviationSegment deviationSegment) {
-        // merge two line strings to one linearRing
-        final CoordinateList list = new CoordinateList(deviationSegment.getSegmentLineX().getCoordinates());
-        final List<Coordinate> coordinatesY = Arrays.asList(deviationSegment.getSegmentLineY().getCoordinates());
-        Collections.reverse(coordinatesY);
-        list.addAll(coordinatesY, false);
-        // close geometry
-        list.closeRing();
-        return this.geometryFactory.createLinearRing(list.toCoordinateArray());
-    }
-
-    public Double calculateTotalDeviationArea(List<DeviationSegment> segments) {
+    
+    public double calculateTotalDeviationArea(List<DeviationSegment> segments) {
         if (null != segments) {
-            Double area = 0d;
+            double area = 0d;
             for (final DeviationSegment curDeviationSegment : segments) {
-                final LinearRing linearRing = this.createRingFromSegment(curDeviationSegment);
+                final Polygon polygon = this.geometryFactory.createPolygon(DeviationUtil.createRingAsArrayFromSegment(curDeviationSegment));
                 // sum up areas
-                if (null != linearRing) {
-                    area += linearRing.getArea();
+                if (null != polygon) {
+                    area += polygon.getArea();
                 }
             }
             return area;

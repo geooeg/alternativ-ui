@@ -137,13 +137,16 @@
                                 </p:rowExpansion>
 
                                 <f:facet name="footer">
-                                    <h:panelGroup>
-                                        <h:outputText value="Deviation in " />
-                                        <p:inputText id="deviation" value="#{positionListView.deviation}" >
-                                            <p:ajax event="blur" update="RouteListForm" />
-                                        </p:inputText>
-                                        <h:outputText value=" meters" />
-                                    </h:panelGroup>
+                                    <p:panelGrid columns="1" styleClass="footerGrid">
+                                        <h:outputText value="Deviation Area: #{trip.deviationArea} | Deviations: #{not empty trip.deviationsFromTrip ? trip.deviationsFromTrip.size() : 'No Deviations'}" />
+                                        <h:panelGroup>
+                                            <h:outputText value="Deviation in " />
+                                            <p:inputText id="deviation" value="#{positionListView.deviation}" >
+                                                <p:ajax event="blur" update="RouteListForm" />
+                                            </p:inputText>
+                                            <h:outputText value=" meters" />
+                                        </h:panelGroup>
+                                    </p:panelGrid>
                                     <p:panelGrid columns="1" styleClass="footerGrid">
                                         <p:panelGrid columns="1" styleClass="errorFooterGrid" rendered="#{not empty positionListView.errorMessage}">
                                             <h:outputText value="#{positionListView.errorMessage}" />

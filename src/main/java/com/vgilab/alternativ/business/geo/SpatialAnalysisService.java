@@ -41,7 +41,7 @@ public class SpatialAnalysisService {
                 final AnalysedTrip analysedTrip = this.analyseRoute(curAlterNativ, deviationInMeters);
                 final List<DeviationSegment> deviationSegments = deviationAnalysisService.createSegments(curAlterNativ);
                 final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.filterSegmentsByDeviation(deviationSegments, 2d);
-                analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation != null ? filteredSegmentsByDeviation.size() : -1);
+                analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
                 analysedTrip.setDeviationArea(deviationAnalysisService.calculateTotalDeviationArea(filteredSegmentsByDeviation));
                 trips.add(analysedTrip);
             });

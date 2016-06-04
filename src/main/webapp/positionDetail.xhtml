@@ -42,7 +42,8 @@
                     <p:column style="font-weight: bold;"><h:outputText value="Chosen type: #{positionDetailView.selectedTrip.alterNativ.chosenType} | ID: #{positionDetailView.selectedTrip.alterNativ.id}" /></p:column>
                 </p:row>
                 <p:row>
-                    <p:column style="font-weight: bold;"><h:outputText value="Deviation Area: #{positionDetailView.selectedTrip.deviationArea} | Deviation Count: #{positionDetailView.selectedTrip.deviationsFromTrip}" /></p:column>
+                    <p:column style="font-weight: bold;">
+                        <h:outputText value="Deviation Area: #{positionDetailView.selectedTrip.deviationArea} | Deviations: #{not empty positionDetailView.selectedTrip.deviationsFromTrip ? positionDetailView.selectedTrip.deviationsFromTrip.size() : 'No Deviations'}" /></p:column>
                 </p:row>
                 <p:row>
                     <p:column>

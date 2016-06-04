@@ -3,7 +3,6 @@ package com.vgilab.alternativ.google;
 import com.vgilab.alternativ.business.geo.Coordinate3D;
 import com.vgilab.alternativ.generated.GoogleMapsRoads;
 import com.vgilab.alternativ.generated.SnappedPoint;
-import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
 import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;

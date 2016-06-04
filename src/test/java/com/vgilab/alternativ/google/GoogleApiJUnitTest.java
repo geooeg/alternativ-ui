@@ -1,7 +1,5 @@
 package com.vgilab.alternativ.google;
 
-import com.vgilab.alternativ.google.GoogleApi;
-import com.vgilab.alternativ.google.GoogleGeocoding;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;

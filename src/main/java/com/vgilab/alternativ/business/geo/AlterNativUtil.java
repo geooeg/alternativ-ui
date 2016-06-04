@@ -21,10 +21,9 @@ public class AlterNativUtil {
     public static List<Coordinate3D> getCoordinatesFromTrack(final AlterNativ alterNativ) {
         final List<Coordinate3D> coordinates = new LinkedList<>();
         coordinates.add(new Coordinate3D(alterNativ.getOrigin().getLng(), alterNativ.getOrigin().getLat(), 0d));
-        for (final Track curTrack : alterNativ.getTracks()) {
-            final Location location = curTrack.getLocation();
+        alterNativ.getTracks().stream().map((curTrack) -> curTrack.getLocation()).forEach((location) -> {
             coordinates.add(new Coordinate3D(location.getCoords().getLongitude(), location.getCoords().getLatitude(), 0d));
-        }
+        });
         coordinates.add(new Coordinate3D(alterNativ.getDestination().getLng(), alterNativ.getDestination().getLat(), 0d));
         return coordinates;
     }
