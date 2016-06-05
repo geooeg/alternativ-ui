@@ -63,7 +63,8 @@ public class PositionListView {
     private AnalysedTrip selectedTrip;
     private StreamedContent shapefile;
     private String errorMessage;
-
+    private Integer minimumTracks = 10;
+    
     @Autowired
     private SpatialAnalysisService spatialAnalysisService;
 
@@ -83,7 +84,7 @@ public class PositionListView {
      */
     public void setAlterNativs(final List<AlterNativ> alterNativs) {
         this.alterNativs = alterNativs;
-        this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, 20d);
+        this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, 20d, this.minimumTracks);
     }
 
     /**
@@ -117,16 +118,30 @@ public class PositionListView {
             try {
                 final DecimalFormatSymbols symbols = new DecimalFormatSymbols();
                 symbols.setDecimalSeparator('.');
-                String pattern = "###0.0#";
-                final DecimalFormat decimalFormat = new DecimalFormat(pattern, symbols);
+                final DecimalFormat decimalFormat = new DecimalFormat("###0.0#", symbols);
                 decimalFormat.setParseBigDecimal(true);
                 final BigDecimal deviationNumber = (BigDecimal) decimalFormat.parse(deviation);
-                this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, deviationNumber.doubleValue());
+                this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, deviationNumber.doubleValue(), this.minimumTracks);
             } catch (final ParseException pex) {
                 FacesMessage message = new FacesMessage("Parse Error", pex.getLocalizedMessage());
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
         }
+    }
+
+    /**
+     * @return the minimumTracks
+     */
+    public Integer getMinimumTracks() {
+        return minimumTracks;
+    }
+
+    /**
+     * @param minimumTracks the minimumTracks to set
+     */
+    public void setMinimumTracks(Integer minimumTracks) {
+        this.minimumTracks = minimumTracks;
+        this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, 20d, this.minimumTracks);
     }
 
     public void onRowToggle(ToggleEvent event) {

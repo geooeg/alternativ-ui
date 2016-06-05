@@ -5,6 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 
     <h:head>
@@ -42,7 +43,15 @@
             <p:dialog widgetVar="statusDialog" id="statusDialog" header="Status" modal="true" height="32" resizable="false" draggable="false">
                 <img src="resources/images/ajaxloadingbar.gif" width="220"/>
             </p:dialog>
-            <p:accordionPanel dynamic="true" cache="true">
+            <p:menubar>
+                <p:menuitem value="Home" icon="ui-icon-home" url="/" />
+                <f:facet name="options">
+                    <pe:inputNumber value="#{positionListView.minimumTracks}" decimalPlaces="0" symbolPosition="suffix" symbol=" Min. Tracks" style="margin-right:10px">  
+                        <p:ajax event="blur" update="accordion" />  
+                    </pe:inputNumber>
+                </f:facet>
+            </p:menubar>
+            <p:accordionPanel id="accordion" dynamic="true" cache="true">
                 <c:forEach var="trip" items="#{positionListView.trips}">
                     <p:tab title="From #{trip.alterNativ.origin.address} to #{trip.alterNativ.destination.address}. Tracks #{positionListView.getTrackPointCountForTrip(trip)}, Steps #{positionListView.getStepPointCountForTrip(trip)}">
                         <p:toolbar>
