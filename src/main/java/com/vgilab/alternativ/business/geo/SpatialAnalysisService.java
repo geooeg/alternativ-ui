@@ -29,17 +29,15 @@ public class SpatialAnalysisService {
 
     @Autowired
     private FeatureService featureService;
-    
+
     @Autowired
     private DeviationAnalysisService deviationAnalysisService;
 
-<<<<<<< Updated upstream
-    public List<AnalysedTrip> analyseRoutes(final List<AlterNativ> alterNativs, final Double deviationInMeters) {
-
+    public List<AnalysedTrip> analyseRoutes(final List<AlterNativ> alterNativs, final Double deviationInMeters, final Integer minimumTracks) {
         final List<AnalysedTrip> trips = new LinkedList<>();
         if (null != alterNativs) {
             alterNativs.stream().forEach((AlterNativ curAlterNativ) -> {
-                final AnalysedTrip analysedTrip = this.analyseRoute(curAlterNativ, deviationInMeters);
+                final AnalysedTrip analysedTrip = this.analyseRoute(curAlterNativ, deviationInMeters, minimumTracks);
                 final List<DeviationSegment> deviationSegments = deviationAnalysisService.createSegments(curAlterNativ);
                 final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.filterSegmentsByDeviation(deviationSegments, 2d);
                 analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
@@ -50,7 +48,7 @@ public class SpatialAnalysisService {
         return trips;
     }
 
-    public AnalysedTrip analyseRoute(final AlterNativ curAlterNativ, final Double deviationInMeters) {
+    public AnalysedTrip analyseRoute(final AlterNativ curAlterNativ, final Double deviationInMeters, final Integer minimumTracks) {
         final Double deviation = null == deviationInMeters ? 20d : deviationInMeters;
         final List<Position> positions = new LinkedList<>();
         // Create Feature Maps
@@ -129,6 +127,17 @@ public class SpatialAnalysisService {
                         position.setCoordinateForTrack(new Coordinate3D(destination.getCoordinate().x, destination.getCoordinate().y, destination.getCoordinate().z));
                         positions.add(position);
                         break destination_loop;
+
+                    }
+                }
+            }
+        }
+        return new AnalysedTrip(curAlterNativ, positions);
+    }
+}
+
+
+        /*
 =======
     public List<AnalysedTrip> analyseRoutes(final List<AlterNativ> alterNativs, final Double deviationInMeters, final Integer minimumTracks) {
         final Double deviation = null == deviationInMeters ? 20d : deviationInMeters;
@@ -219,11 +228,4 @@ public class SpatialAnalysisService {
                             }
                         }
 >>>>>>> Stashed changes
-                    }
-                    trips.add(new AnalysedTrip(curAlterNativ, positions));
-                }
-            }
-        }
-        return new AnalysedTrip(curAlterNativ, positions);
-    }
-}
+*/
