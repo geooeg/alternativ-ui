@@ -93,7 +93,7 @@ public class FeatureService {
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", Point.class); // then add geometry
-        featureTypeBuilder.add("trip_id", String.class);
+        featureTypeBuilder.add("ref_id", String.class);
         featureTypeBuilder.add("activity", String.class);
         featureTypeBuilder.add("battery", Double.class);
         featureTypeBuilder.add("timestamp", Long.class);
@@ -105,7 +105,7 @@ public class FeatureService {
         featureTypeBuilder.setName("Line");
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", LineString.class); // then add geometry
-        featureTypeBuilder.add("trip_id", String.class);
+        featureTypeBuilder.add("ref_id", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
@@ -249,7 +249,7 @@ public class FeatureService {
         featureTypeBuilder.setName("Point");
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", Point.class); // then add geometry
-        featureTypeBuilder.add("trip_id", String.class);
+        featureTypeBuilder.add("ref_id", String.class);
         featureTypeBuilder.add("user_id", String.class);
         featureTypeBuilder.add("travelmode", String.class);
         featureTypeBuilder.add("tags", String.class);
@@ -268,7 +268,7 @@ public class FeatureService {
         featureTypeBuilder.setName("Line");
         featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
         featureTypeBuilder.add("the_geom", LineString.class); // then add geometry
-        featureTypeBuilder.add("trip_id", String.class);
+        featureTypeBuilder.add("ref_id", String.class);
         featureTypeBuilder.add("user_id", String.class);
         featureTypeBuilder.add("chosentype", String.class);
         return featureTypeBuilder.buildFeatureType();
