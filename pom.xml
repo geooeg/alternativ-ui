@@ -92,6 +92,23 @@
             <version>13.2</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-opengis</artifactId>
+            <version>13.2</version>
+            <type>jar</type>
+        </dependency>       
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-referencing</artifactId>
+            <version>13.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-extension</artifactId>
+            <version>13.2</version>
+        </dependency>
+
         
         <!-- Utility framework -->
         <dependency>

@@ -27,10 +27,13 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.primefaces.event.FileUploadEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.geotools.geometry.jts.JTS;
+
 
 /**
  *
@@ -104,9 +107,12 @@ public class ExportView {
                 final List<SubTrajectory> subTrajectories = this.shapefileService.getCoordinatesFromFeatureCollection(this.projectedCoordinateReferenceSystem, curReportItem.getTripId(), this.importedFeatures);
                 final List<TravelMode> travelModes = new LinkedList<>();
                 final List<Coordinate> coordinates = new LinkedList<>();
+                final List<Double> distance = new LinkedList<>();
+                
                 subTrajectories.stream().forEach((curSubTrajectory) -> {
                     travelModes.add(curSubTrajectory.getTravelMode());
                     coordinates.addAll(Coordinate3DUtil.convert(curSubTrajectory.getCoordinates()));
+                   // distance.add(curSubTrajectory.);
                 });
                 final StringJoiner combinedTravelModes = new StringJoiner(",");
                 travelModes.stream().distinct().forEachOrdered(curTravelMode -> {
@@ -142,5 +148,15 @@ public class ExportView {
                 });
 */
         }
+    }
+    public Double calculateDistance(Coordinate p0, Coordinate p1, CoordinateReferenceSystem crs) {
+        try {
+            this.geodeticCalculator.setStartingPosition(JTS.toDirectPosition(p0, crs));
+            this.geodeticCalculator.setDestinationPosition(JTS.toDirectPosition(p1, crs));
+            return this.geodeticCalculator.getOrthodromicDistance();
+        } catch (IllegalArgumentException | TransformException ex) {
+            Logger.getLogger(SpeedCalculation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }

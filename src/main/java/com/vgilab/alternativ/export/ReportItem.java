@@ -18,6 +18,7 @@ public class ReportItem {
     private String currentPreferency;
     private String deviationFromChoosenRoute;
     private String distance;
+    private String duration;
 
     /**
      * @return the tripId
