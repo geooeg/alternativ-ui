@@ -123,7 +123,7 @@ public class ExportView {
                     combinedTravelModes.add(curTravelMode.name());
                 });
                 curReportItem.setPrimaryModeActual(combinedTravelModes.toString());
-
+                curReportItem.setDistance(curReportItem.getTrajectories().stream().mapToDouble(t -> t.getDistance()).sum());
             });
             /*
             final Map<String, String> map = new HashMap<>();
