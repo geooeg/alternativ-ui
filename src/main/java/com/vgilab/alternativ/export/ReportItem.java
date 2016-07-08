@@ -1,5 +1,7 @@
 package com.vgilab.alternativ.export;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -17,8 +19,9 @@ public class ReportItem {
     private String primaryModeActual;
     private String currentPreferency;
     private String deviationFromChoosenRoute;
-    private String distance;
-    private String duration;
+    private Double distance;
+    private Double duration;
+    private List<ReportItemTrajectory> trajectories = new LinkedList<>();
 
     /**
      * @return the tripId
@@ -163,14 +166,14 @@ public class ReportItem {
     /**
      * @return the distance
      */
-    public String getDistance() {
+    public Double getDistance() {
         return distance;
     }
 
     /**
      * @param distance the distance to set
      */
-    public void setDistance(String distance) {
+    public void setDistance(Double distance) {
         this.distance = distance;
     }
     
@@ -184,6 +187,34 @@ public class ReportItem {
         int hash = 3;
         hash = 43 * hash + Objects.hashCode(this.tripId);
         return hash;
+    }
+
+    /**
+     * @return the duration
+     */
+    public Double getDuration() {
+        return duration;
+    }
+
+    /**
+     * @param duration the duration to set
+     */
+    public void setDuration(Double duration) {
+        this.duration = duration;
+    }
+
+    /**
+     * @return the trajectories
+     */
+    public List<ReportItemTrajectory> getTrajectories() {
+        return trajectories;
+    }
+
+    /**
+     * @param trajectories the trajectories to set
+     */
+    public void setTrajectories(List<ReportItemTrajectory> trajectories) {
+        this.trajectories = trajectories;
     }
     
 }

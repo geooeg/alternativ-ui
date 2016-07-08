@@ -6,6 +6,7 @@ import com.vgilab.alternativ.business.geo.ShapefileService;
 import com.vgilab.alternativ.business.geo.SubTrajectory;
 import com.vgilab.alternativ.business.geo.TravelMode;
 import com.vgilab.alternativ.export.ReportItem;
+import com.vgilab.alternativ.export.ReportItemTrajectory;
 import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.ChosenRoute;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -32,8 +33,6 @@ import org.primefaces.event.FileUploadEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.geotools.geometry.jts.JTS;
-
 
 /**
  *
@@ -106,24 +105,25 @@ public class ExportView {
             this.reportItems.stream().forEach((curReportItem) -> {
                 final List<SubTrajectory> subTrajectories = this.shapefileService.getCoordinatesFromFeatureCollection(this.projectedCoordinateReferenceSystem, curReportItem.getTripId(), this.importedFeatures);
                 final List<TravelMode> travelModes = new LinkedList<>();
-                final List<Coordinate> coordinates = new LinkedList<>();
-                final List<Double> distance = new LinkedList<>();
-                
                 subTrajectories.stream().forEach((curSubTrajectory) -> {
                     travelModes.add(curSubTrajectory.getTravelMode());
-                    coordinates.addAll(Coordinate3DUtil.convert(curSubTrajectory.getCoordinates()));
-                   // distance.add(curSubTrajectory.);
+                    final List<Coordinate> coordinates = Coordinate3DUtil.convert(curSubTrajectory.getCoordinates());
+                    final ReportItemTrajectory reportItemTrajectory = new ReportItemTrajectory();
+                    reportItemTrajectory.setTravelMode(curSubTrajectory.getTravelMode());
+                    try {
+                        final Double distance = distanceCalculation.calculate(coordinates, projectedCoordinateReferenceSystem);
+                        reportItemTrajectory.setDistance(distance);
+                    } catch (TransformException ex) {
+                        Logger.getLogger(ExportView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    curReportItem.getTrajectories().add(reportItemTrajectory);
                 });
                 final StringJoiner combinedTravelModes = new StringJoiner(",");
                 travelModes.stream().distinct().forEachOrdered(curTravelMode -> {
                     combinedTravelModes.add(curTravelMode.name());
                 });
                 curReportItem.setPrimaryModeActual(combinedTravelModes.toString());
-//                try {
-//                    curReportItem.setDistance(String.valueOf(distanceCalculation.calculate(coordinates, projectedCoordinateReferenceSystem)));
-//                } catch (TransformException ex) {
-//                    Logger.getLogger(ExportView.class.getName()).log(Level.SEVERE, null, ex);
-//                }
+
             });
             /*
             final Map<String, String> map = new HashMap<>();
@@ -146,17 +146,7 @@ public class ExportView {
                 travelModes.stream().distinct().forEachOrdered(t -> {
                     combinedTravelModes.add(t.toString());
                 });
-*/
+             */
         }
-    }
-    public Double calculateDistance(Coordinate p0, Coordinate p1, CoordinateReferenceSystem crs) {
-        try {
-            this.geodeticCalculator.setStartingPosition(JTS.toDirectPosition(p0, crs));
-            this.geodeticCalculator.setDestinationPosition(JTS.toDirectPosition(p1, crs));
-            return this.geodeticCalculator.getOrthodromicDistance();
-        } catch (IllegalArgumentException | TransformException ex) {
-            Logger.getLogger(SpeedCalculation.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
     }
 }
