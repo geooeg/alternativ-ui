@@ -64,7 +64,6 @@ public class ShapefileService {
     private final static Logger LOGGER = Logger.getGlobal();
     private final static String REFERENCE_ID = "Tripid";
     private final static String TRAVEL_MODE_ID = "Type";
-    public final static String DEFAULT_CRS = "EPSG:2039";
     
 
     @Autowired
@@ -338,7 +337,7 @@ public class ShapefileService {
                                     }
                                 } catch (FactoryException ex) {
                                     Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
-                                    srcCrs = CRS.decode(DEFAULT_CRS);
+                                    srcCrs = DefaultGeographicCRS.WGS84;
                                 }
                                 return srcCrs;
                             } finally {
@@ -362,7 +361,7 @@ public class ShapefileService {
                 });
             }
         }
-        return null;
+        return DefaultGeographicCRS.WGS84;
     }
 
     private boolean isValid(final ZipEntry entry) {
@@ -403,6 +402,9 @@ public class ShapefileService {
 
     private static Geometry transformToGeo(CoordinateReferenceSystem srcCRS, Geometry source, boolean lenient) throws FactoryException, TransformException {
         final CoordinateReferenceSystem destCRS = DefaultGeographicCRS.WGS84;
+        if(srcCRS == destCRS) {
+            return source;
+        }
         final MathTransform transform = CRS.findMathTransform(srcCRS, destCRS, lenient);
         return JTS.transform(source, transform);
     }

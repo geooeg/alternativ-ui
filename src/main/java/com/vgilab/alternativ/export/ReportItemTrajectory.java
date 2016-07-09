@@ -8,7 +8,7 @@ import com.vgilab.alternativ.business.geo.TravelMode;
  */
 public class ReportItemTrajectory {
     private TravelMode travelMode;
-    private Double distance;
+    private Double distance = 0d;
 
     /**
      * @return the travelMode

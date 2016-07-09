@@ -102,16 +102,16 @@ public class ExportView {
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
             final DistanceCalculation distanceCalculation = new DistanceCalculation();
-            this.reportItems.stream().forEach((curReportItem) -> {
+            this.reportItems.forEach((curReportItem) -> {
                 final List<SubTrajectory> subTrajectories = this.shapefileService.getCoordinatesFromFeatureCollection(this.projectedCoordinateReferenceSystem, curReportItem.getTripId(), this.importedFeatures);
                 final List<TravelMode> travelModes = new LinkedList<>();
-                subTrajectories.stream().forEach((curSubTrajectory) -> {
+                subTrajectories.forEach((curSubTrajectory) -> {
                     travelModes.add(curSubTrajectory.getTravelMode());
                     final List<Coordinate> coordinates = Coordinate3DUtil.convert(curSubTrajectory.getCoordinates());
                     final ReportItemTrajectory reportItemTrajectory = new ReportItemTrajectory();
                     reportItemTrajectory.setTravelMode(curSubTrajectory.getTravelMode());
                     try {
-                        final Double distance = distanceCalculation.calculate(coordinates, projectedCoordinateReferenceSystem);
+                        final Double distance = distanceCalculation.calculate(coordinates, this.projectedCoordinateReferenceSystem);
                         reportItemTrajectory.setDistance(distance);
                     } catch (TransformException ex) {
                         Logger.getLogger(ExportView.class.getName()).log(Level.SEVERE, null, ex);
