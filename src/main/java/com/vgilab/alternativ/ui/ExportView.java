@@ -91,7 +91,7 @@ public class ExportView {
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } catch (FactoryException | IOException ex) {
                 Logger.getLogger(PositionDetailView.class.getName()).log(Level.WARNING, null, ex);
-                this.errorMessage.append(ex.getLocalizedMessage());
+                this.errorMessage.append(ex.getLocalizedMessage()).append("<br/>\n");
                 final FacesMessage message = new FacesMessage("Error", "Could not read features from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
@@ -101,7 +101,7 @@ public class ExportView {
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } catch (FactoryException | IOException ex) {
                 Logger.getLogger(PositionDetailView.class.getName()).log(Level.WARNING, null, ex);
-                this.errorMessage.append(ex.getLocalizedMessage());
+                this.errorMessage.append(ex.getLocalizedMessage()).append("<br/>\n");
                 final FacesMessage message = new FacesMessage("Error", "Could not read CRS from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
@@ -120,14 +120,14 @@ public class ExportView {
                             reportItemTrajectory.setDistance(distance);
                         } catch (IllegalArgumentException | TransformException ex) {
                             Logger.getLogger(ExportView.class.getName()).log(Level.WARNING, null, ex);
-                            this.errorMessage.append(ex.getLocalizedMessage());
+                            this.errorMessage.append(ex.getLocalizedMessage()).append("\n");
                             final FacesMessage message = new FacesMessage("Error", "Could not calculate distance: " + ex.getLocalizedMessage());
                             FacesContext.getCurrentInstance().addMessage(null, message);
                         }
                         curReportItem.getTrajectories().add(reportItemTrajectory);
                     } catch (Exception ex) {
                         Logger.getLogger(ExportView.class.getName()).log(Level.SEVERE, null, ex);
-                        this.errorMessage.append(ex.getLocalizedMessage());
+                        this.errorMessage.append(ex.getLocalizedMessage()).append("<br/>\n");
                         final FacesMessage message = new FacesMessage("Error", "Could not add sub trajectory: " + ex.getLocalizedMessage());
                         FacesContext.getCurrentInstance().addMessage(null, message);
                     }
