@@ -82,6 +82,11 @@
                         <h:outputText value="Imported Features: #{exportView.importedFeaturesCount}" rendered="#{not empty exportView.importedFeaturesCount}"></h:outputText>
                     </p:column>
                 </p:row>
+                <p:row rendered="#{not empty exportView.errorMessage}">
+                    <p:column>
+                        <p:inputTextarea rows="10" autoResize="true" value="#{exportView.errorMessage}" style="width: 100%;"/>
+                    </p:column>
+                </p:row>
             </p:panelGrid>
         </h:form>
     </h:body>

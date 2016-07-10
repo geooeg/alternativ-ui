@@ -46,6 +46,7 @@ public class ExportView {
     private final String coordinateReferenceSystem = "EPSG:2039";
     private FeatureCollection<SimpleFeatureType, SimpleFeature> importedFeatures;
     private CoordinateReferenceSystem projectedCoordinateReferenceSystem;
+    private StringBuilder errorMessage = new StringBuilder();
 
     @Autowired
     private ShapefileService shapefileService;
@@ -80,6 +81,7 @@ public class ExportView {
     }
 
     public void handleFileUpload(FileUploadEvent event) {
+        this.errorMessage = new StringBuilder();
         event.getComponent().setTransient(false);
         if (event.getFile() != null && event.getFile().getSize() > 0) {
             final byte[] contents = event.getFile().getContents();
@@ -88,7 +90,8 @@ public class ExportView {
                 final FacesMessage message = new FacesMessage("Successful", "Imported features from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } catch (FactoryException | IOException ex) {
-                Logger.getLogger(PositionDetailView.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(PositionDetailView.class.getName()).log(Level.WARNING, null, ex);
+                this.errorMessage.append(ex.getLocalizedMessage());
                 final FacesMessage message = new FacesMessage("Error", "Could not read features from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
@@ -97,7 +100,8 @@ public class ExportView {
                 final FacesMessage message = new FacesMessage("Successful", "Imported CRS from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } catch (FactoryException | IOException ex) {
-                Logger.getLogger(PositionDetailView.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(PositionDetailView.class.getName()).log(Level.WARNING, null, ex);
+                this.errorMessage.append(ex.getLocalizedMessage());
                 final FacesMessage message = new FacesMessage("Error", "Could not read CRS from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
@@ -116,12 +120,14 @@ public class ExportView {
                             reportItemTrajectory.setDistance(distance);
                         } catch (IllegalArgumentException | TransformException ex) {
                             Logger.getLogger(ExportView.class.getName()).log(Level.WARNING, null, ex);
+                            this.errorMessage.append(ex.getLocalizedMessage());
                             final FacesMessage message = new FacesMessage("Error", "Could not calculate distance: " + ex.getLocalizedMessage());
                             FacesContext.getCurrentInstance().addMessage(null, message);
                         }
                         curReportItem.getTrajectories().add(reportItemTrajectory);
                     } catch (Exception ex) {
                         Logger.getLogger(ExportView.class.getName()).log(Level.SEVERE, null, ex);
+                        this.errorMessage.append(ex.getLocalizedMessage());
                         final FacesMessage message = new FacesMessage("Error", "Could not add sub trajectory: " + ex.getLocalizedMessage());
                         FacesContext.getCurrentInstance().addMessage(null, message);
                     }
@@ -157,12 +163,16 @@ public class ExportView {
              */
         }
     }
-        
+
     public Integer getImportedFeaturesCount() {
         return this.importedFeatures != null ? this.importedFeatures.size() : null;
     }
-    
+
     public String getProjectedCoordinateReferenceSystem() {
         return this.projectedCoordinateReferenceSystem != null ? this.projectedCoordinateReferenceSystem.getName().getCode() : null;
+    }
+
+    public String getErrorMessage() {
+        return this.errorMessage.length() >= 1 ? this.errorMessage.toString() : null;
     }
 }
