@@ -72,6 +72,17 @@
             <p:spacer />
             <p:fileUpload fileUploadListener="#{exportView.handleFileUpload}" mode="advanced"
                           update="growl, ReportForm" auto="true" allowTypes="/(\.|\/)(zip)$/" />
+            <p:spacer />
+            <p:panelGrid id="statusOfImportGrid" style="width:100%">
+                <p:row>
+                    <p:column style="font-weight: bold;">
+                        <h:outputText value="Projected Coordinate Reference System: #{exportView.projectedCoordinateReferenceSystem}" rendered="#{not empty exportView.projectedCoordinateReferenceSystem}"></h:outputText>
+                    </p:column>
+                    <p:column style="font-weight: bold;">
+                        <h:outputText value="Imported Features: #{exportView.importedFeaturesCount}" rendered="#{not empty exportView.importedFeaturesCount}"></h:outputText>
+                    </p:column>
+                </p:row>
+            </p:panelGrid>
         </h:form>
     </h:body>
 </html>

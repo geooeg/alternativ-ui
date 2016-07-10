@@ -106,17 +106,25 @@ public class ExportView {
                 final List<SubTrajectory> subTrajectories = this.shapefileService.getCoordinatesFromFeatureCollection(this.projectedCoordinateReferenceSystem, curReportItem.getTripId(), this.importedFeatures);
                 final List<TravelMode> travelModes = new LinkedList<>();
                 subTrajectories.forEach((curSubTrajectory) -> {
-                    travelModes.add(curSubTrajectory.getTravelMode());
-                    final List<Coordinate> coordinates = Coordinate3DUtil.convert(curSubTrajectory.getCoordinates());
-                    final ReportItemTrajectory reportItemTrajectory = new ReportItemTrajectory();
-                    reportItemTrajectory.setTravelMode(curSubTrajectory.getTravelMode());
                     try {
-                        final Double distance = distanceCalculation.calculate(coordinates, this.projectedCoordinateReferenceSystem);
-                        reportItemTrajectory.setDistance(distance);
-                    } catch (TransformException ex) {
+                        travelModes.add(curSubTrajectory.getTravelMode());
+                        final List<Coordinate> coordinates = Coordinate3DUtil.convert(curSubTrajectory.getCoordinates());
+                        final ReportItemTrajectory reportItemTrajectory = new ReportItemTrajectory();
+                        reportItemTrajectory.setTravelMode(curSubTrajectory.getTravelMode());
+                        try {
+                            final Double distance = distanceCalculation.calculate(coordinates, this.projectedCoordinateReferenceSystem);
+                            reportItemTrajectory.setDistance(distance);
+                        } catch (IllegalArgumentException | TransformException ex) {
+                            Logger.getLogger(ExportView.class.getName()).log(Level.WARNING, null, ex);
+                            final FacesMessage message = new FacesMessage("Error", "Could not calculate distance: " + ex.getLocalizedMessage());
+                            FacesContext.getCurrentInstance().addMessage(null, message);
+                        }
+                        curReportItem.getTrajectories().add(reportItemTrajectory);
+                    } catch (Exception ex) {
                         Logger.getLogger(ExportView.class.getName()).log(Level.SEVERE, null, ex);
+                        final FacesMessage message = new FacesMessage("Error", "Could not add sub trajectory: " + ex.getLocalizedMessage());
+                        FacesContext.getCurrentInstance().addMessage(null, message);
                     }
-                    curReportItem.getTrajectories().add(reportItemTrajectory);
                 });
                 final StringJoiner combinedTravelModes = new StringJoiner(",");
                 travelModes.stream().distinct().forEachOrdered(curTravelMode -> {
@@ -148,5 +156,13 @@ public class ExportView {
                 });
              */
         }
+    }
+        
+    public Integer getImportedFeaturesCount() {
+        return this.importedFeatures != null ? this.importedFeatures.size() : null;
+    }
+    
+    public String getProjectedCoordinateReferenceSystem() {
+        return this.projectedCoordinateReferenceSystem != null ? this.projectedCoordinateReferenceSystem.getName().getCode() : null;
     }
 }

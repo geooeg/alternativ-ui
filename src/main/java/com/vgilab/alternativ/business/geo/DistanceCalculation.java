@@ -17,7 +17,7 @@ public class DistanceCalculation {
 
     final GeodeticCalculator geodeticCalculator = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
 
-    public Double calculate(final List<Coordinate> coordinates, final CoordinateReferenceSystem crs) throws TransformException {
+    public Double calculate(final List<Coordinate> coordinates, final CoordinateReferenceSystem crs) throws TransformException, IllegalArgumentException {
         final Iterator<Coordinate> iterator = coordinates.iterator();
         Double distance = 0d;
         Coordinate previous = null;
@@ -32,7 +32,7 @@ public class DistanceCalculation {
         return distance;
     }
 
-    public Double calculate(final Coordinate p0, final Coordinate p1, final CoordinateReferenceSystem crs) throws TransformException {
+    public Double calculate(final Coordinate p0, final Coordinate p1, final CoordinateReferenceSystem crs) throws TransformException, IllegalArgumentException {
         this.geodeticCalculator.setStartingPosition(JTS.toDirectPosition(p0, crs));
         this.geodeticCalculator.setDestinationPosition(JTS.toDirectPosition(p1, crs));
         return this.geodeticCalculator.getOrthodromicDistance();
