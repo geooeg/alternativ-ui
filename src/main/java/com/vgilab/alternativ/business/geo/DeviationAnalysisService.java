@@ -61,7 +61,7 @@ public class DeviationAnalysisService {
         final List<DeviationSegment> segments = new LinkedList<>();
         final Geometry intersections = lineX.intersection(lineY);
         final Geometry intersectionsY = lineY.intersection(lineX);
-        final Geometry diff = intersections.difference(intersectionsY);
+        ///final Geometry diff = intersections.difference(intersectionsY);
         if (null != intersections.getCoordinates() && intersections.getCoordinates().length > 0) {
             final Coordinate[] intersectingCoordinates = intersections.getCoordinates();
             LOGGER.info(MessageFormat.format("Found %d intersections", intersectingCoordinates.length));

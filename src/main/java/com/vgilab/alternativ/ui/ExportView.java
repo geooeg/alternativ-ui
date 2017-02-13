@@ -33,6 +33,9 @@ import org.primefaces.event.FileUploadEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.geotools.referencing.GeodeticCalculator;
+
+
 
 /**
  *
@@ -46,6 +49,8 @@ public class ExportView {
     private final String coordinateReferenceSystem = "EPSG:2039";
     private FeatureCollection<SimpleFeatureType, SimpleFeature> importedFeatures;
     private CoordinateReferenceSystem projectedCoordinateReferenceSystem;
+    
+    final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 
     @Autowired
     private ShapefileService shapefileService;
@@ -154,6 +159,7 @@ public class ExportView {
                 travelModes.stream().distinct().forEachOrdered(t -> {
                     combinedTravelModes.add(t.toString());
                 });
+<<<<<<< Updated upstream
              */
         }
     }
