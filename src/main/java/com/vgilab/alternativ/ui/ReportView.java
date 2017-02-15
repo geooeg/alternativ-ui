@@ -44,7 +44,7 @@ import org.geotools.referencing.GeodeticCalculator;
 @Component
 @ManagedBean(name = "exportView")
 @SessionScoped
-public class ExportView {
+public class ReportView {
 
     private final String coordinateReferenceSystem = "EPSG:2039";
     private FeatureCollection<SimpleFeatureType, SimpleFeature> importedFeatures;
@@ -93,7 +93,7 @@ public class ExportView {
                 final FacesMessage message = new FacesMessage("Successful", "Imported features from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } catch (FactoryException | IOException ex) {
-                Logger.getLogger(PositionDetailView.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ReportView.class.getName()).log(Level.SEVERE, null, ex);
                 final FacesMessage message = new FacesMessage("Error", "Could not read features from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
@@ -102,7 +102,7 @@ public class ExportView {
                 final FacesMessage message = new FacesMessage("Successful", "Imported CRS from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } catch (FactoryException | IOException ex) {
-                Logger.getLogger(PositionDetailView.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ReportView.class.getName()).log(Level.SEVERE, null, ex);
                 final FacesMessage message = new FacesMessage("Error", "Could not read CRS from " + event.getFile().getFileName() + ".");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
@@ -120,13 +120,13 @@ public class ExportView {
                             final Double distance = distanceCalculation.calculate(coordinates, this.projectedCoordinateReferenceSystem);
                             reportItemTrajectory.setDistance(distance);
                         } catch (IllegalArgumentException | TransformException ex) {
-                            Logger.getLogger(ExportView.class.getName()).log(Level.WARNING, null, ex);
+                            Logger.getLogger(ReportView.class.getName()).log(Level.WARNING, null, ex);
                             final FacesMessage message = new FacesMessage("Error", "Could not calculate distance: " + ex.getLocalizedMessage());
                             FacesContext.getCurrentInstance().addMessage(null, message);
                         }
                         curReportItem.getTrajectories().add(reportItemTrajectory);
                     } catch (Exception ex) {
-                        Logger.getLogger(ExportView.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(ReportView.class.getName()).log(Level.SEVERE, null, ex);
                         final FacesMessage message = new FacesMessage("Error", "Could not add sub trajectory: " + ex.getLocalizedMessage());
                         FacesContext.getCurrentInstance().addMessage(null, message);
                     }

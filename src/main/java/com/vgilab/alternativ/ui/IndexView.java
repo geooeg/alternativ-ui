@@ -201,12 +201,11 @@ public class IndexView implements Serializable {
         configurableNavigationHandler.performNavigation("/positionList.xhtml?faces-redirect=true");
     }
     
-    
     public void startReport() {
-        final ExportView exportView = (ExportView) FacesContext.getCurrentInstance().getApplication().getELResolver().getValue(FacesContext.getCurrentInstance().getELContext(), null, "exportView");
-        exportView.setAlterNativs(this.alterNativs);
+        final ReportView reportView = (ReportView) FacesContext.getCurrentInstance().getApplication().getELResolver().getValue(FacesContext.getCurrentInstance().getELContext(), null, "exportView");
+        reportView.setAlterNativs(this.alterNativs);
         final ConfigurableNavigationHandler configurableNavigationHandler = (ConfigurableNavigationHandler) FacesContext.getCurrentInstance().getApplication().getNavigationHandler();
-        configurableNavigationHandler.performNavigation("/reportForm.xhtml?faces-redirect=true");
+        configurableNavigationHandler.performNavigation("/report.xhtml?faces-redirect=true");
     }
 
     public MapModel getMapModel() {
