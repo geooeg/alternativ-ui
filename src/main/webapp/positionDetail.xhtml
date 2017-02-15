@@ -24,6 +24,20 @@
                 height: 15px;
             }
         </style>
+        <script type="text/javascript">
+            function showStatus() {
+                PF('statusDialog').show();
+            }
+
+            function hideStatus() {
+                PF('statusDialog').hide();
+            }
+        </script>
+        <p:growl id="growl" sticky="false" autoUpdate="true" life="3000" showDetail="true"/>
+        <p:dialog widgetVar="statusDialog" id="statusDialog" header="Status" modal="true" height="32" resizable="false" draggable="false">
+            <img src="resources/images/ajaxloadingbar.gif" width="220"/>
+        </p:dialog>
+        <h:form id="form" style="height: 100%" enctype="multipart/form-data">
     </h:head>
 
     <h:body>
@@ -31,6 +45,12 @@
             <p:growl id="growl" sticky="false" autoUpdate="true" life="3000" showDetail="true"/>
             <p:toolbar styleClass="no-print">
                 <f:facet name="right">
+                    <p:menuButton value="Export...">    
+                        <p:menuitem ajax="false" onclick="PrimeFaces.monitorDownload(showStatus, hideStatus);" value=".shp" icon="ui-icon-arrowthick-1-s">
+                            <p:fileDownload value="#{positionDetailView.getShapefile()}" />
+                        </p:menuitem>
+                        <p:separator />
+                    </p:menuButton>
                     <p:commandButton id="printButton" value="Print" icon="ui-icon-print" onclick="window.print()"/>
                 </f:facet>
             </p:toolbar>

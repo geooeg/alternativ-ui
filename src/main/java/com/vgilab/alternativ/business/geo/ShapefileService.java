@@ -8,6 +8,8 @@ import com.vgilab.alternativ.generated.Feature;
 import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Polygon;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -41,6 +44,7 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.simple.SimpleFeature;
@@ -64,10 +68,38 @@ public class ShapefileService {
     private final static Logger LOGGER = Logger.getGlobal();
     private final static String REFERENCE_ID = "Tripid";
     private final static String TRAVEL_MODE_ID = "Type";
+    private final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
     
-
     @Autowired
     private FeatureService featureService;
+
+    public File exportToShapefile(final AnalysedTrip analysedTrip) {
+        final File shapeDir = Files.createTempDir();
+        if (null != analysedTrip) {
+            final String tripId = analysedTrip.getAlterNativ().getId();
+            final String userId = analysedTrip.getAlterNativ().getUserId();
+            final List<SimpleFeature> deviationLines = new LinkedList<>();
+            final List<SimpleFeature> deviationPolygons = new LinkedList<>();
+
+            analysedTrip.getDeviationsFromTrip().forEach((curDeviationSegment) -> {
+                final String segmentId = UUID.randomUUID().toString();
+                deviationLines.add(this.featureService.createLineXFromDeviationSegment(curDeviationSegment, tripId, userId, segmentId));
+                deviationLines.add(this.featureService.createLineYFromDeviationSegment(curDeviationSegment, tripId, userId, segmentId));
+                final Polygon polygon = this.geometryFactory.createPolygon(DeviationUtil.createRingAsArrayFromSegment(curDeviationSegment));
+                deviationPolygons.add(this.featureService.createPolygonFromDeviationSegment(polygon, tripId, userId, segmentId));
+            });
+            
+            if (!CollectionUtils.isEmpty(deviationLines)) {
+                final File shapeFile = new File(shapeDir, "deviation-lines.shp");
+                this.writeToShapeFile(shapeFile, this.featureService.getLineTypeForDeviationSegment(), deviationLines);
+            }
+            if (!CollectionUtils.isEmpty(deviationPolygons)) {
+                final File shapeFile = new File(shapeDir, "deviation-polygons.shp");
+                this.writeToShapeFile(shapeFile, this.featureService.getPolygonTypeForDeviationSegment(), deviationPolygons);
+            }
+        }
+        return this.archiveShapeDir(shapeDir, shapeDir + File.pathSeparator + "deviation-segments-shp.zip");
+    }
 
     public File exportToShapefile(final List<AlterNativ> alterNativs, final List<BusStop> busStops, final List<Feature> telofuns, final boolean snapToRoad) {
         final File shapeDir = Files.createTempDir();
@@ -116,25 +148,7 @@ public class ShapefileService {
             final List<SimpleFeature> pointsForTelofuns = this.featureService.createPointsFromTelofuns(telofuns);
             this.addTelofunsAsPoints(shapeDir, pointsForTelofuns);
         }
-        try {
-            shapeDir.deleteOnExit();
-            final File zipFile = new File(shapeDir + File.pathSeparator + "alternativ-shp.zip");
-            try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
-                for (File file : shapeDir.listFiles()) {
-                    file.deleteOnExit();
-                    final ZipEntry entry = new ZipEntry(file.getName());
-                    zipOutputStream.putNextEntry(entry);
-                    final FileInputStream in = new FileInputStream(file);
-                    IOUtils.copy(in, zipOutputStream);
-                    IOUtils.closeQuietly(in);
-                }
-                zipOutputStream.flush();
-            }
-            return zipFile;
-        } catch (IOException ex) {
-            Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+        return this.archiveShapeDir(shapeDir, shapeDir + File.pathSeparator + "alternativ-shp.zip");
     }
 
     public File exportToShapefile(final AlterNativ alterNativ, final List<Coordinate3D> snapedToRoad) {
@@ -161,25 +175,7 @@ public class ShapefileService {
             final List<SimpleFeature> linesForSnapedToRoad = this.featureService.createLinesForCoordinates(snapedToRoad);
             this.addSnappedToRoadAsLines(shapeDir, linesForSnapedToRoad);
         }
-        try {
-            shapeDir.deleteOnExit();
-            final File zipFile = new File(shapeDir + File.pathSeparator + alterNativ.getId() + "-shp.zip");
-            try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
-                for (File file : shapeDir.listFiles()) {
-                    file.deleteOnExit();
-                    final ZipEntry entry = new ZipEntry(file.getName());
-                    zipOutputStream.putNextEntry(entry);
-                    final FileInputStream in = new FileInputStream(file);
-                    IOUtils.copy(in, zipOutputStream);
-                    IOUtils.closeQuietly(in);
-                }
-                zipOutputStream.flush();
-            }
-            return zipFile;
-        } catch (IOException ex) {
-            Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+        return this.archiveShapeDir(shapeDir, shapeDir + File.pathSeparator + alterNativ.getId() + "-shp.zip");
     }
 
     private void addChoosenRouteAsPoints(File shapeDir, List<SimpleFeature> featuresForChosenRoute) {
@@ -399,13 +395,36 @@ public class ShapefileService {
         }
         return subTrajectories;
     }
+    
+    private File archiveShapeDir(File shapeDir, String path)  {
+        try {
+            shapeDir.deleteOnExit();
+            final File zipFile = new File(path);
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
+                for (File file : shapeDir.listFiles()) {
+                    file.deleteOnExit();
+                    final ZipEntry entry = new ZipEntry(file.getName());
+                    zipOutputStream.putNextEntry(entry);
+                    final FileInputStream in = new FileInputStream(file);
+                    IOUtils.copy(in, zipOutputStream);
+                    IOUtils.closeQuietly(in);
+                }
+                zipOutputStream.flush();
+            }
+            return zipFile;
+        } catch (IOException ex) {
+            Logger.getLogger(ShapefileService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
 
     private static Geometry transformToGeo(CoordinateReferenceSystem srcCRS, Geometry source, boolean lenient) throws FactoryException, TransformException {
         final CoordinateReferenceSystem destCRS = DefaultGeographicCRS.WGS84;
-        if(srcCRS == destCRS) {
+        if (srcCRS == destCRS) {
             return source;
         }
         final MathTransform transform = CRS.findMathTransform(srcCRS, destCRS, lenient);
         return JTS.transform(source, transform);
     }
+    
 }

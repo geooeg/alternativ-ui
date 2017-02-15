@@ -15,6 +15,8 @@ import com.vgilab.alternativ.generated.Destination;
 import com.vgilab.alternativ.generated.Origin;
 import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
 import com.vividsolutions.jts.geom.Coordinate;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -30,6 +32,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 import org.primefaces.model.map.DefaultMapModel;
 import org.primefaces.model.map.LatLng;
 import org.primefaces.model.map.MapModel;
@@ -57,6 +61,7 @@ public class PositionDetailView {
     private VisibleImportedRoute visibleImportedRoute = VisibleImportedRoute.ANALYSED_DATA;
     private FeatureCollection<SimpleFeatureType, SimpleFeature> importedFeatures;
     private CoordinateReferenceSystem projectedCoordinateReferenceSystem;
+    private StreamedContent shapefile;
 
     @Autowired
     private FeatureService featureService;
@@ -295,5 +300,19 @@ public class PositionDetailView {
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
         }
+    }
+    
+    public StreamedContent getShapefile() {
+        if (null != this.selectedTrip) {
+            try {
+                this.shapefile = new DefaultStreamedContent(new FileInputStream(this.shapefileService.exportToShapefile(this.selectedTrip)), "application/zip", "alternativ-shp.zip");
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            FacesMessage message = new FacesMessage("Failed", "Please import first data.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+        }
+        return this.shapefile;
     }
 }

@@ -11,6 +11,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -124,7 +125,7 @@ public class FeatureService {
     }
 
     public List<SimpleFeature> createPointsFromChosenRoute(final ChosenRoute chosenRoute, final String tripId, final String userId, final String chosenType, final String createdAt) {
-        Long timestampFromIso8601 = -1l;  
+        Long timestampFromIso8601 = -1l;
         try {
             timestampFromIso8601 = this.getTimestampFromIso8601(createdAt);
         } catch (IllegalArgumentException ex) {
@@ -273,7 +274,7 @@ public class FeatureService {
         featureTypeBuilder.add("chosentype", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
-
+    
     public List<SimpleFeature> createPointsFromBusStops(final List<BusStop> busStops) {
         final List<SimpleFeature> features = new ArrayList<>();
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPointTypeForBusStops());
@@ -370,7 +371,66 @@ public class FeatureService {
         featureTypeBuilder.add("the_geom", LineString.class); // then add geometry
         return featureTypeBuilder.buildFeatureType();
     }
+    
+    /**
+     * Deviation Export
+     * 
+     * @return 
+     */
+    public SimpleFeatureType getLineTypeForDeviationSegment() {
+        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.setName("Line");
+        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
+        featureTypeBuilder.add("the_geom", LineString.class); // then add geometry
+        featureTypeBuilder.add("ref_id", String.class);
+        featureTypeBuilder.add("user_id", String.class);
+        featureTypeBuilder.add("seg_id", String.class);
+        featureTypeBuilder.add("line", String.class);
+        return featureTypeBuilder.buildFeatureType();
+    }
 
+    public SimpleFeature createLineXFromDeviationSegment(final DeviationSegment deviationSegment, final String tripId, final String userId, final String segmentId) {
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForDeviationSegment());
+        featureBuilder.add(deviationSegment.getSegmentLineX());
+        featureBuilder.add(tripId);
+        featureBuilder.add(userId);
+        featureBuilder.add(segmentId);
+        featureBuilder.add("X");
+        return featureBuilder.buildFeature(null);
+    }
+
+    public SimpleFeature createLineYFromDeviationSegment(final DeviationSegment deviationSegment, final String tripId, final String userId, final String segmentId) {
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForDeviationSegment());
+        featureBuilder.add(deviationSegment.getSegmentLineY());
+        featureBuilder.add(tripId);
+        featureBuilder.add(userId);
+        featureBuilder.add(segmentId);
+        featureBuilder.add("Y");
+        return featureBuilder.buildFeature(null);
+    }
+    
+    public SimpleFeatureType getPolygonTypeForDeviationSegment() {
+        final SimpleFeatureTypeBuilder featureTypeBuilder = new SimpleFeatureTypeBuilder();
+        featureTypeBuilder.setName("Polygon");
+        featureTypeBuilder.setCRS(DefaultGeographicCRS.WGS84); // set crs first
+        featureTypeBuilder.add("the_geom", Polygon.class); // then add geometry
+        featureTypeBuilder.add("ref_id", String.class);
+        featureTypeBuilder.add("user_id", String.class);
+        featureTypeBuilder.add("seg_id", String.class);
+        featureTypeBuilder.add("line", String.class);
+        return featureTypeBuilder.buildFeatureType();
+    }
+
+    public SimpleFeature createPolygonFromDeviationSegment(final Polygon polygon, final String tripId, final String userId, final String segmentId) {
+        final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPolygonTypeForDeviationSegment());
+        featureBuilder.add(polygon);
+        featureBuilder.add(tripId);
+        featureBuilder.add(userId);
+        featureBuilder.add(segmentId);
+        featureBuilder.add("X");
+        return featureBuilder.buildFeature(null);
+    }
+    
     /**
      * https://developers.google.com/maps/documentation/utilities/polylineutility
      *
@@ -415,12 +475,12 @@ public class FeatureService {
         final Point point = geometryFactory.createPoint(coordinate);
         featureBuilder.add(point);
         featureBuilder.add(tripId);
-        if(null != curTrack.getLocation().getActivity() && StringUtils.isNotEmpty(curTrack.getLocation().getActivity().getType())) {
+        if (null != curTrack.getLocation().getActivity() && StringUtils.isNotEmpty(curTrack.getLocation().getActivity().getType())) {
             featureBuilder.add(curTrack.getLocation().getActivity().getType());
         } else {
             featureBuilder.add("-");
         }
-        if(null != curTrack.getLocation().getBattery() && null != curTrack.getLocation().getBattery().getLevel()) {
+        if (null != curTrack.getLocation().getBattery() && null != curTrack.getLocation().getBattery().getLevel()) {
             featureBuilder.add(curTrack.getLocation().getBattery().getLevel());
         } else {
             featureBuilder.add("-");
