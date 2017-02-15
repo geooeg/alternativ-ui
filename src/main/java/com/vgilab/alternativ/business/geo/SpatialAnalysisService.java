@@ -4,6 +4,7 @@ import com.vgilab.alternativ.generated.AlterNativ;
 import com.vgilab.alternativ.generated.Route;
 import com.vgilab.alternativ.generated.Step;
 import com.vgilab.alternativ.generated.Track;
+import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
@@ -38,11 +39,21 @@ public class SpatialAnalysisService {
         if (null != alterNativs) {
             alterNativs.stream().forEach((AlterNativ curAlterNativ) -> {
                 final AnalysedTrip analysedTrip = this.analyseRoute(curAlterNativ, deviationInMeters, minimumTracks);
-                final List<DeviationSegment> deviationSegments = deviationAnalysisService.createSegments(curAlterNativ);
-                final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.filterSegmentsByDeviation(deviationSegments, 2d);
-                analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
-                analysedTrip.setDeviationArea(deviationAnalysisService.calculateTotalDeviationArea(filteredSegmentsByDeviation));
-                trips.add(analysedTrip);
+
+                try {
+                    final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(AlterNativUtil.getCoordinatesFromTrack(curAlterNativ), true);
+                    final List<Coordinate> track = Coordinate3DUtil.convert(snapedToRoad);
+                    // final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ);
+                    final List<DeviationSegment> deviationSegments = deviationAnalysisService.createSegments(curAlterNativ, track);
+                    final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.filterSegmentsByDeviation(deviationSegments, 2d);
+                    analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
+                    analysedTrip.setDeviationArea(deviationAnalysisService.calculateTotalDeviationArea(filteredSegmentsByDeviation));
+                    trips.add(analysedTrip);
+
+                } catch (final SecurityException ex) {
+                    Logger.getLogger(SpatialAnalysisService.class.getName()).log(Level.SEVERE, null, ex);
+
+                }
             });
         }
         return trips;

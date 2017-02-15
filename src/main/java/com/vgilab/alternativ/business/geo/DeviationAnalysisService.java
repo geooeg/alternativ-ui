@@ -22,6 +22,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.operation.TransformException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 /**
  *
@@ -51,6 +52,19 @@ public class DeviationAnalysisService {
         return this.createSegments(lineFromTracks, lineFromChosenRoute);
     }
 
+    public List<DeviationSegment> createSegments(final AlterNativ alterNativ, List<Coordinate> track) {
+        if (null == alterNativ || CollectionUtils.isEmpty(alterNativ.getChosenRoute()) || CollectionUtils.isEmpty(track) ) {
+            return null;
+        }
+        final LineString lineFromTrack = geometryFactory.createLineString(track.toArray(new Coordinate[track.size()]));
+        final SimpleFeature featureFromChosenRoute = this.featureService.createLineFromChosenRoute(alterNativ.getChosenRoute().get(0), alterNativ.getId(), alterNativ.getUserId(), alterNativ.getChosenType());
+        if (null == lineFromTrack || null == featureFromChosenRoute) {
+            return null;
+        }
+        final LineString lineFromChosenRoute = (LineString) featureFromChosenRoute.getDefaultGeometry();
+        return this.createSegments(lineFromTrack, lineFromChosenRoute);
+    }
+    
     private List<DeviationSegment> createSegments(final LineString lineX, final LineString lineY) {
         if (null == lineX || null == lineY) {
             return null;

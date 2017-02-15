@@ -107,6 +107,5 @@ public class GoogleMapsRoadsApi {
         }
         stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         return stringBuilder.toString();
-
     }
 }
