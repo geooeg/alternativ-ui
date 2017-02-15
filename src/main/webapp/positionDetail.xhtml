@@ -33,16 +33,15 @@
                 PF('statusDialog').hide();
             }
         </script>
-        <p:growl id="growl" sticky="false" autoUpdate="true" life="3000" showDetail="true"/>
-        <p:dialog widgetVar="statusDialog" id="statusDialog" header="Status" modal="true" height="32" resizable="false" draggable="false">
-            <img src="resources/images/ajaxloadingbar.gif" width="220"/>
-        </p:dialog>
-        <h:form id="form" style="height: 100%" enctype="multipart/form-data">
     </h:head>
 
     <h:body>
-        <h:form id="RouteDetailForm">
+        <p:dialog widgetVar="statusDialog" id="statusDialog" header="Status" modal="true" height="32" resizable="false" draggable="false">
+            <img src="resources/images/ajaxloadingbar.gif" width="220"/>
+        </p:dialog>
+        <h:form id="RouteDetailForm" style="height: 100%" enctype="multipart/form-data">
             <p:growl id="growl" sticky="false" autoUpdate="true" life="3000" showDetail="true"/>
+            
             <p:toolbar styleClass="no-print">
                 <f:facet name="right">
                     <p:menuButton value="Export...">    

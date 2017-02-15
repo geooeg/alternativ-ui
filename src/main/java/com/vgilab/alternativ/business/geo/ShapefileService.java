@@ -75,7 +75,7 @@ public class ShapefileService {
 
     public File exportToShapefile(final AnalysedTrip analysedTrip) {
         final File shapeDir = Files.createTempDir();
-        if (null != analysedTrip) {
+        if (null != analysedTrip && !CollectionUtils.isEmpty(analysedTrip.getDeviationsFromTrip())) {
             final String tripId = analysedTrip.getAlterNativ().getId();
             final String userId = analysedTrip.getAlterNativ().getUserId();
             final List<SimpleFeature> deviationLines = new LinkedList<>();
