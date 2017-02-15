@@ -70,11 +70,11 @@
                 </p:column>
             </p:dataTable>
             <p:spacer />
-            <p:fileUpload fileUploadListener="#{exportView.handleFileUpload}" mode="advanced"
+            <p:fileUpload id="fileUpload" fileUploadListener="#{exportView.handleFileUpload}" mode="advanced"
                           update="growl, ReportForm" auto="true" allowTypes="/(\.|\/)(zip)$/" />
             <p:spacer />
             <p:panelGrid id="statusOfImportGrid" style="width:100%">
-                <p:row>
+                <p:row rendered="#{not empty exportView.projectedCoordinateReferenceSystem and not empty exportView.importedFeaturesCount}">
                     <p:column style="font-weight: bold;">
                         <h:outputText value="Projected Coordinate Reference System: #{exportView.projectedCoordinateReferenceSystem}" rendered="#{not empty exportView.projectedCoordinateReferenceSystem}"></h:outputText>
                     </p:column>
@@ -82,7 +82,13 @@
                         <h:outputText value="Imported Features: #{exportView.importedFeaturesCount}" rendered="#{not empty exportView.importedFeaturesCount}"></h:outputText>
                     </p:column>
                 </p:row>
+                <p:row rendered="#{not empty exportView.errorMessage}">
+                    <p:column colspan="2">
+                        <p:inputTextarea rows="10" maxlength="4000" readonly="true" value="#{exportView.errorMessage}" style="width: 100%; color: red" />
+                    </p:column>
+                </p:row>
             </p:panelGrid>
+            <p:blockUI block="ReportForm" trigger="fileUpload" />
         </h:form>
     </h:body>
 </html>
