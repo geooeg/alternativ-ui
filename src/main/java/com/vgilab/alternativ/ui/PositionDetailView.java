@@ -305,7 +305,7 @@ public class PositionDetailView {
     public StreamedContent getShapefile() {
         if (null != this.selectedTrip) {
             try {
-                this.shapefile = new DefaultStreamedContent(new FileInputStream(this.shapefileService.exportToShapefile(this.selectedTrip)), "application/zip", "alternativ-shp.zip");
+                this.shapefile = new DefaultStreamedContent(new FileInputStream(this.shapefileService.exportToShapefile(this.selectedTrip)), "application/zip", "deviations-shp.zip");
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(IndexView.class.getName()).log(Level.SEVERE, null, ex);
             }

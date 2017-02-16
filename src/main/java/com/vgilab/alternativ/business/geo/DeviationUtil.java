@@ -29,7 +29,6 @@ public class DeviationUtil {
         return Arrays.asList(coordinateList.toCoordinateArray());
     }
     
-    
     public static List<Coordinate3D> createRingOfCoordinatesFromSegment(final DeviationSegment deviationSegment) {
         final List<Coordinate3D> coordinates3D = new LinkedList<>();
         final List<Coordinate> coordinates = DeviationUtil.createRingAsListFromSegment(deviationSegment);

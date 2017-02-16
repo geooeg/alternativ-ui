@@ -53,7 +53,11 @@ public class DeviationAnalysisService {
     }
 
     public List<DeviationSegment> createSegments(final AlterNativ alterNativ, List<Coordinate> track) {
-        if (null == alterNativ || CollectionUtils.isEmpty(alterNativ.getChosenRoute()) || CollectionUtils.isEmpty(track) ) {
+        if (null == alterNativ 
+                || CollectionUtils.isEmpty(alterNativ.getChosenRoute()) 
+                || alterNativ.getChosenRoute().size() < 2
+                || CollectionUtils.isEmpty(track) 
+                || track.size() < 2) {
             return null;
         }
         final LineString lineFromTrack = geometryFactory.createLineString(track.toArray(new Coordinate[track.size()]));

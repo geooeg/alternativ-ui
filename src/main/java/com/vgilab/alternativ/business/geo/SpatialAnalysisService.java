@@ -39,7 +39,6 @@ public class SpatialAnalysisService {
         if (null != alterNativs) {
             alterNativs.stream().forEach((AlterNativ curAlterNativ) -> {
                 final AnalysedTrip analysedTrip = this.analyseRoute(curAlterNativ, deviationInMeters, minimumTracks);
-
                 try {
                     final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(AlterNativUtil.getCoordinatesFromTrack(curAlterNativ), true);
                     final List<Coordinate> track = Coordinate3DUtil.convert(snapedToRoad);
@@ -49,7 +48,6 @@ public class SpatialAnalysisService {
                     analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
                     analysedTrip.setDeviationArea(deviationAnalysisService.calculateTotalDeviationArea(filteredSegmentsByDeviation));
                     trips.add(analysedTrip);
-
                 } catch (final SecurityException ex) {
                     Logger.getLogger(SpatialAnalysisService.class.getName()).log(Level.SEVERE, null, ex);
 
