@@ -52,7 +52,7 @@ public class GoogleMapsRoadsApi {
         }
     }
 
-    public static List<Coordinate3D> snapToRoadsUsingBatches(final List<Coordinate3D> coordinates, final boolean interpolate) throws SecurityException {
+    public static List<Coordinate3D> snapToRoadsUsingBatches(final List<Coordinate3D> coordinates, final boolean interpolate) {
         final List<Coordinate3D> snappedCoordinates = new LinkedList<>();
         for (int i = 0; i < coordinates.size(); i += GOOGLE_MAPS_ROADS_CHUNK_SIZE) {
             final int chunk = (i + GOOGLE_MAPS_ROADS_CHUNK_SIZE > coordinates.size()) ? coordinates.size() : i + GOOGLE_MAPS_ROADS_CHUNK_SIZE;
@@ -60,15 +60,15 @@ public class GoogleMapsRoadsApi {
             final LinkedList<Coordinate3D> coordinatesChunkList = new LinkedList<>(Arrays.asList(coordinatesChunk));
             final GoogleMapsRoads googleMapsRoads = GoogleMapsRoadsApi.snapToRoads(coordinatesChunkList, interpolate);
             if (null != googleMapsRoads) {
-                for (final SnappedPoint curSnappedPoint : googleMapsRoads.getSnappedPoints()) {
+                googleMapsRoads.getSnappedPoints().stream().forEach((curSnappedPoint) -> {
                     snappedCoordinates.add(new Coordinate3D(curSnappedPoint.getLocation().getLongitude(), curSnappedPoint.getLocation().getLatitude(), 0d));
-                }
+                });
             }
         }
         return snappedCoordinates;
     }
 
-    public static GoogleMapsRoads snapToRoads(final List<Coordinate3D> coordinates, final boolean interpolate) throws SecurityException {
+    public static GoogleMapsRoads snapToRoads(final List<Coordinate3D> coordinates, final boolean interpolate)  throws SecurityException {
         final String coordinatesToPath = GoogleMapsRoadsApi.coordinatesToPath(coordinates);
         final RestTemplate restTemplate = new RestTemplate();
         final HttpHeaders headers = new HttpHeaders();
@@ -87,11 +87,10 @@ public class GoogleMapsRoadsApi {
                     = restTemplate.exchange(builder.build().encode().toUri(),
                             HttpMethod.GET, entity, new ParameterizedTypeReference<GoogleMapsRoads>() {
                     });
-
             return googleMapsRoadsResponse.getBody();
         } catch (Exception ex) {
             LOGGER.severe(ex.getLocalizedMessage());
-            throw new SecurityException(ex);
+            return null;
         }
     }
 

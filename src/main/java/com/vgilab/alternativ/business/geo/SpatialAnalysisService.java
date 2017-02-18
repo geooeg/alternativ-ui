@@ -20,6 +20,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 /**
  *
@@ -51,21 +52,18 @@ public class SpatialAnalysisService {
     public AnalysedTrip analyseRoute(final AlterNativ curAlterNativ, final Double deviationInMeters, final Integer minimumTracks) {
         final Double deviation = null == deviationInMeters ? 20d : deviationInMeters;
         final AnalysedTrip analysedTrip = new AnalysedTrip(curAlterNativ, deviation, minimumTracks); 
-        try {
-            final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(AlterNativUtil.getCoordinatesFromTrack(curAlterNativ), true);
-            analysedTrip.setSnapedToRoad(snapedToRoad);
-            final List<Coordinate> track = Coordinate3DUtil.convert(snapedToRoad);
+        
+            if(CollectionUtils.isEmpty(analysedTrip.getSnapedToRoad())) {
+                final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(AlterNativUtil.getCoordinatesFromTrack(curAlterNativ), true);
+                analysedTrip.setSnapedToRoad(snapedToRoad);
+            }
+            final List<Coordinate> track = Coordinate3DUtil.convert(analysedTrip.getSnapedToRoad());
             // final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ);
             final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ, track);
             final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.filterSegmentsByDeviation(deviationSegmentsWithTracks, 2d);
             analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
             analysedTrip.setDeviationArea(deviationAnalysisService.calculateTotalDeviationArea(filteredSegmentsByDeviation));
-        }
-        catch(Exception ex) 
-        {
-            Logger.getLogger(SpatialAnalysisService.class.getName()).log(Level.SEVERE, null, ex);
-            analysedTrip.setSnapedToRoadError(true);
-        }
+        
         final List<Position> positions = this.matchPositions(curAlterNativ, deviationInMeters, minimumTracks);
         analysedTrip.setPositions(positions);
         return analysedTrip;

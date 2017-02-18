@@ -6,7 +6,6 @@ import com.vividsolutions.jts.geom.CoordinateList;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
@@ -42,6 +41,7 @@ public class DeviationAnalysisService {
         if (null == alterNativ || null == alterNativ.getTracks() || alterNativ.getTracks().isEmpty() || null == alterNativ.getChosenRoute() || alterNativ.getChosenRoute().isEmpty()) {
             return null;
         }
+        LOGGER.log(Level.INFO, "=== Create deviation segments for ID {0} ===", alterNativ.getId());
         final SimpleFeature featureFromTracks = this.featureService.createLineFromTracks(alterNativ.getTracks(), alterNativ.getId());
         final SimpleFeature featureFromChosenRoute = this.featureService.createLineFromChosenRoute(alterNativ.getChosenRoute().get(0), alterNativ.getId(), alterNativ.getUserId(), alterNativ.getChosenType());
         if (null == featureFromTracks || null == featureFromChosenRoute) {
@@ -49,18 +49,20 @@ public class DeviationAnalysisService {
         }
         final LineString lineFromTracks = (LineString) featureFromTracks.getDefaultGeometry();
         final LineString lineFromChosenRoute = (LineString) featureFromChosenRoute.getDefaultGeometry();
-        return this.createSegments(lineFromTracks, lineFromChosenRoute);
+        final List<DeviationSegment> segments = this.createSegments(lineFromTracks, lineFromChosenRoute);
+        LOGGER.log(Level.INFO, "=== Found {0} deviation segments ===", segments.size());
+        return segments;
     }
 
     public List<DeviationSegment> createSegments(final AlterNativ alterNativ, List<Coordinate> track) {
         if (null == alterNativ 
-                || CollectionUtils.isEmpty(alterNativ.getChosenRoute()) 
-                || alterNativ.getChosenRoute().size() < 2
+                || CollectionUtils.isEmpty(alterNativ.getChosenRoute())
                 || CollectionUtils.isEmpty(track) 
                 || track.size() < 2) {
             return null;
         }
-        final LineString lineFromTrack = geometryFactory.createLineString(track.toArray(new Coordinate[track.size()]));
+        final Coordinate[] trackArray = track.toArray(new Coordinate[track.size()]);
+        final LineString lineFromTrack = geometryFactory.createLineString(trackArray);
         final SimpleFeature featureFromChosenRoute = this.featureService.createLineFromChosenRoute(alterNativ.getChosenRoute().get(0), alterNativ.getId(), alterNativ.getUserId(), alterNativ.getChosenType());
         if (null == lineFromTrack || null == featureFromChosenRoute) {
             return null;
