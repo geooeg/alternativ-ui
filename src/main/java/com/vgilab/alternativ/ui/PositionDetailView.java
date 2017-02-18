@@ -146,18 +146,19 @@ public class PositionDetailView {
             this.routeMapModel.addOverlay(destinationMarker);
             this.routeMapModel.addOverlay(trackPolyline);
             try {
-                final Polyline googleMapsTrackPolyline = new Polyline();
-                googleMapsTrackPolyline.setStrokeWeight(2);
-                googleMapsTrackPolyline.setStrokeColor("blue");
-                googleMapsTrackPolyline.setStrokeOpacity(0.7);
-                final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(alterNativ);
-                final List<Coordinate3D> snapedToRoad = this.selectedTrip.getSnapedToRoad() != null ? this.selectedTrip.getSnapedToRoad() : GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
-                snapedToRoad.stream().map((curCoordinate) -> new LatLng(curCoordinate.getLatitude(), curCoordinate.getLongitude())).forEach((latLng) -> {
-                    googleMapsTrackPolyline.getPaths().add(latLng);
-                });
-                this.routeMapModel.addOverlay(googleMapsTrackPolyline);
+                if(!CollectionUtils.isEmpty(this.selectedTrip.getSnapedToRoad())) {
+                    final List<Coordinate3D> snapedToRoad = this.selectedTrip.getSnapedToRoad();
+                    final Polyline googleMapsTrackPolyline = new Polyline();
+                    googleMapsTrackPolyline.setStrokeWeight(2);
+                    googleMapsTrackPolyline.setStrokeColor("blue");
+                    googleMapsTrackPolyline.setStrokeOpacity(0.7);
+                    snapedToRoad.stream().map((curCoordinate) -> new LatLng(curCoordinate.getLatitude(), curCoordinate.getLongitude())).forEach((latLng) -> {
+                        googleMapsTrackPolyline.getPaths().add(latLng);
+                    });
+                    this.routeMapModel.addOverlay(googleMapsTrackPolyline);
+                }
             } catch (final SecurityException ex) {
-                Logger.getLogger(PositionListView.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(PositionDetailView.class.getName()).log(Level.SEVERE, null, ex);
                 FacesMessage message = new FacesMessage("Security Error", ex.getLocalizedMessage());
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }

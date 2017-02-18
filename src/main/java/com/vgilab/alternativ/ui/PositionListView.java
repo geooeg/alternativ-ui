@@ -44,6 +44,7 @@ import org.primefaces.model.map.Marker;
 import org.primefaces.model.map.Polyline;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 /**
  *
@@ -233,19 +234,19 @@ public class PositionListView {
             }
             this.routeMapModel.addOverlay(trackPolyline);
             // create a list of coordinates for the google maps roads api
-            final List<Coordinate3D> coordinates = AlterNativUtil.getCoordinatesFromTrack(alterNativ);
             try {
-                final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(coordinates, true);
-                final Polyline googleMapsTrackPolyline = new org.primefaces.model.map.Polyline();
-                googleMapsTrackPolyline.setStrokeWeight(2);
-                googleMapsTrackPolyline.setStrokeColor("blue");
-                googleMapsTrackPolyline.setStrokeOpacity(0.7);
-                for (final Coordinate3D curCoordinate : snapedToRoad) {
-                    final LatLng latLng = new LatLng(curCoordinate.getLatitude(), curCoordinate.getLongitude());
-                    googleMapsTrackPolyline.getPaths().add(latLng);
+                if(!CollectionUtils.isEmpty(trip.getSnapedToRoad())) {
+                    final List<Coordinate3D> snapedToRoad = trip.getSnapedToRoad();
+                    final Polyline googleMapsTrackPolyline = new org.primefaces.model.map.Polyline();
+                    googleMapsTrackPolyline.setStrokeWeight(2);
+                    googleMapsTrackPolyline.setStrokeColor("blue");
+                    googleMapsTrackPolyline.setStrokeOpacity(0.7);
+                    for (final Coordinate3D curCoordinate : snapedToRoad) {
+                        final LatLng latLng = new LatLng(curCoordinate.getLatitude(), curCoordinate.getLongitude());
+                        googleMapsTrackPolyline.getPaths().add(latLng);
+                    }
+                    this.routeMapModel.addOverlay(googleMapsTrackPolyline);
                 }
-                this.routeMapModel.addOverlay(googleMapsTrackPolyline);
-                trip.setSnapedToRoad(snapedToRoad);
             } catch (final SecurityException ex) {
                 Logger.getLogger(PositionListView.class
                         .getName()).log(Level.SEVERE, null, ex);

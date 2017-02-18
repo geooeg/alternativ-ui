@@ -8,15 +8,19 @@ import java.util.List;
  * @author smuellner
  */
 public class AnalysedTrip {
-    private AlterNativ alterNativ;
-    private List<Position> positions;
+    private final AlterNativ alterNativ;
+    private final Double deviationInMeters;
+    private final Integer minimumTracks;
     private List<Coordinate3D> snapedToRoad;
+    private boolean snapedToRoadError = false;
     private double deviationArea;
     private List<DeviationSegment> deviationsFromTrip;
+    private List<Position> positions;
 
-    public AnalysedTrip(final AlterNativ curAlterNativ, final List<Position> positions) {
+    public AnalysedTrip(final AlterNativ curAlterNativ, Double deviationInMeters, Integer minimumTracks) {
         this.alterNativ = curAlterNativ;
-        this.positions = positions;
+        this.deviationInMeters = deviationInMeters;
+        this.minimumTracks = minimumTracks;
     }
 
     /**
@@ -26,12 +30,6 @@ public class AnalysedTrip {
         return alterNativ;
     }
 
-    /**
-     * @param alterNativ the alterNativ to set
-     */
-    public void setAlterNativ(AlterNativ alterNativ) {
-        this.alterNativ = alterNativ;
-    }
 
     /**
      * @return the positions
@@ -59,6 +57,20 @@ public class AnalysedTrip {
      */
     public void setSnapedToRoad(List<Coordinate3D> snapedToRoad) {
         this.snapedToRoad = snapedToRoad;
+    }
+
+    /**
+     * @return the snapedToRoadEror
+     */
+    public boolean isSnapedToRoadError() {
+        return snapedToRoadError;
+    }
+
+    /**
+     * @param snapedToRoadEror the snapedToRoadEror to set
+     */
+    public void setSnapedToRoadError(boolean snapedToRoadError) {
+        this.snapedToRoadError = snapedToRoadError;
     }
 
     /**

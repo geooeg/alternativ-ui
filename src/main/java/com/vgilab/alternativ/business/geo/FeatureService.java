@@ -417,7 +417,6 @@ public class FeatureService {
         featureTypeBuilder.add("ref_id", String.class);
         featureTypeBuilder.add("user_id", String.class);
         featureTypeBuilder.add("seg_id", String.class);
-        featureTypeBuilder.add("line", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
@@ -427,7 +426,6 @@ public class FeatureService {
         featureBuilder.add(tripId);
         featureBuilder.add(userId);
         featureBuilder.add(segmentId);
-        featureBuilder.add("X");
         return featureBuilder.buildFeature(null);
     }
     

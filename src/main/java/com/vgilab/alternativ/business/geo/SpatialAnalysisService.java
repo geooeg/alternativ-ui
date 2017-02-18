@@ -38,19 +38,10 @@ public class SpatialAnalysisService {
         final List<AnalysedTrip> trips = new LinkedList<>();
         if (null != alterNativs) {
             alterNativs.stream().forEach((AlterNativ curAlterNativ) -> {
-                final AnalysedTrip analysedTrip = this.analyseRoute(curAlterNativ, deviationInMeters, minimumTracks);
                 try {
-                    final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(AlterNativUtil.getCoordinatesFromTrack(curAlterNativ), true);
-                    final List<Coordinate> track = Coordinate3DUtil.convert(snapedToRoad);
-                    // final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ);
-                    final List<DeviationSegment> deviationSegments = deviationAnalysisService.createSegments(curAlterNativ, track);
-                    final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.filterSegmentsByDeviation(deviationSegments, 2d);
-                    analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
-                    analysedTrip.setDeviationArea(deviationAnalysisService.calculateTotalDeviationArea(filteredSegmentsByDeviation));
-                    trips.add(analysedTrip);
+                    trips.add(this.analyseRoute(curAlterNativ, deviationInMeters, minimumTracks));
                 } catch (final SecurityException ex) {
                     Logger.getLogger(SpatialAnalysisService.class.getName()).log(Level.SEVERE, null, ex);
-
                 }
             });
         }
@@ -59,6 +50,28 @@ public class SpatialAnalysisService {
 
     public AnalysedTrip analyseRoute(final AlterNativ curAlterNativ, final Double deviationInMeters, final Integer minimumTracks) {
         final Double deviation = null == deviationInMeters ? 20d : deviationInMeters;
+        final AnalysedTrip analysedTrip = new AnalysedTrip(curAlterNativ, deviation, minimumTracks); 
+        try {
+            final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(AlterNativUtil.getCoordinatesFromTrack(curAlterNativ), true);
+            analysedTrip.setSnapedToRoad(snapedToRoad);
+            final List<Coordinate> track = Coordinate3DUtil.convert(snapedToRoad);
+            // final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ);
+            final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ, track);
+            final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.filterSegmentsByDeviation(deviationSegmentsWithTracks, 2d);
+            analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
+            analysedTrip.setDeviationArea(deviationAnalysisService.calculateTotalDeviationArea(filteredSegmentsByDeviation));
+        }
+        catch(Exception ex) 
+        {
+            Logger.getLogger(SpatialAnalysisService.class.getName()).log(Level.SEVERE, null, ex);
+            analysedTrip.setSnapedToRoadError(true);
+        }
+        final List<Position> positions = this.matchPositions(curAlterNativ, deviationInMeters, minimumTracks);
+        analysedTrip.setPositions(positions);
+        return analysedTrip;
+    }
+    
+    private List<Position> matchPositions(final AlterNativ curAlterNativ, final Double deviation, final Integer minimumTracks) {
         final List<Position> positions = new LinkedList<>();
         // Create Feature Maps
         final Map<Point, Track> pointTrackMap = this.featureService.createPointTrackMapFromTracks(curAlterNativ.getTracks(), curAlterNativ.getId());
@@ -136,11 +149,10 @@ public class SpatialAnalysisService {
                         position.setCoordinateForTrack(new Coordinate3D(destination.getCoordinate().x, destination.getCoordinate().y, destination.getCoordinate().z));
                         positions.add(position);
                         break destination_loop;
-
                     }
                 }
             }
         }
-        return new AnalysedTrip(curAlterNativ, positions);
+        return positions;
     }
 }
