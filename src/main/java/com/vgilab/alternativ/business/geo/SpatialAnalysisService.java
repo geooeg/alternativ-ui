@@ -53,17 +53,19 @@ public class SpatialAnalysisService {
         final Double deviation = null == deviationInMeters ? 20d : deviationInMeters;
         final AnalysedTrip analysedTrip = new AnalysedTrip(curAlterNativ, deviation, minimumTracks); 
         
-            if(CollectionUtils.isEmpty(analysedTrip.getSnapedToRoad())) {
-                final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(AlterNativUtil.getCoordinatesFromTrack(curAlterNativ), true);
-                analysedTrip.setSnapedToRoad(snapedToRoad);
-            }
-            final List<Coordinate> track = Coordinate3DUtil.convert(analysedTrip.getSnapedToRoad());
-            // final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ);
-            final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ, track);
-            final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.filterSegmentsByDeviation(deviationSegmentsWithTracks, 2d);
-            analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
-            analysedTrip.setDeviationArea(deviationAnalysisService.calculateTotalDeviationArea(filteredSegmentsByDeviation));
-        
+        if(CollectionUtils.isEmpty(analysedTrip.getSnapedToRoad())) {
+            final List<Coordinate3D> snapedToRoad = GoogleMapsRoadsApi.snapToRoadsUsingBatches(AlterNativUtil.getCoordinatesFromTrack(curAlterNativ), true);
+            analysedTrip.setSnapedToRoad(snapedToRoad);
+        }
+        final List<Coordinate> track = Coordinate3DUtil.convert(analysedTrip.getSnapedToRoad());
+        // final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ);
+        // final List<DeviationSegment> deviationSegmentsWithTracks = deviationAnalysisService.createSegments(curAlterNativ, track);
+        // final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.filterSegmentsByDeviation(deviationSegmentsWithTracks, 2d);
+
+        final List<DeviationSegment> filteredSegmentsByDeviation = deviationAnalysisService.createSegments(curAlterNativ, track);
+        analysedTrip.setDeviationsFromTrip(filteredSegmentsByDeviation);
+        analysedTrip.setDeviationArea(deviationAnalysisService.calculateTotalDeviationArea(filteredSegmentsByDeviation));
+
         final List<Position> positions = this.matchPositions(curAlterNativ, deviationInMeters, minimumTracks);
         analysedTrip.setPositions(positions);
         return analysedTrip;

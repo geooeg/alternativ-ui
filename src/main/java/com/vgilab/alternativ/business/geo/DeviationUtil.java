@@ -2,11 +2,15 @@ package com.vgilab.alternativ.business.geo;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 
 /**
@@ -50,5 +54,34 @@ public class DeviationUtil {
             coordinates3D.add(coordinate3D);
         });
         return coordinates3D;
+    }
+    
+    public static CoordinateList cutSegment(final List<Coordinate> coordinates, final LineString start, final LineString end) {
+        final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+        final AtomicBoolean extract = new AtomicBoolean();
+        final CoordinateList extractedCoordinateList = new CoordinateList();
+        final Iterator<Coordinate> coordinateIterator = coordinates.iterator();
+        Coordinate previousCoordinate = null;
+        while(coordinateIterator.hasNext()) {
+            Coordinate currentCoordinate = coordinateIterator.next();
+            if(previousCoordinate != null) {
+                final CoordinateList intersectionCoordinates = new CoordinateList();
+                intersectionCoordinates.add(previousCoordinate);
+                intersectionCoordinates.add(currentCoordinate);
+                final LineString lineString = geometryFactory.createLineString(intersectionCoordinates.toCoordinateArray());
+                if(lineString.touches(start) || lineString.crosses(start)) {
+                    extract.set(true);
+                    extractedCoordinateList.add(previousCoordinate);
+                } 
+                if(extract.get()) {
+                    extractedCoordinateList.add(currentCoordinate);
+                }
+                if(lineString.touches(end) || lineString.crosses(end)) {
+                    extract.set(false);
+                }
+            }
+            previousCoordinate = currentCoordinate;
+        }
+        return extractedCoordinateList;
     }
 }

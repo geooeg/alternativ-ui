@@ -8,8 +8,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.prep.PreparedGeometry;
-import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,8 +32,7 @@ public class DeviationAnalysisService {
 
     private final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
     
-    private final static Double BUFFER_SIZE = 0.002;
-    private final static Integer FILTER_SIZE = 5;
+    private final static Integer FILTER_SIZE = 1;
 
     @Autowired
     private FeatureService featureService;
@@ -71,71 +68,44 @@ public class DeviationAnalysisService {
             return null;
         }
         final LineString lineFromChosenRoute = (LineString) featureFromChosenRoute.getDefaultGeometry();
-        return this.createSegments(lineFromTrack, lineFromChosenRoute);
+        return this.createSegments(lineFromChosenRoute, lineFromTrack);
     }
     
     private List<DeviationSegment> createSegments(final LineString lineX, final LineString lineY) {
         if (null == lineX || null == lineY) {
             return null;
         }
-        LOGGER.info(MessageFormat.format("Coordinates in Line X %d and Line Y %d", lineX.getCoordinates().length, lineY.getCoordinates().length));
+        LOGGER.info(MessageFormat.format("Amount of Coordinates in Line X %d and Line Y %d", lineX.getCoordinates().length, lineY.getCoordinates().length));
         final List<DeviationSegment> segments = new LinkedList<>();
-        final Geometry intersections = lineX.intersection(lineY);
-        final Geometry intersectionsY = lineY.intersection(lineX);
-        ///final Geometry diff = intersections.difference(intersectionsY);
-        if (null != intersections.getCoordinates() && intersections.getCoordinates().length > 0) {
-            final Coordinate[] intersectingCoordinates = intersections.getCoordinates();
-            LOGGER.info(MessageFormat.format("Found %d intersections", intersectingCoordinates.length));
-            final CoordinateList coordinatesX = new CoordinateList(lineX.getCoordinates());
-            final CoordinateList coordinatesY = new CoordinateList(lineY.getCoordinates());
-            for (final Coordinate curIntersectingCoordinate : intersectingCoordinates) {
-                LOGGER.info(MessageFormat.format("Intersecting Coordinate at X %d , Y %d", curIntersectingCoordinate.x, curIntersectingCoordinate.y));
-                final Point intersectingPoint = this.geometryFactory.createPoint(curIntersectingCoordinate);
-                final Geometry intersectingBufferedGeometry = intersectingPoint.buffer(BUFFER_SIZE);
-                final PreparedGeometry preparedIntersectingGeometry = PreparedGeometryFactory.prepare(intersectingBufferedGeometry);
-                final CoordinateList segmentCoordinatesX = new CoordinateList();
-                Coordinate prevCoordinateX = null;
-                for (final Coordinate curCoordinateX : coordinatesX.toCoordinateArray()) {
-                    if (prevCoordinateX != null) {
-                        final CoordinateList coordinates = new CoordinateList();
-                        coordinates.add(prevCoordinateX);
-                        coordinates.add(curCoordinateX);
-                        final LineString line = this.geometryFactory.createLineString(coordinates.toCoordinateArray());
-                        if (preparedIntersectingGeometry.intersects(line)) {
-                            LOGGER.info(MessageFormat.format("Found intersection on Line X after %d coordinates", segmentCoordinatesX.size()));
-                            break;
-                        }
-                    }
-                    segmentCoordinatesX.add(curCoordinateX);
-                    prevCoordinateX = curCoordinateX;
-                }
-                coordinatesX.removeAll(segmentCoordinatesX);
-                segmentCoordinatesX.add(curIntersectingCoordinate);
-                final CoordinateList segmentCoordinatesY = new CoordinateList();
-                Coordinate prevCoordinateY = null;
-                for (final Coordinate curCoordinateY : coordinatesY.toCoordinateArray()) {
-                    if (prevCoordinateY != null) {
-                        final CoordinateList coordinates = new CoordinateList();
-                        coordinates.add(prevCoordinateY);
-                        coordinates.add(curCoordinateY);
-                        final LineString line = this.geometryFactory.createLineString(coordinates.toCoordinateArray());
-                        if (preparedIntersectingGeometry.intersects(line)) {
-                            LOGGER.info(MessageFormat.format("Found intersection on Line X after %d coordinates", segmentCoordinatesY.size()));
-                            break;
-                        }
-                    }
+        final CoordinateList segmentCoordinatesY = new CoordinateList();
+        for(Coordinate curCoordinateY : lineY.getCoordinates()) {
+            LOGGER.info(MessageFormat.format("Coordinate at Y %d , Y %d", curCoordinateY.x, curCoordinateY.y));
+            if(segmentCoordinatesY.size() > 1) {
+                final Coordinate previousCoordinateY = segmentCoordinatesY.getCoordinate(segmentCoordinatesY.size() - 1);
+                final CoordinateList lineStringCoordinatesY = new CoordinateList();
+                lineStringCoordinatesY.add(previousCoordinateY);
+                lineStringCoordinatesY.add(curCoordinateY);
+                final LineString curLineStringY = this.geometryFactory.createLineString(lineStringCoordinatesY.toCoordinateArray());
+                if(lineX.crosses(curLineStringY) || lineX.touches(curLineStringY)) {
                     segmentCoordinatesY.add(curCoordinateY);
-                    prevCoordinateY = curCoordinateY;
-                }
-                coordinatesY.removeAll(segmentCoordinatesY);
-                segmentCoordinatesY.add(curIntersectingCoordinate);
-                if (segmentCoordinatesX.size() > FILTER_SIZE && segmentCoordinatesY.size() > FILTER_SIZE) {
-                    final LineString segmentLineX = this.geometryFactory.createLineString(segmentCoordinatesX.toCoordinateArray());
-                    final LineString segmentLineY = this.geometryFactory.createLineString(segmentCoordinatesY.toCoordinateArray());
-                    segments.add(new DeviationSegment(segmentLineX, segmentLineY));
+                    LOGGER.info(MessageFormat.format("Found crossing or touch on Line X after %d coordinates", segmentCoordinatesY.size()));  
+                    final CoordinateList startCoordinateListY = new CoordinateList();
+                    startCoordinateListY.add(segmentCoordinatesY.getCoordinate(0));
+                    startCoordinateListY.add(segmentCoordinatesY.getCoordinate(1));
+                    final LineString startLineStringY = this.geometryFactory.createLineString(startCoordinateListY.toCoordinateArray());
+                    final CoordinateList coordinatesX = new CoordinateList(lineX.getCoordinates());
+                    final CoordinateList segmentCoordinatesX = DeviationUtil.cutSegment(coordinatesX, startLineStringY, curLineStringY);
+                    if (segmentCoordinatesX.size() > FILTER_SIZE && segmentCoordinatesY.size() > FILTER_SIZE) {
+                        final LineString segmentLineX = this.geometryFactory.createLineString(segmentCoordinatesX.toCoordinateArray());
+                        final LineString segmentLineY = this.geometryFactory.createLineString(segmentCoordinatesY.toCoordinateArray());
+                        segments.add(new DeviationSegment(segmentLineX, segmentLineY));
+                    }
+                    segmentCoordinatesY.clear();
                 }
             }
+            segmentCoordinatesY.add(curCoordinateY);
         }
+        LOGGER.info(MessageFormat.format("Found %d intersections", segments.size()));
         return segments;
     }
     

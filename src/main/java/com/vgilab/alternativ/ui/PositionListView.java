@@ -114,8 +114,7 @@ public class PositionListView {
      * @param deviation the deviation to set
      */
     public void setDeviation(final String deviation) {
-        this.deviation = deviation;
-        if (StringUtils.isNotEmpty(deviation)) {
+        if (StringUtils.isNotEmpty(deviation) && !StringUtils.equalsIgnoreCase(this.deviation, deviation)) {
             try {
                 final DecimalFormatSymbols symbols = new DecimalFormatSymbols();
                 symbols.setDecimalSeparator('.');
@@ -128,6 +127,7 @@ public class PositionListView {
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
         }
+        this.deviation = deviation;
     }
 
     /**
@@ -142,7 +142,7 @@ public class PositionListView {
      */
     public void setMinimumTracks(Integer minimumTracks) {
         this.minimumTracks = minimumTracks;
-        this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, 20d, this.minimumTracks);
+        // this.trips = this.spatialAnalysisService.analyseRoutes(this.alterNativs, 20d, this.minimumTracks);
     }
 
     public void onRowToggle(ToggleEvent event) {
