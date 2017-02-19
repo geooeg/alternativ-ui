@@ -95,7 +95,6 @@ public class PositionDetailView {
             if (null != this.selectedTrip.getDeviationsFromTrip()) {
                 this.selectedTrip.getDeviationsFromTrip().stream().forEach(deviationSegment -> {
                     final List<Coordinate> ring = DeviationUtil.createRingAsListFromSegment(deviationSegment);
-                    final List<LatLng> latLngs = Coordinate3DUtil.convertToLatLngs(ring);
                     final Polygon deviationPolygon = new Polygon();
                     deviationPolygon.setStrokeWeight(1);
                     deviationPolygon.setStrokeColor("yellow");

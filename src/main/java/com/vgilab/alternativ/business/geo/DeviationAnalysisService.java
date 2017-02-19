@@ -33,6 +33,8 @@ public class DeviationAnalysisService {
     private final static Logger LOGGER = Logger.getGlobal();
 
     private final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+    
+    private final static Double BUFFER_SIZE = 0.002;
 
     @Autowired
     private FeatureService featureService;
@@ -88,7 +90,7 @@ public class DeviationAnalysisService {
             for (final Coordinate curIntersectingCoordinate : intersectingCoordinates) {
                 LOGGER.info(MessageFormat.format("Intersecting Coordinate at X %d , Y %d", curIntersectingCoordinate.x, curIntersectingCoordinate.y));
                 final Point intersectingPoint = this.geometryFactory.createPoint(curIntersectingCoordinate);
-                final Geometry intersectingBufferedGeometry = intersectingPoint.buffer(0.002);
+                final Geometry intersectingBufferedGeometry = intersectingPoint.buffer(BUFFER_SIZE);
                 final PreparedGeometry preparedIntersectingGeometry = PreparedGeometryFactory.prepare(intersectingBufferedGeometry);
                 final CoordinateList segmentCoordinatesX = new CoordinateList();
                 Coordinate prevCoordinateX = null;
@@ -140,10 +142,17 @@ public class DeviationAnalysisService {
         if (null != segments) {
             double area = 0d;
             for (final DeviationSegment curDeviationSegment : segments) {
-                final Polygon polygon = this.geometryFactory.createPolygon(DeviationUtil.createRingAsArrayFromSegment(curDeviationSegment));
-                // sum up areas
-                if (null != polygon) {
-                    area += polygon.getArea();
+                try
+                {
+                    final Polygon polygon = this.geometryFactory.createPolygon(DeviationUtil.createRingAsArrayFromSegment(curDeviationSegment));
+                    // sum up areas
+                    if (null != polygon) {
+                        area += polygon.getArea();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LOGGER.log(Level.SEVERE, "Could not create polygon '{'0'}'", ex.getLocalizedMessage());
                 }
             }
             return area;

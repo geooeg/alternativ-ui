@@ -9,6 +9,7 @@ import com.vgilab.alternativ.google.GoogleMapsRoadsApi;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -85,8 +86,15 @@ public class ShapefileService {
                 final String segmentId = UUID.randomUUID().toString();
                 deviationLines.add(this.featureService.createLineXFromDeviationSegment(curDeviationSegment, tripId, userId, segmentId));
                 deviationLines.add(this.featureService.createLineYFromDeviationSegment(curDeviationSegment, tripId, userId, segmentId));
-                final Polygon polygon = this.geometryFactory.createPolygon(DeviationUtil.createRingAsArrayFromSegment(curDeviationSegment));
-                deviationPolygons.add(this.featureService.createPolygonFromDeviationSegment(polygon, tripId, userId, segmentId));
+                try
+                {   final LinearRing linearRing = DeviationUtil.createRingFromSegment(curDeviationSegment);
+                    final Polygon polygon = this.geometryFactory.createPolygon(linearRing);
+                    deviationPolygons.add(this.featureService.createPolygonFromDeviationSegment(polygon, tripId, userId, segmentId));
+                }
+                catch (Exception ex)
+                {
+                    LOGGER.log(Level.SEVERE, "Could not create polygon '{'0'}'", ex.getLocalizedMessage());
+                }
             });
             
             if (!CollectionUtils.isEmpty(deviationLines)) {
