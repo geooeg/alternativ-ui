@@ -35,6 +35,7 @@ public class DeviationAnalysisService {
     private final GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
     
     private final static Double BUFFER_SIZE = 0.002;
+    private final static Integer FILTER_SIZE = 5;
 
     @Autowired
     private FeatureService featureService;
@@ -128,7 +129,7 @@ public class DeviationAnalysisService {
                 }
                 coordinatesY.removeAll(segmentCoordinatesY);
                 segmentCoordinatesY.add(curIntersectingCoordinate);
-                if (segmentCoordinatesX.size() > 1 && segmentCoordinatesY.size() > 1) {
+                if (segmentCoordinatesX.size() > FILTER_SIZE && segmentCoordinatesY.size() > FILTER_SIZE) {
                     final LineString segmentLineX = this.geometryFactory.createLineString(segmentCoordinatesX.toCoordinateArray());
                     final LineString segmentLineY = this.geometryFactory.createLineString(segmentCoordinatesY.toCoordinateArray());
                     segments.add(new DeviationSegment(segmentLineX, segmentLineY));
