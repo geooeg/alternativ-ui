@@ -386,26 +386,29 @@ public class FeatureService {
         featureTypeBuilder.add("user_id", String.class);
         featureTypeBuilder.add("seg_id", String.class);
         featureTypeBuilder.add("line", String.class);
+        featureTypeBuilder.add("idx", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
-    public SimpleFeature createLineXFromDeviationSegment(final DeviationSegment deviationSegment, final String tripId, final String userId, final String segmentId) {
+    public SimpleFeature createLineXFromDeviationSegment(final DeviationSegment deviationSegment, final String tripId, final String userId, final String segmentId, final Integer idx) {
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForDeviationSegment());
         featureBuilder.add(deviationSegment.getSegmentLineX());
         featureBuilder.add(tripId);
         featureBuilder.add(userId);
         featureBuilder.add(segmentId);
         featureBuilder.add("X");
+        featureBuilder.add(idx);
         return featureBuilder.buildFeature(null);
     }
 
-    public SimpleFeature createLineYFromDeviationSegment(final DeviationSegment deviationSegment, final String tripId, final String userId, final String segmentId) {
+    public SimpleFeature createLineYFromDeviationSegment(final DeviationSegment deviationSegment, final String tripId, final String userId, final String segmentId, final Integer idx) {
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getLineTypeForDeviationSegment());
         featureBuilder.add(deviationSegment.getSegmentLineY());
         featureBuilder.add(tripId);
         featureBuilder.add(userId);
         featureBuilder.add(segmentId);
         featureBuilder.add("Y");
+        featureBuilder.add(idx);
         return featureBuilder.buildFeature(null);
     }
     
@@ -417,15 +420,17 @@ public class FeatureService {
         featureTypeBuilder.add("ref_id", String.class);
         featureTypeBuilder.add("user_id", String.class);
         featureTypeBuilder.add("seg_id", String.class);
+        featureTypeBuilder.add("idx", String.class);
         return featureTypeBuilder.buildFeatureType();
     }
 
-    public SimpleFeature createPolygonFromDeviationSegment(final Polygon polygon, final String tripId, final String userId, final String segmentId) {
+    public SimpleFeature createPolygonFromDeviationSegment(final Polygon polygon, final String tripId, final String userId, final String segmentId, final Integer idx) {
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(this.getPolygonTypeForDeviationSegment());
         featureBuilder.add(polygon);
         featureBuilder.add(tripId);
         featureBuilder.add(userId);
         featureBuilder.add(segmentId);
+        featureBuilder.add(idx);
         return featureBuilder.buildFeature(null);
     }
     

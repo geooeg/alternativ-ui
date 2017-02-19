@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -81,20 +82,23 @@ public class ShapefileService {
             final String userId = analysedTrip.getAlterNativ().getUserId();
             final List<SimpleFeature> deviationLines = new LinkedList<>();
             final List<SimpleFeature> deviationPolygons = new LinkedList<>();
-
+            final int maxIdx = analysedTrip.getDeviationsFromTrip().size() - 1;
+            final AtomicInteger count = new AtomicInteger();
             analysedTrip.getDeviationsFromTrip().forEach((curDeviationSegment) -> {
+                final Integer idx = (count.get() == maxIdx) ? Integer.MAX_VALUE : count.get();
                 final String segmentId = UUID.randomUUID().toString();
-                deviationLines.add(this.featureService.createLineXFromDeviationSegment(curDeviationSegment, tripId, userId, segmentId));
-                deviationLines.add(this.featureService.createLineYFromDeviationSegment(curDeviationSegment, tripId, userId, segmentId));
+                deviationLines.add(this.featureService.createLineXFromDeviationSegment(curDeviationSegment, tripId, userId, segmentId, idx));
+                deviationLines.add(this.featureService.createLineYFromDeviationSegment(curDeviationSegment, tripId, userId, segmentId, idx));
                 try
                 {   final LinearRing linearRing = DeviationUtil.createRingFromSegment(curDeviationSegment);
                     final Polygon polygon = this.geometryFactory.createPolygon(linearRing);
-                    deviationPolygons.add(this.featureService.createPolygonFromDeviationSegment(polygon, tripId, userId, segmentId));
+                    deviationPolygons.add(this.featureService.createPolygonFromDeviationSegment(polygon, tripId, userId, segmentId, idx));
                 }
                 catch (Exception ex)
                 {
                     LOGGER.log(Level.SEVERE, "Could not create polygon '{'0'}'", ex.getLocalizedMessage());
                 }
+                count.incrementAndGet();
             });
             
             if (!CollectionUtils.isEmpty(deviationLines)) {
